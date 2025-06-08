@@ -1,0 +1,67 @@
+.Theme_control_barbashDesign {
+        & .Radio.Radio_view_primary {
+            --radio-size: var(--control-box-size-l);
+            --radio-offset: var(--space-xs);
+    
+            --color-primary: var(--color-gray-300);
+            --color-shadow: none;
+    
+            & input.Radio-Input {
+                margin-left: var(--space-3xs);
+                margin-right: var(--space-3xs);
+    
+                border-color: var(--color-primary);
+                background-color: var(--color-control-typo-primary);
+    
+                &.MixFocus {
+                    --mix-focus-color-one: transparent;
+                    --mix-focus-color-two: transparent;
+                    --mix-focus-animation: none;
+                }
+    
+                &:hover,
+                &:focus,
+                &:active {
+                    box-shadow: 0px 0px 0px 4px var(--color-shadow);
+                }
+    
+                &:checked::before {
+                    transform: scale(0.5);
+                    background-color: var(--color-primary);
+                }
+            }
+    
+            &.Radio_disabled {
+                & input.Radio-Input:not(:checked) {
+                    background-color: var(--color-gray-100);
+                }
+    
+                & .Radio-Input:checked {
+                    opacity: 0.45;
+                }
+    
+                --color-primary: var(--color-gray-200);
+            }
+    
+            & .Radio-Input:checked {
+                --color-primary: var(--color-blue-ui);
+                --color-shadow: none;
+            }
+    
+            & .Radio-Input:hover {
+                --color-primary: var(--color-blue-ui);
+                --color-shadow: var(--color-royal-blue);
+            }
+    
+            & .Radio-Input:active {
+                --color-primary: var(--color-blue-ui-pressed);
+                --color-shadow: var(--color-royal-blue-200);
+            }
+        }
+    
+        & .Radio_size_l,
+        & .Radio_size_m {
+            --radio-font-size: var(--control-text-size-s);
+        }
+    }
+    

@@ -1,0 +1,26 @@
+.Theme_control_barbashDesign .Tabs .MixFocus {
+        --mix-focus-color-one: transparent;
+        --mix-focus-color-two: transparent;
+        --mix-focus-animation: none;
+    }
+    
+    .Theme_control_barbashDesign .Tabs .TabsLine_type_running {
+        --line-thickness: 4px;
+    }
+    
+    .Theme_control_barbashDesign .Tabs .ListItemGrid-Slot {
+        font-family: var(--font-primary);
+        line-height: 18px;
+    }
+    
+    .Theme_control_barbashDesign .Tabs .ListItemGrid-Slot_position_center {
+        color: var(--color-typo-primary);
+    }
+    
+    .Theme_control_barbashDesign
+        .Tabs
+        .TabsTab_checked
+        .ListItemGrid-Slot_position_center {
+        color: var(--color-typo-system);
+    }
+    

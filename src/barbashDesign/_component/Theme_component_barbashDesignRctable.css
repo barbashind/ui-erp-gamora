@@ -1,0 +1,56 @@
+.Theme_control_barbashDesign .rcta--RcTable-cell {
+        font-weight: 500;
+        padding: 8px;
+    }
+    
+    .Theme_control_barbashDesign .rcta--RcTable-thead .rcta--RcTable-cell {
+        padding: 4px 8px;
+    }
+    
+    .Theme_control_barbashDesign .rcta--RcTable thead > tr:last-child > * {
+        border-bottom: 0px;
+    }
+    
+    .Theme_control_barbashDesign
+        .rcta--RcTable
+        tbody
+        > tr:not(.rcta--RcTable-placeholder):hover {
+        background-color: var(--color-bg-default);
+    }
+    
+    .Theme_control_barbashDesign
+        .rcta--RcTable
+        tbody
+        > tr:not(.rcta--RcTable-placeholder):hover
+        .rcta--RcTable-cell-fix-left:before,
+    .Theme_control_barbashDesign
+        .rcta--RcTable
+        tbody
+        > tr:not(.rcta--RcTable-placeholder):hover
+        .rcta--RcTable-cell-fix-right:before {
+        background-color: var(--color-bg-default);
+    }
+    
+    .Theme_control_barbashDesign .rcta--RcTable *::-webkit-scrollbar {
+        width: 16px;
+    }
+    
+    .Theme_control_barbashDesign .rcta--RcTable *::-webkit-scrollbar-track {
+        background: var(--color-gray-100);
+        border-left: 8px var(--color-bg-default) solid;
+    }
+    
+    .Theme_control_barbashDesign .rcta--RcTable *::-webkit-scrollbar-thumb {
+        background: var(--color-gray-200);
+        border-left: 8px var(--color-bg-default) solid;
+    }
+    
+    .Theme_control_barbashDesign .rcta--RcTable *::-webkit-scrollbar-thumb:hover {
+        background-color: var(--color-gray-200);
+    }
+    
+    .Theme_control_barbashDesign .rcta--RcTable *::-webkit-scrollbar-thumb:horizontal,
+    .Theme_control_barbashDesign .rcta--RcTable *::-webkit-scrollbar-track:horizontal {
+        border-left: none;
+    }
+    

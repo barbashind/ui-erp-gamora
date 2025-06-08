@@ -1,0 +1,12 @@
+.fileDropArea :hover {
+    background-color: var(--color-control-bg-clear);
+}
+.fileDropArea {
+    pointer-events: fill;
+}
+.link :hover {
+    text-decoration: underline;
+}
+.link {
+    pointer-events: fill;
+}

@@ -1,0 +1,29 @@
+* {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-weight: 500;
+    }
+    
+    .Theme_control_barbashDesign {
+        --font-weight-placeholder: 400;
+    }
+    
+    .Theme_control_barbashDesign .MixFocus:not(.MixFocus_before):focus,
+    .Theme_control_barbashDesign .MixFocus:not(.MixFocus_before):focus:hover {
+        box-shadow: none;
+    }
+    
+    .Theme_control_barbashDesign *::-webkit-scrollbar-track {
+        background: var(--color-gray-100);
+    }
+    
+    .Theme_control_barbashDesign *::-webkit-scrollbar-thumb {
+        background: var(--color-gray-200);
+        cursor: pointer;
+    }
+    
+    .Theme_control_barbashDesign *::-webkit-scrollbar-thumb:hover {
+        background: var(--color-gray-200);
+    }
+    

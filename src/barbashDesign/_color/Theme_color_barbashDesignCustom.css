@@ -1,0 +1,45 @@
+.Theme_color_barbashDesignDefault,
+.Theme_color_barbashDesignDark {
+    /* --color-blue-ui: rgba(0, 34, 255, 1); */
+    --color-blue-ui-hovered: rgba(47, 29, 225, 1);
+    --color-blue-ui-pressed: rgba(20, 0, 219, 1);
+    --color-blue-ui-bg: rgba(54, 81, 255, 1);
+    --color-green-ui-bg: rgba(13, 255, 187, 0.1);
+    --color-royal-blue: rgba(233, 234, 255, 1);
+    --color-royal-blue-10: rgba(251, 249, 255, 1);
+    --color-royal-blue-50: rgba(242, 243, 255, 1);
+    --color-royal-blue-100: var(--color-royal-blue);
+    --color-royal-blue-200: rgba(197, 191, 255, 1);
+    --color-royal-blue-300: rgba(177, 169, 255, 1);
+    --color-gray-100: rgba(233, 234, 242, 1);
+    --color-gray-200: rgba(209, 210, 222, 1);
+    --color-gray-300: rgba(183, 185, 199, 1);
+    --color-gray-400: rgba(156, 158, 173, 1);
+    --color-gray-500: rgba(126, 128, 143, 1);
+    --color-gray-600: rgba(96, 99, 115, 1);
+    --color-red-10: rgba(254, 245, 246, 1);
+    --color-red-50: rgba(255, 236, 238, 1);
+    --color-red-100: rgba(252, 217, 220, 1);
+    --color-red-400: rgba(241, 60, 79, 1);
+    --color-red-500: rgba(235, 42, 56, 1);
+    --color-red-error: rgba(243, 92, 108, 1);
+    --color-aquamarine-50: rgba(242, 254, 255, 1);
+    --color-aquamarine-70: rgba(238, 255, 250, 1);
+    --color-green-100: rgba(13, 255, 187, 1);
+    --color-aquamarine-200: rgba(192, 249, 233, 1);
+    --color-aquamarine-300: rgba(107, 245, 207, 1);
+    --color-aquamarine-500: rgba(59, 233, 185, 1);
+    --color-aquamarine-700: rgba(11, 201, 148, 1);
+    --color-aquamarine-800: rgba(8, 188, 139, 1);
+    --color-aquamarine-900: rgba(12, 163, 121, 1);
+    --color-dark-blue: rgba(71, 91, 229, 1);
+    --color-orange-10: rgba(255, 247, 245, 1);
+    --color-orange-50: rgba(255, 239, 233, 1);
+    --color-orange-100: rgba(255, 230, 209, 1);
+    --color-orange-400: rgba(255, 113, 0, 1);
+    --color-orange-500: rgba(240, 106, 0, 1);
+    --color-orange-600: rgba(225, 100, 0, 1);
+    --color-orange-1000: rgba(255, 95, 25, 1);
+    --color-volcano-600: rgba(255, 181, 0, 1);
+}
+

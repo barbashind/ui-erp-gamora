@@ -1,0 +1,188 @@
+.ComboboxMultipleEffect {
+        & .Select-Delimiter {
+            display: none;
+        }
+    
+        & .Select-ControlValue {
+            display: flex;
+            align-items: center;
+        }
+    
+        & .Select-IndicatorsDropdown {
+            color: var(--color-control-bg-primary);
+        }
+    
+        & .Select-DropdownIndicatorIcon {
+            top: 2px;
+        }
+    
+        & .Select-SelectContainer_multiple .Select-ControlValueContainer {
+            position: absolute;
+        }
+    
+        & .Select-ClearIndicator:not(.ComboboxMultipleEffect-ClearIndicator) {
+            display: none;
+        }
+    
+        & .ComboboxMultipleEffect-ClearIndicator {
+            min-height: auto;
+            order: -1;
+        }
+    
+        &.ComboboxMultipleEffect_isDisabled {
+            &.Select_view_default .Select-SelectContainer .Select-Control {
+                border-color: var(--color-control-bg-border-disable);
+                background-color: var(--color-control-bg-disable);
+                box-shadow: none;
+            }
+    
+            & input {
+                caret-color: transparent;
+            }
+        }
+    
+        &.ComboboxMultipleEffect_withIconSearch {
+            & .Select-ControlValueContainer {
+                display: flex;
+                align-items: center;
+                padding-left: var(--space-xs);
+                padding-top: var(--space-3xs);
+            }
+    
+            & .Select-Placeholder {
+                margin-left: 0;
+                width: calc(100% - var(--input-space) - var(--space-3xl));
+            }
+    
+            & .Select-ControlValueContainer::before {
+                content: url('../../assets/inputfield/IconSearch.svg');
+                margin-top: 0;
+                margin-right: var(--space-m);
+            }
+    
+            &:not(.ComboboxMultipleEffect_isDisabled)
+                :is(
+                    .Select-SelectContainer_focused,
+                    .Select-SelectContainer:not(
+                            .Select-SelectContainer_disabled
+                        ):hover
+                )
+                .Select-ControlValueContainer::before {
+                content: url('../../assets/inputfield/IconFocusSearch.svg');
+            }
+        }
+    }
+    
+    .ComboboxMultipleEffectValue {
+        margin-bottom: var(--space-3xs);
+        line-height: var(--line-height-text-m);
+        display: inline-block;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        width: 100%;
+        white-space: nowrap;
+    }
+    
+    .ComboboxMultipleEffectItemLabel {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        align-items: center;
+    }
+    
+    .ComboboxMultipleDropdownEffect {
+        & .ListGroupLabel {
+            text-transform: none;
+            font-size: var(--size-text-xs);
+            padding-top: var(--space-xs);
+        }
+    
+        & .SelectDropdown-List .ListItem {
+            min-height: 28px;
+        }
+    
+        & .ListItemGrid-Slot_position_left {
+            margin-right: var(--space-xs);
+        }
+    
+        & .ComboboxContainerItemUnderlined {
+            border-bottom: 1px solid var(--color-control-bg-border-default);
+            margin-bottom: var(--space-xs);
+            padding-bottom: var(--space-xs);
+        }
+    
+        &.ComboboxMultipleDropdownEffect_withTopToolbar {
+            display: flex;
+            flex-direction: column-reverse;
+        }
+    
+        &.ComboboxMultipleDropdownEffect_isDisabled {
+            & .ListItem_interactive:hover {
+                background-color: var(--color-control-bg-clear);
+            }
+        }
+    }
+    
+    .ComboboxMultipleEffectToolbar {
+        padding: var(--space-2xs) var(--space-m);
+        border-bottom: 1px solid var(--color-gray-100);
+    }
+    
+    div.ListBox.ComboboxMultipleDropdownEffect_isScrolled {
+        padding-right: var(--space-xs);
+    
+        & .ComboboxMultipleEffectToolbar {
+            margin-right: calc(-1 * var(--space-xs));
+        }
+    
+        & *::-webkit-scrollbar {
+            width: var(--space-xs);
+        }
+    
+        & *::-webkit-scrollbar-track,
+        & *::-webkit-scrollbar-thumb {
+            border-right: 0px;
+            border-radius: 2px;
+        }
+    }
+    
+    .ListBox_shadow.ComboboxMultipleDropdownEffect_openDirection_up {
+        box-shadow:
+            0px -4px 4px
+                color-mix(in srgb, var(--color-typo-primary) 4%, transparent),
+            0px -8px 24px
+                color-mix(in srgb, var(--color-typo-primary) 12%, transparent);
+    }
+    
+    .ListBox_shadow.ComboboxMultipleDropdownEffect_openDirection_down {
+        box-shadow:
+            0px 4px 4px
+                color-mix(in srgb, var(--color-typo-primary) 4%, transparent),
+            0px 8px 24px
+                color-mix(in srgb, var(--color-typo-primary) 12%, transparent);
+    }
+    
+    .ComboboxMultipleEffectSelectableGroup {
+        &::after {
+            position: relative;
+            content: ' ';
+            display: block;
+            width: calc(100% - 10px);
+            left: 10px;
+            top: calc(-1 * var(--space-2xs));
+            border-bottom: var(--control-border-width) solid
+                var(--color-control-bg-border-default);
+        }
+    
+        & > div {
+            column-gap: 0;
+            padding-bottom: var(--space-2xs);
+        }
+    }
+    
+    .ComboboxMultipleEffectSelectableGroupLabel {
+        color: var(--color-typo-secondary);
+        font-size: var(--size-text-xs);
+    }
+    
+    

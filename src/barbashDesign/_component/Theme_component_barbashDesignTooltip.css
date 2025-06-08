@@ -1,0 +1,6 @@
+.Theme_control_barbashDesign.Tooltip {
+        --tooltip-bg-color: var(--color-control-typo-primary);
+        --shadow-layer: 0px 0px 1px var(--color-shadow-layer-1),
+            0px 4px 8px var(--color-shadow-layer-1);
+    }
+    

@@ -1,0 +1,32 @@
+.Pagination {
+        align-items: center;
+    }
+    
+    .Pagination-ButtonContainer {
+        display: flex;
+        gap: var(--space-xl);
+    }
+    
+    .Pagination-Buttons {
+        display: flex;
+        gap: var(--space-2xs);
+    }
+    
+    .Pagination-ButtonDots {
+        margin-left: var(--space-s);
+        margin-right: var(--space-s);
+        color: var(--color-gray-500);
+        display: flex;
+        align-items: center;
+    }
+    
+    .Pagination-PageSelect .Text {
+        white-space: nowrap;
+        font-weight: 400;
+    }
+    
+    .Pagination-PageSelect .Select-Body {
+        width: 93px;
+    }
+    
+    

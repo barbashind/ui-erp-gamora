@@ -1,0 +1,33 @@
+.MixFontSize-2xs {
+    font-size: var(--size-text-2xs);
+}
+.MixFontSize-xs {
+    font-size: var(--size-text-xs);
+}
+.MixFontSize-s {
+    font-size: var(--size-text-s);
+}
+.MixFontSize-m {
+    font-size: var(--size-text-m);
+}
+.MixFontSize-l {
+    font-size: var(--size-text-l);
+}
+.MixFontSize-xl {
+    font-size: var(--size-text-xl);
+}
+.MixFontSize-2xl {
+    font-size: var(--size-text-2xl);
+}
+.MixFontSize-3xl {
+    font-size: var(--size-text-3xl);
+}
+.MixFontSize-4xl {
+    font-size: var(--size-text-4xl);
+}
+.MixFontSize-5xl {
+    font-size: var(--size-text-5xl);
+}
+.MixFontSize-6xl {
+    font-size: var(--size-text-6xl);
+}

@@ -1,0 +1,65 @@
+.Theme_control_barbashDesign .TextField-Input::placeholder {
+        color: var(--color-control-typo-placeholder);
+        font-weight: var(--font-weight-placeholder);
+    }
+    
+    .Theme_control_barbashDesign
+        .TextField-InputContainer.TextField-InputContainer_status_alert {
+        --container-border-color: var(--color-typo-alert);
+    }
+    
+    .Theme_control_barbashDesign
+        .TextField-InputContainer.TextField-InputContainer_status_warning {
+        --container-border-color: var(--color-typo-warning);
+    }
+    
+    .Theme_control_barbashDesign .TextField-InputContainer_view_default {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+    
+    /* Кнопка очистки */
+    .Theme_control_barbashDesign .TextField-ClearButton {
+        align-self: center;
+    }
+    
+    .Theme_control_barbashDesign .TextField-ClearButton .IconClear svg {
+        display: none;
+    }
+    
+    .Theme_control_barbashDesign .TextField-ClearButton .IconClear:before {
+        width: 12px;
+        height: 12px;
+        content: url('../../../assets/IconClear.svg');
+    }
+    
+    /* Скругление границ элемента */
+    .Theme_control_barbashDesign .TextField-InputContainer_view_default {
+        --control-radius: 2px;
+    }
+    
+    /* Выделение элемента при фокусе и наведении */
+    .Theme_control_barbashDesign
+        .TextField-InputContainer_view_default:not(
+            .TextField-InputContainer_disabled
+        ):hover,
+    .Theme_control_barbashDesign
+        .TextField-InputContainer_view_default.TextField-InputContainer_focus {
+        border-color: var(--color-control-bg-border-secondary);
+        box-shadow: 0px 0px 0px 4px var(--color-royal-blue);
+    }
+
+
+.Theme_control_barbashDesign .FieldInput {
+    --input-heigh: 14px;
+    --input-font-size: 14px;
+    font-weight: var(--font-weight-placeholder);
+    line-height: calc(var(--input-height) - 2px);
+    font-size: var(--input-font-size);
+    font-family: var(--font-primary);
+    font-style: normal;
+    padding-left: 8px;
+}
+
+    
+    

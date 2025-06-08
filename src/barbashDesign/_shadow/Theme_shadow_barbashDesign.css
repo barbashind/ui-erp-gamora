@@ -1,0 +1,10 @@
+.Theme_shadow_barbashDesign {
+        /* Тени */
+        --shadow-group: 0px 2px 2px var(--color-shadow-group-1),
+            0px 2px 2px var(--color-shadow-group-2);
+        --shadow-layer: 0px 4px 4px var(--color-shadow-layer-1),
+            0px 4px 4px var(--color-shadow-layer-2);
+        --shadow-modal: 0px 4px 8px 0px var(--color-shadow-modal-1),
+            0px 0px 1px 0px var(--color-shadow-modal-2);
+    }
+    

@@ -1,0 +1,262 @@
+/* stylelint-disable */
+.Theme_color_barbashDesignDefault {
+        /* //////////////////////////////
+      // Цвета фонов /////////////// */
+        --color-bg-default: rgb(255, 255, 255); /* Цвет дефолта */
+        --color-bg-secondary: rgb(244, 246, 251); /* Цвет дефолта */
+    
+        --color-bg-brand: rgb(0, 113, 178); /* Цвет фона брендированый */
+    
+        --color-bg-link: var(--color-blue-ui); /* Цвет фона ссылки */
+        --color-bg-border: rgba(0, 65, 102, 0.2); /* Цвет границ */
+        --color-bg-stripe: rgba(
+            0,
+            32,
+            51,
+            0.05
+        ); /* Цвет зебры (например, при окрашивании фона строк таблицы через одну) */
+    
+        --color-bg-ghost: rgba(0, 32, 51, 0.08); /* Цвет затенения */
+    
+        --color-bg-tone: rgba(71, 74, 89, 0.3); /* Цвет паранджи */
+        --color-bg-soft: rgba(255, 255, 255, 0.9); /* Цвет молока */
+        --color-bg-system: rgb(222, 228, 232); /* Цвет фона системнный */
+    
+        --color-bg-normal: rgb(86, 185, 242); /* Цвет фона нейтральный */
+    
+        --color-bg-success: rgb(223, 250, 242); /* Цвет фона успеха */
+        --color-bg-caution: rgb(242, 201, 76); /* Цвет фона осторожности */
+    
+        --color-bg-warning: rgb(255, 246, 214); /* Цвет фона предупреждения */
+    
+        --color-bg-alert: rgb(255, 236, 238); /* Цвет фона ошибки */
+        --color-bg-critical: rgb(51, 0, 15); /* Цвет фона системнный */
+    
+        /* //////////////////////////////
+      // Цвета текста ////////////// */
+        --color-typo-primary: rgb(26, 27, 38); /* Цвет основного текста */
+    
+        --color-typo-secondary: rgb(
+            126,
+            128,
+            143
+        ); /* Цвет второстепенного текста */
+    
+        --color-typo-ghost: rgba(26, 27, 38, 0.3); /* Цвет дополнительного текста */
+    
+        --color-typo-brand: rgb(0, 113, 178); /* Цвет брендового текста */
+    
+        --color-typo-system: var(--color-blue-ui); /* Цвет фона системнный */
+    
+        --color-typo-normal: rgb(51, 180, 255); /* Цвет фона нейтральный */
+    
+        --color-typo-success: rgb(11, 201, 148); /* Цвет текста успеха */
+    
+        --color-typo-caution: rgb(255, 161, 10); /* Цвет текста осторожности */
+    
+        --color-typo-warning: var(
+            --color-orange-400
+        ); /* Цвет текста предупреждения */
+    
+        --color-typo-alert: rgb(243, 92, 108); /* Цвет текста ошибки */
+    
+        --color-typo-critical: rgb(51, 0, 15); /* Цвет фона системнный */
+    
+        --color-typo-link: rgb(80, 102, 255); /* Цвет основной ссылки */
+        --color-typo-link-minor: rgb(70, 89, 216); /* Цвет второстепенной ссылки */
+    
+        --color-typo-link-hover: rgb(122, 140, 255); /* Цвет ховера ссылки */
+    
+        /* //////////////////////////////
+      // Цвета скроллбара ////////////// */
+        --color-scroll-bg: rgba(0, 66, 105, 0.06);
+        --color-scroll-thumb: var(--color-gray-200);
+        --color-scroll-thumb-hover: var(--color-gray-200);
+    
+        /* /////////////////////////////
+      // Цвета контролов /////////// */
+    
+        /* Default */
+        --color-control-bg-default: rgb(255, 255, 255); /* Цвет фона контрола */
+    
+        --color-control-typo-default: rgb(
+            26,
+            27,
+            38
+        ); /* Цвет основного текста контрола */
+    
+        --color-control-typo-placeholder: var(
+            --color-gray-500
+        ); /* Цвет плейсхолдера контрола */
+    
+        --color-control-bg-border-default: rgb(
+            183,
+            185,
+            199
+        ); /* Цвет фона бордеров котрола */
+    
+        --color-control-bg-border-default-hover: rgba(
+            0,
+            66,
+            105,
+            0.52
+        ); /* Цвет фона бордеров контрола по ховеру */
+    
+        --color-control-bg-border-focus: rgb(
+            128,
+            144,
+            255
+        ); /* Цвет аутлайна контролов при фокусе */ /* TODO заменить на правило целиком */
+        --color-control-bg-focus: rgba(
+            80,
+            102,
+            255,
+            0.3
+        ); /* Цвет тени в состонии фокуса */
+    
+        --color-control-bg-active: rgba(
+            80,
+            102,
+            255,
+            0.5
+        ); /* Цвет тени в состонии нажатия  */
+    
+        /* Primary */
+        --color-control-bg-primary: var(
+            --color-blue-ui
+        ); /* Цвет фона активного контрола */
+    
+        --color-control-bg-primary-hover: rgb(
+            23,
+            0,
+            254
+        ); /* Цвет фона активного контрола по ховеру */
+    
+        --color-control-typo-primary: rgb(
+            255,
+            255,
+            255
+        ); /* Цвет акцентного текста */
+    
+        --color-control-typo-primary-hover: rgb(
+            255,
+            255,
+            255
+        ); /* Цвет акцентного текста */
+    
+        /* Secondary */
+        --color-control-bg-secondary: rgba(
+            255,
+            255,
+            255,
+            0
+        ); /* Цвет фона бордеров котрола */
+    
+        --color-control-bg-border-secondary: var(
+            --color-blue-ui
+        ); /* Цвет фона бордеров котрола */
+    
+        --color-control-bg-border-secondary-hover: rgb(
+            23,
+            0,
+            254
+        ); /* Цвет фона бордеров контрола по ховеру */
+    
+        --color-control-typo-secondary: var(
+            --color-blue-ui
+        ); /* Цвет второстепеного текста контрола */
+    
+        --color-control-typo-secondary-hover: rgb(
+            23,
+            0,
+            254
+        ); /* Цвет акцентного текста */
+    
+        /* Ghost */
+        --color-control-bg-ghost: rgba(
+            0,
+            66,
+            105,
+            0.07
+        ); /* Цвет фона дополнительного контрола */
+    
+        --color-control-bg-ghost-hover: rgba(
+            0,
+            66,
+            105,
+            0.05
+        ); /* Цвет фона дополнительного контрола по ховеру */
+    
+        --color-control-typo-ghost: rgba(
+            43,
+            45,
+            64,
+            0.8
+        ); /* Цвет дополнительного текста контрола */
+    
+        --color-control-typo-ghost-hover: rgba(
+            43,
+            45,
+            64,
+            0.75
+        ); /* Цвет акцентного текста */
+    
+        /* Clear */
+        --color-control-bg-clear: rgba(
+            0,
+            66,
+            105,
+            0
+        ); /* Цвет фона чистого контрола */
+    
+        --color-control-bg-clear-hover: rgba(
+            0,
+            66,
+            105,
+            0.05
+        ); /* Цвет фона чистого контрола по ховеру */
+    
+        --color-control-typo-clear: var(
+            --color-blue-ui
+        ); /* Цвет акцентного текста */
+    
+        --color-control-typo-clear-hover: rgba(
+            23,
+            0,
+            254
+        ); /* Цвет акцентного текста */
+    
+        /* Disable */
+        --color-control-bg-disable: rgba(
+            233,
+            234,
+            242
+        ); /* Цвет фона неактивного контрола */
+    
+        --color-control-bg-border-disable: rgba(
+            183,
+            185,
+            199
+        ); /* Цвет фона бордеров неактивного контрола */
+    
+        --color-control-typo-disable: rgb(
+            26,
+            27,
+            38
+        ); /* Цвет основного текста неактивного контрола */
+    
+        /* ///////////////
+            // Цвета тени / */
+        --color-shadow-group-1: rgba(0, 32, 51, 0.02);
+        --color-shadow-group-2: rgba(0, 32, 51, 0.16);
+        --color-shadow-layer-1: rgba(0, 32, 51, 0.04);
+        --color-shadow-layer-2: rgba(0, 32, 51, 0.12);
+        --color-shadow-modal-1: rgba(0, 0, 0, 0.08);
+        --color-shadow-modal-2: rgba(0, 0, 0, 0.08);
+
+        --color-blue-ui: rgba(0, 72, 255, 1);
+        --color-gray-100: rgba(233, 234, 242, 1);
+        --color-green-100: rgba(13, 255, 187, 1);
+    }
+    /* stylelint-enable */
+    

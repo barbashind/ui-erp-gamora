@@ -1,0 +1,16 @@
+.Theme_control_barbashDesign .Button_disabled {
+        background-color: var(--color-bg-secondary);
+        opacity: 0.3;
+        border-color: var(--color-control-typo-secondary);
+        color: var(--color-control-typo-secondary);
+    }
+    
+    .Theme_control_barbashDesign .Button_view_secondary:hover,
+    .Theme_control_barbashDesign .Button_view_clear:hover {
+        --button-bg-color-hover: var(--color-royal-blue-50);
+    }
+    .Theme_control_barbashDesign .Button_view_secondary:hover,
+    .Theme_control_barbashDesign .Button_view_primary:hover {
+        box-shadow: 0px 0px 0px 4px var(--color-royal-blue-50);
+    }
+    

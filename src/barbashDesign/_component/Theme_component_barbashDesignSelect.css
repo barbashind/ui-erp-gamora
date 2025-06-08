@@ -1,0 +1,223 @@
+.Theme_control_barbashDesign.SelectDropdown *::-webkit-scrollbar,
+.Theme_control_barbashDesign.deprecated--SelectDropdown *::-webkit-scrollbar {
+    width: 16px;
+}
+
+.Theme_control_barbashDesign.SelectDropdown *::-webkit-scrollbar-track,
+.Theme_control_barbashDesign.deprecated--SelectDropdown *::-webkit-scrollbar-track {
+    background: var(--color-gray-100);
+    border-right: 8px var(--color-bg-default) solid;
+    margin: 0;
+}
+
+.Theme_control_barbashDesign.SelectDropdown *::-webkit-scrollbar-thumb,
+.Theme_control_barbashDesign.deprecated--SelectDropdown *::-webkit-scrollbar-thumb {
+    background: var(--color-gray-200);
+    border-right: 8px var(--color-bg-default) solid;
+    border-radius: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.Theme_control_barbashDesign.SelectDropdown *::-webkit-scrollbar-thumb:hover,
+.Theme_control_barbashDesign.deprecated--SelectDropdown
+    *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-gray-200);
+}
+
+.Theme_control_barbashDesign.SelectDropdown,
+.Theme_control_barbashDesign.deprecated--SelectDropdown {
+    min-width: 16px;
+    border-radius: 2px;
+    border: none;
+}
+
+.Theme_control_barbashDesign .SelectDropdown-List,
+.Theme_control_barbashDesign .deprecated--SelectDropdown-List {
+    padding-top: 0px;
+}
+
+.Theme_control_barbashDesign
+    .SelectDropdown-ScrollContainer
+    > .SelectDropdown-List {
+    max-height: unset;
+}
+
+.Theme_control_barbashDesign .SelectDropdown-List .ListItem,
+.Theme_control_barbashDesign .deprecated--SelectDropdown-List .ListItem {
+    line-height: var(--line-height-text-m);
+}
+
+.Theme_control_barbashDesign.SelectDropdown-List .ListItemGrid-Slot,
+.Theme_control_barbashDesign.deprecated--SelectDropdown-List .ListItemGrid-Slot {
+    line-height: var(--line-height-text-m);
+}
+
+.Theme_control_barbashDesign .Select .Select-IndicatorsDropdown,
+.Theme_control_barbashDesign
+    .deprecated--Select
+    .deprecated--Select-IndicatorsDropdown {
+    color: var(--color-control-bg-primary);
+}
+
+.Theme_control_barbashDesign
+    .Select
+    .Select-SelectContainer_disabled
+    .Select-IndicatorsDropdown,
+.Theme_control_barbashDesign
+    .deprecated--Select
+    .deprecated--Select-SelectContainer_disabled
+    .deprecated--Select-IndicatorsDropdown {
+    color: var(--color-typo-secondary);
+}
+
+.Theme_control_barbashDesign .Select-SelectContainer_status_alert,
+.Theme_control_barbashDesign .deprecated--Select-SelectContainer_status_alert {
+    --container-border-color: var(--color-typo-alert);
+}
+
+.Theme_control_barbashDesign .Select-SelectContainer_status_warning,
+.Theme_control_barbashDesign .deprecated--Select-SelectContainer_status_warning {
+    --container-border-color: var(--color-typo-warning);
+}
+
+.Theme_control_barbashDesign .Select-Delimiter,
+.Theme_control_barbashDesign .deprecated--Select-Delimiter {
+    display: none;
+}
+
+.Theme_control_barbashDesign .Select-SelectContainer_view_default .Select-Control,
+.Theme_control_barbashDesign
+    .deprecated--Select-SelectContainer_view_default
+    .deprecated--Select-Control {
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+/* Индикатор очистки */
+.Theme_control_barbashDesign .Select-ClearIndicator,
+.Theme_control_barbashDesign .deprecated--Select-ClearIndicator {
+    height: 100%;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.Theme_control_barbashDesign .Select-ClearIndicator .IconClear svg,
+.Theme_control_barbashDesign .deprecated--Select-ClearIndicator .IconClear svg {
+    display: none;
+}
+
+.Theme_control_barbashDesign .Select-ClearIndicator .IconClear:before,
+.Theme_control_barbashDesign .deprecated--Select-ClearIndicator .IconClear:before {
+    width: 12px;
+    height: 12px;
+    content: url('../../../src/assets/IconClear.svg');
+}
+
+.Theme_control_barbashDesign .Select-ClearIndicatorIcon,
+.Theme_control_barbashDesign .deprecated--Select-ClearIndicatorIcon {
+    top: -0.5px;
+}
+
+/* Подсветка при наведении в выпадающем списке */
+.Theme_control_barbashDesign .SelectDropdown-List .ListItem,
+.Theme_control_barbashDesign .deprecated--SelectDropdown-List .ListItem {
+    min-height: 34px;
+    padding: 8px;
+    border-radius: 2px;
+}
+
+.Theme_control_barbashDesign .SelectDropdown-List .ListItem_interactive:hover,
+.Theme_control_barbashDesign
+    .deprecated--SelectDropdown-List
+    .ListItem_interactive:hover {
+    background-color: var(--color-royal-blue-50);
+}
+
+.Theme_control_barbashDesign .SelectDropdown-List .ListItem_active,
+.Theme_control_barbashDesign
+    .SelectDropdown-List
+    .ListItem_interactive:hover
+    .Checkbox
+    input:not(:checked),
+.Theme_control_barbashDesign .deprecated--SelectDropdown-List .ListItem_active,
+.Theme_control_barbashDesign
+    .deprecated--SelectDropdown-List
+    .ListItem_interactive:hover
+    .Checkbox
+    input:not(:checked) {
+    background-color: var(--color-bg-default);
+}
+
+/* Размер и отступ для checkbox */
+.Theme_control_barbashDesign .SelectDropdown-List .ListItem .Checkbox,
+.Theme_control_barbashDesign .deprecated--SelectDropdown-List .ListItem .Checkbox {
+    --checkbox-size: 20px;
+    margin: 2px;
+}
+
+.Theme_control_barbashDesign > .SelectDropdown-ScrollContainer,
+.Theme_control_barbashDesign > .deprecated--SelectDropdown-ScrollContainer,
+.Theme_control_barbashDesign > .SelectDropdown-List,
+.Theme_control_barbashDesign > .deprecated--SelectDropdown-List {
+    border: 8px solid transparent;
+    border-right-style: none;
+    padding: 0 8px 0 0;
+}
+
+/* Скругление границ элемента */
+.Theme_control_barbashDesign .Select-SelectContainer_view_default,
+.Theme_control_barbashDesign .deprecated--Select-SelectContainer_view_default {
+    --control-radius: 2px;
+}
+
+/* Выделение элемента при фокусе и наведении */
+.Theme_control_barbashDesign
+    .Select-SelectContainer_view_default:not(
+        .Select-SelectContainer_disabled
+    ):hover
+    .Select-Control,
+.Theme_control_barbashDesign
+    .deprecated--Select-SelectContainer_view_default:not(
+        .deprecated--Select-SelectContainer_disabled
+    ):hover
+    .deprecated--Select-Control,
+.Theme_control_barbashDesign
+    .Select-SelectContainer_view_default.Select-SelectContainer_focused
+    .Select-Control,
+.Theme_control_barbashDesign
+    .deprecated--Select-SelectContainer_view_default.deprecated--Select-SelectContainer_focused
+    .deprecated--Select-Control {
+    border-color: var(--color-control-bg-border-secondary);
+    box-shadow: 0px 0px 0px 4px var(--color-royal-blue);
+}
+
+/* Выделение выбранного элемента в списке  */
+.Theme_control_barbashDesign {
+    &:is(.SelectDropdown, .deprecated--SelectDropdown) {
+        & .ListItem_checked {
+            background-color: var(--color-royal-blue-50);
+
+            &.Text {
+                color: var(--color-typo-primary);
+            }
+
+            &::before {
+                content: none;
+            }
+        }
+    }
+}
+
+.Theme_control_barbashDesign .Select-Placeholder,
+.Theme_control_barbashDesign .deprecated--Select-Placeholder {
+    font-weight: var(--font-weight-placeholder);   
+}
+
+/* правка стилей для consta5 при подключенных стилях select consta4*/
+.Theme_control_barbashDesign
+    > .SelectDropdown-ScrollContainer
+    > .SelectDropdown-List {
+    overflow: unset;
+}
+
