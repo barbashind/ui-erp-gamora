@@ -1,4 +1,4 @@
-import { SortOrder } from "#/global/TableColumnHeader";
+import { SortOrder } from "../global/TableColumnHeader";
 
 export type Loft = {
         loftId: number | undefined;

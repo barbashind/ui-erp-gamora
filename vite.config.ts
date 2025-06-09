@@ -12,11 +12,6 @@ import react from '@vitejs/plugin-react';
 //                 changeOrigin: true,
 //                 secure: false,
 //             },
-//             '/cards': {
-//                 target: 'https://card.wb.ru',
-//                 changeOrigin: true,
-//                 secure: false,
-//             },
 //         },
 //     },
 // });
