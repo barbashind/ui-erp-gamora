@@ -52,6 +52,7 @@ export  const checkToken = async (): Promise<Valid> => {
     valid: boolean;
     username?: string;
     role?: string;
+    companyId?: number;
 }
 
 export  const getUserInfo = async (): Promise<UserInfo> => {

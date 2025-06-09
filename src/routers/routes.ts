@@ -1,13 +1,13 @@
 export interface TRouteTarget {
         main: string;
         menu: string;
-        supplies: string;
-        productsQuants: string;
+        loftsManadgment: string;
+        organization: string;
     }
 
 export const routeTarget: TRouteTarget = {
         main: '/',
         menu: 'menu',
-        supplies: 'supplies',
-        productsQuants: 'products-quants'
+        loftsManadgment: 'lofts-managment',
+        organization: 'organization',
     };

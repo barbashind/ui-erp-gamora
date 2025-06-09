@@ -7,7 +7,7 @@ const MainPage = () => {
         return (
                 <Layout direction="column" >
                         <DashBoard/>
-                        <Layout style={{backgroundColor: 'var(--color-bg-secondary)', justifyContent: 'left', padding: '24px'}}>
+                        <Layout style={{backgroundColor: 'var(--color-bg-secondary)', justifyContent: 'left'}}>
                                 <Outlet/>
                         </Layout>
                 </Layout>

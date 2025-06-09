@@ -1,10 +1,12 @@
 import { routeTarget } from "../routers/routes";
 import { concatUrl } from "../utils/urlUtils";
-import { ShoppingOutlined, TruckOutlined } from "@ant-design/icons";
+import { AreaChartOutlined, BankOutlined, BlockOutlined, BookOutlined } from "@ant-design/icons";
 import { Card } from "@consta/uikit/Card";
-import { Layout } from "@consta/uikit/Layout";
 import { cnMixSpace } from "@consta/uikit/MixSpace";
 import { Text } from "@consta/uikit/Text";
+
+import { Layout } from "@consta/uikit/Layout";
+
 import { useNavigate } from "react-router-dom";
 
 const MenuPage = () => {
@@ -12,23 +14,76 @@ const navigate = useNavigate()
 
         return (
                 <Layout direction="column" >
-                        <Layout direction='row' style={{gap: '32px'}}>
+                        <Layout 
+                                direction='row' 
+                                style={{ 
+                                        minHeight: 'calc(100vh - 80px)', 
+                                        // maxHeight: 'calc(100vh - 80px)', 
+                                        gap: '32px', 
+                                        padding: '32px', 
+                                        paddingTop:'64px',
+                                        flexWrap: 'wrap'
+                                }}
+                        >
                                 <Card 
-                                        style={{ justifyItems: 'center',  backgroundColor: 'var(--color-bg-default)', cursor: 'pointer'}} 
-                                        className={cnMixSpace({p:'m'})}
-                                >
-                                        <TruckOutlined style={{ fontSize: '2em'}} className={cnMixSpace({mB:'xs'})}/>
-                                        <Text size="m" weight='semibold' style={{minWidth:'130px', maxWidth: '130px'}} align="center">Поставки</Text>
-                                </Card>
-                                <Card 
-                                        style={{ justifyItems: 'center',  backgroundColor: 'var(--color-bg-default)', cursor: 'pointer' }} 
+                                        style={{ 
+                                                justifyItems: 'center',  
+                                                backgroundColor: 'var(--color-bg-default)', 
+                                                cursor: 'pointer',
+                                                minHeight: '130px',
+                                                maxHeight: '130px'
+                                        }} 
                                         className={cnMixSpace({p:'m'})}
                                         onClick={() => {
-                                                navigate(concatUrl([routeTarget.main, routeTarget.productsQuants]));
+                                                navigate(concatUrl([routeTarget.main, routeTarget.organization]));
                                         }}
                                 >
-                                        <ShoppingOutlined style={{ fontSize: '2em'}} className={cnMixSpace({mB:'xs'})}/>
-                                        <Text size="m" weight='semibold' style={{minWidth:'130px', maxWidth: '130px'}} align="center">Остатки товаров</Text>
+                                        <BankOutlined style={{ fontSize: '3em', color: 'var(--color-blue-ui)'}} className={cnMixSpace({mB:'xs'})}/>
+                                        <Text size="m" weight='semibold' style={{minWidth:'130px', maxWidth: '130px', color: 'var(--color-blue-ui)'}} align="center">Данные организации</Text>
+                                </Card>
+                                <Card 
+                                        style={{ 
+                                                justifyItems: 'center',  
+                                                backgroundColor: 'var(--color-bg-default)', 
+                                                cursor: 'pointer',
+                                                minHeight: '130px',
+                                                maxHeight: '130px'
+                                        }} 
+                                        className={cnMixSpace({p:'m'})}
+                                        onClick={() => {
+                                                navigate(concatUrl([routeTarget.main, routeTarget.loftsManadgment]));
+                                        }}
+                                >
+                                        <BlockOutlined style={{ fontSize: '3em', color: 'var(--color-blue-ui)'}} className={cnMixSpace({mB:'xs'})}/>
+                                        <Text size="m" weight='semibold' style={{minWidth:'130px', maxWidth: '130px', color: 'var(--color-blue-ui)'}} align="center">Управление помещениями</Text>
+                                </Card>
+                                <Card 
+                                        style={{ 
+                                                justifyItems: 'center',  
+                                                backgroundColor: 'var(--color-bg-default)', 
+                                                cursor: 'pointer',
+                                                minHeight: '130px',
+                                                maxHeight: '130px'
+                                        }} 
+                                        className={cnMixSpace({p:'m'})}
+                                       
+                                >
+                                        <BookOutlined style={{ fontSize: '3em', color: 'var(--color-blue-ui)'}} className={cnMixSpace({mB:'xs'})}/>
+                                        <Text size="m" weight='semibold' style={{minWidth:'130px', maxWidth: '130px', color: 'var(--color-blue-ui)'}} align="center">Управление бронированиями</Text>
+                                </Card>
+                                <Card 
+                                        style={{ 
+                                                justifyItems: 'center',  
+                                                backgroundColor: 'var(--color-bg-default)', 
+                                                cursor: 'pointer',
+                                                minHeight: '130px',
+                                                maxHeight: '130px'
+                                        }}
+                                        className={cnMixSpace({p:'m'})}
+                                        
+                                >
+                                        <AreaChartOutlined style={{ fontSize: '3em', color: 'var(--color-blue-ui)'}} className={cnMixSpace({mB:'xs'})}/>
+                                        <Text size="m" weight='semibold' style={{minWidth:'130px', maxWidth: '130px', color: 'var(--color-blue-ui)'}} align="center">Аналитика компании</Text>
                                 </Card>
                         </Layout>
                 </Layout>

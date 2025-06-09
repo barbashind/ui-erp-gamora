@@ -8,7 +8,7 @@ import { cnMixSpace } from "@consta/uikit/MixSpace";
 import { ContextMenu } from '@consta/uikit/ContextMenu';
 
 // Иконки
-import {  HomeOutlined, LogoutOutlined, MenuOutlined } from "@ant-design/icons";
+import {  CheckSquareOutlined, LogoutOutlined, MenuOutlined } from "@ant-design/icons";
 
 // Доп. хуки
 import { AntIcon } from "../utils/AntIcon";
@@ -57,15 +57,9 @@ const navigate = useNavigate();
 
         return (
                 <Layout direction="row" className={cnMixSpace({pH: 'm', pV:'s', })} style={{justifyContent: 'space-between', alignItems: 'center'}}>
-                                <Button 
-                                        iconLeft={AntIcon.asIconComponent(() => (
-                                                <HomeOutlined
-                                                        className={cnMixFontSize('xl')}
-                                                />
-                                        ))}
+                                <CheckSquareOutlined
+                                        className={cnMixFontSize('3xl')}
                                         onClick={()=>{ navigate(concatUrl([routeTarget.main])) }}
-                                        size="m"
-                                        view="clear"
                                 />
                                 <Layout direction="row" style={{ alignItems: 'center' }}>
                                         {!isLoading && (
@@ -75,7 +69,7 @@ const navigate = useNavigate();
                                                                 onClick={()=>{console.log(user)}}
                                                         />
                                                         <Text
-                                                                className={cnMixSpace({mL: 's', mR: 'm'})}
+                                                                className={cnMixSpace({mL: 's', mR: '2xl'})}
                                                         >
                                                                 {user?.username}
                                                         </Text>

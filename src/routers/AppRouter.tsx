@@ -5,8 +5,8 @@ import { routeTarget } from "./routes";
 import { concatUrl } from "../utils/urlUtils";
 import MainPage from "../pages/MainPage";
 import MenuPage from "../pages/MenuPage";
-import ProductQuantsPage from "../pages/ProductQuantsPage";
-
+import LoftsManagmentPage from "../pages/LoftsManagmentPage";
+import OrganizationPage from "../pages/OrganizationPage";
 // страницы
 
 
@@ -15,7 +15,8 @@ const AppRouter = () => {
                 <Routes>
                         <Route element={<MainPage />} path={routeTarget.main} >
                                 <Route element={<MenuPage />} path={concatUrl([routeTarget.main])} />
-                                <Route element={<ProductQuantsPage />} path={concatUrl([routeTarget.main, routeTarget.productsQuants])} />
+                                <Route element={<LoftsManagmentPage />} path={concatUrl([routeTarget.main, routeTarget.loftsManadgment])} />
+                                <Route element={<OrganizationPage />} path={concatUrl([routeTarget.main, routeTarget.organization])} />
                         </Route>
                         <Route
                                 path=""
