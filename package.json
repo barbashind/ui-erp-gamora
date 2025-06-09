@@ -28,6 +28,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.8.1",
     "react-tabulator": "^0.18.1",
+    "rollup": "^4.42.0",
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {
@@ -51,4 +52,3 @@
     }
   }
 }
-
