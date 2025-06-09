@@ -1,5 +1,5 @@
-import { Loft, LoftFilter } from "#/types/lofts-managment-types";
-import { TPageableResponse } from "#/utils/types";
+import { Loft, LoftFilter } from "../types/lofts-managment-types";
+import { TPageableResponse } from "../utils/types";
 import { HttpService } from "../system/HttpService";
 import { ErrorResponse, getErrorResponse, TSortParam } from "./utils";
 
