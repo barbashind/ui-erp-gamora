@@ -2,15 +2,15 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // собственные компоненты
-import { getCompanyData, updateCompanyData } from "../services/OraganizationService";
-import { Organization } from "../types/organization-types";
+import { getCompanyData, getUsersData, updateCompanyData } from "../services/OraganizationService";
+import { Organization, User } from "../types/organization-types";
 import { AntIcon } from "../utils/AntIcon";
 import { cnMixFontSize } from "../utils/MixFontSize";
 import { concatUrl } from "../utils/urlUtils";
 import { routeTarget } from "../routers/routes";
 
 // иконки
-import { AuditOutlined, EditOutlined, HomeOutlined, SaveOutlined, UsergroupAddOutlined } from "@ant-design/icons";
+import { AuditOutlined, DeleteOutlined, EditOutlined, HomeOutlined, PlusOutlined, SaveOutlined, UsergroupAddOutlined } from "@ant-design/icons";
 
 // компоненты Consta
 import { TextField } from "@consta/uikit/TextField";
@@ -55,7 +55,19 @@ const OrganizationPage = () => {
                 shortName: null
         }
 
+        const defaultUser: User = {
+                companyId: undefined,
+                name: null,
+                username: null,
+                email: null,
+                password: null,
+                role: null,
+                description: null,
+                main: false,
+        }
+
         const [data, setData] = useState<Organization>(defaultData)
+        const [users, setUsers] = useState<User[]>([defaultUser])
         const [dataDef, setDataDef] = useState<Organization>(defaultData)
         const [isEdit, setIsEdit] = useState<boolean>(false)
         const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -72,10 +84,17 @@ const OrganizationPage = () => {
                         void getCompany();
                 }
                 if (activeTab.id === 1) {
-                        console.log(1)
+                        const getUsers = async () => {
+                                await getUsersData((resp)=>{
+                                        setUsers(resp);
+                                        setIsLoading(false);
+                                })
+                        }
+                        void getUsers();
                 }
-                
         }, [activeTab])
+
+
 
         const updateCompany = async () => {
                 try {
@@ -148,13 +167,13 @@ const OrganizationPage = () => {
                                                         {(activeTab.id === 0) && (
                                                                 <Layout direction="row" style={{alignItems:'center'}} >
                                                                         <AuditOutlined style={{ fontSize: '2em', color: 'var(--color-blue-ui)'}} />
-                                                                        <Text size="xl" weight='semibold' style={{color: 'var(--color-blue-ui)'}} className={cnMixSpace({mL:'m'})} >Ведение основных данных организации</Text>
+                                                                        <Text size="xl" weight='semibold' style={{color: 'var(--color-blue-ui)'}} className={cnMixSpace({mL:'m'})} >Основные данные</Text>
                                                                 </Layout>
                                                         )}
                                                         {(activeTab.id === 1) && (
                                                                 <Layout direction="row" style={{alignItems:'center'}} >
                                                                         <UsergroupAddOutlined style={{ fontSize: '2em', color: 'var(--color-blue-ui)'}} />
-                                                                        <Text size="xl" weight='semibold' style={{color: 'var(--color-blue-ui)'}} className={cnMixSpace({mL:'m'})} >Ведение списка пользователей организации</Text>
+                                                                        <Text size="xl" weight='semibold' style={{color: 'var(--color-blue-ui)'}} className={cnMixSpace({mL:'m'})} onClick={()=>console.log(users)}>Список пользователей</Text>
                                                                 </Layout>
                                                         )}
                                                 </Layout>
@@ -282,6 +301,59 @@ const OrganizationPage = () => {
                                                                 </Layout>
                                                         </Layout>
                                                 )}
+
+                                                {!isLoading && (activeTab.id === 1) && (
+                                                        <Layout direction="column" style={{width: 'fit-content'}} className={cnMixSpace({mT:'xl', mL:'xl'})}>
+                                                                {(users && users.length > 0) && users.map((user) => (
+                                                                        <Card border style={{height:'100%', width: 'fit-content'}} className={cnMixSpace({pH:'xl', pV:'s'})}>
+                                                                                <Layout direction="row" style={{alignItems: 'center', gap: '32px'}}>
+                                                                                        <Text size="m" weight="semibold">{user.username}</Text>
+                                                                                        <Text size="m" weight="regular" view="secondary">{user.description}</Text>
+                                                                                        <Text size="m" weight="regular" view="secondary">{user.email}</Text>
+                                                                                        <Layout direction="row">
+                                                                                               <Button
+                                                                                                        iconLeft={AntIcon.asIconComponent(() => (
+                                                                                                                <EditOutlined
+                                                                                                                        className={cnMixFontSize('l')}
+                                                                                                                />
+                                                                                                        ))}
+                                                                                                        onClick={()=>{}}
+                                                                                                        size="s"
+                                                                                                        view="secondary"
+                                                                                                        className={cnMixSpace({mR:'m'})}
+                                                                                                />
+                                                                                                <Button
+                                                                                                        iconLeft={AntIcon.asIconComponent(() => (
+                                                                                                                <DeleteOutlined
+                                                                                                                        className={cnMixFontSize('l')}
+                                                                                                                />
+                                                                                                        ))}
+                                                                                                        onClick={()=>{}}
+                                                                                                        size="s"
+                                                                                                        view="secondary"
+                                                                                                        style={{ color:'var(--color-typo-alert)', borderColor: 'var(--color-typo-alert)' }}
+                                                                                                /> 
+                                                                                        </Layout>
+                                                                                        
+                                                                                </Layout>
+                                                                        </Card>
+                                                                ))}
+                                                                <Layout direction="row" style={{justifyContent: 'center'}}>
+                                                                        <Button 
+                                                                                label={'Добавить еще'}
+                                                                                iconLeft={AntIcon.asIconComponent(() => (
+                                                                                        <PlusOutlined
+                                                                                                className={cnMixFontSize('l') + ' ' + cnMixSpace({mR:'xs'})}
+                                                                                        />
+                                                                                ))}
+                                                                                size="s"
+                                                                                view="secondary"
+                                                                                className={cnMixSpace({mT:'l'})}
+                                                                        />
+                                                                </Layout>
+                                                                
+                                                        </Layout>
+                                                )} 
 
                                                 {isLoading && (
                                                         <Layout style={{minHeight: 'calc(100vh - 328px)', width: '100%', justifyContent: 'center', alignItems: 'center'}}>

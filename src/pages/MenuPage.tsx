@@ -66,7 +66,9 @@ const navigate = useNavigate()
                                                 maxHeight: '130px'
                                         }} 
                                         className={cnMixSpace({p:'m'})}
-                                       
+                                       onClick={() => {
+                                                navigate(concatUrl([routeTarget.main, routeTarget.bookingManagment]));
+                                        }}
                                 >
                                         <BookOutlined style={{ fontSize: '3em', color: 'var(--color-blue-ui)'}} className={cnMixSpace({mB:'xs'})}/>
                                         <Text size="m" weight='semibold' style={{minWidth:'130px', maxWidth: '130px', color: 'var(--color-blue-ui)'}} align="center">Управление бронированиями</Text>

@@ -1,30 +1,28 @@
 import { SortOrder } from "../global/TableColumnHeader";
 
-export type Loft = {
+export type Booking = {
+        bookingId: number | undefined;
         loftId: number | undefined;
         companyId: number | undefined;
-        name: string | null;
-        address: string | null;
-        size: number | null;
-        guestCountMax: number | null;
-        valid: boolean;
-        typeText: string | null;
-        type: string | null;
+        loftName: string;
+        client: string | null;
+        startDate: Date;
+        endDate: Date;
         createdAt: Date | null;
         updatedAt: Date | null;
 }
 
-export type LoftRow = Loft & {
+export type BookingRow = Booking & {
         rowNumber: number;
         spacer: boolean;
     };
 
-export interface LoftFilter {
+export interface BookingFilter {
         name?: string | null;
         valid?: boolean;
 }
 
-export interface LoftSortFields {
+export interface BookingSortFields {
         loftId: SortOrder;
         size: SortOrder;
         createdAt: SortOrder;

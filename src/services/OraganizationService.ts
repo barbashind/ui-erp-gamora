@@ -1,5 +1,5 @@
 import { HttpService } from "../system/HttpService";
-import { Organization } from "../types/organization-types";
+import { Organization, User } from "../types/organization-types";
 import { ErrorResponse, getErrorResponse } from "./utils";
 
 export const getCompanyData = async (
@@ -32,3 +32,33 @@ export const updateCompanyData = async (data: Organization): Promise<Organizatio
         return resp;
     };
 
+
+export const getUsersData = async (
+        getCallback: (arg0: User[]) => void
+    ) => {
+        await HttpService.get<User[]>(`/api/gamora/users-data`)
+            .then((response) => {
+                getCallback(response);
+            })
+            .catch(() => {
+                console.log('failed');
+            });
+    };
+
+export const updateUsersData = async (userId: number, data: User): Promise<User> => {
+    const token = localStorage.getItem('token');
+        const response = await fetch(`/api/gamora/user-data-update/${userId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) {
+            const errorResponse = await getErrorResponse(response);
+            throw new ErrorResponse(errorResponse);
+        }
+        const resp: User = (await response.json()) as User;
+        return resp;
+    };

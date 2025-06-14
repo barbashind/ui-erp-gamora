@@ -1,9 +1,6 @@
 import { DragNDropField } from '@consta/uikit/DragNDropField';
-import { cnMixSpace } from '@consta/uikit/MixSpace';
 import { Text } from '@consta/uikit/Text';
 import classes from './FileEmtyText.module.css';
-import { PaperClipOutlined } from '@ant-design/icons';
-import { cnMixFontSize } from '../utils/MixFontSize';
 import { useRef } from 'react';
 import { Loader } from '@consta/uikit/Loader';
 
@@ -17,7 +14,6 @@ interface FileEmptyTextProps {
     setFiles: React.Dispatch<React.SetStateAction<File[]>>;
     isMultiple: boolean;
     callbackAfter: (files: File[]) => void;
-    accept: string;
     fileMaxSize: boolean;
     setErrorText: React.Dispatch<React.SetStateAction<ErrorText[]>>;
     isLoading?: boolean;
@@ -31,7 +27,7 @@ const FileEmptyText = (props: FileEmptyTextProps) => {
     return (
         <div className={classes.fileDropArea} id="dropzone">
             <DragNDropField
-                style={{ padding: 0, height: 'fit-content', minHeight: '111px' }}
+                style={{ padding: 0, height: 'fit-content', minHeight: '44px' }}
                 multiple={props.isMultiple}
                 onClick={(event) => {
                     if (event.currentTarget !== link.current) {
@@ -81,10 +77,9 @@ const FileEmptyText = (props: FileEmptyTextProps) => {
                                     style={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        marginTop: '23px',
                                     }}
                                 >
-                                    Перетащите файлы или
+                                    Перетащите файл или
                                     <div className={classes.link} ref={link}>
                                         <span
                                             onClick={openFileDialog}
@@ -95,37 +90,10 @@ const FileEmptyText = (props: FileEmptyTextProps) => {
                                                 marginLeft: 4,
                                             }}
                                         >
-                                            загрузите{' '}
-                                            <PaperClipOutlined
-                                                className={cnMixFontSize('l')}
-                                                style={{ marginLeft: 4 }}
-                                            />
+                                            нажмите для выбора{' '}
                                         </span>
                                     </div>
                                 </Text>
-                                <Text
-                                    size="s"
-                                    view="secondary"
-                                    weight="regular"
-                                    className={cnMixSpace({
-                                        mT: 'm',
-                                    })}
-                                    align="center"
-                                >
-                                    {props.accept}
-                                </Text>
-                                {props.fileMaxSize && (
-                                    <Text
-                                        size="s"
-                                        view="secondary"
-                                        weight="regular"
-                                        className={cnMixSpace({
-                                            mB: 'm',
-                                        })}
-                                    >
-                                        Максимальный размер файла: 20 Мб
-                                    </Text>
-                                )}
                             </>
                         )}
                     </>

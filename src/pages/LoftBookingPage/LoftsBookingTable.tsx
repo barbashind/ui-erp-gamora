@@ -10,7 +10,7 @@ import { Text } from "@consta/uikit/Text";
 import { ColumnType } from "rc-table";
 import RCTable, { TableProps } from 'rc-table';
 import classesTable from '../../styles/Table.module.scss';
-import classes from './LoftsManagmentTable.module.css'
+import classes from './LoftsBookingTable.module.css'
 import { useEffect, useState } from "react";
 import { Loader } from '@consta/uikit/Loader';
 import { cnMixSpace } from "@consta/uikit/MixSpace";
@@ -20,11 +20,11 @@ import { classnames } from "@bem-react/classnames";
 import { NoDataImage } from "../../assets/images/NoDataImage";
 import { Loft, LoftFilter, LoftRow, LoftSortFields } from "../../types/lofts-managment-types";
 import { getLofts } from "../../services/LoftManagment";
-import { useNavigate } from "react-router-dom";
-import { concatUrl } from "../../utils/urlUtils";
-import { routeTarget } from "../../routers/routes";
+// import { useNavigate } from "react-router-dom";
+// import { concatUrl } from "../../utils/urlUtils";
+// import { routeTarget } from "../../routers/routes";
 
-interface LoftsManagmentTableProps {
+interface LoftsBookingTableProps {
         updateFlag: boolean;
         setUpdateFlag: React.Dispatch<React.SetStateAction<boolean>>;
         currentPage: number;
@@ -37,7 +37,7 @@ interface LoftsManagmentTableProps {
         count: number | null;
         setCount: React.Dispatch<React.SetStateAction<number | null>>;
     }
-const LoftsManagmentTable = ({
+const LoftsBookingTable = ({
         updateFlag,
         setUpdateFlag, 
         currentPage,
@@ -49,7 +49,7 @@ const LoftsManagmentTable = ({
         filterValues,
         count,
         setCount,
-    } : LoftsManagmentTableProps) => {
+    } : LoftsBookingTableProps) => {
         const { getStoredPageSize, setStoredPageSize } = usePaginationStore('Records');
         const [pagination, setPagination] = useState<IPagination>({
                         totalPages: 0,
@@ -59,7 +59,7 @@ const LoftsManagmentTable = ({
                 });        
         const [rows, setRows] = useState<LoftRow[]>([]);
         const [isLoading, setIsLoading] = useState<boolean>(false);
-        const navigate = useNavigate();
+        // const navigate = useNavigate();
     
        
 useEffect(() => {
@@ -292,9 +292,9 @@ const getData = async () => {
                             onRow={record => ({
                                 className: record.spacer ? 'data-is-spacer' : `data-is-row`,
                                 onClick: () => {
-                                    if (!record.spacer) {
-                                        navigate(concatUrl([routeTarget.main, `loft-details/${record.loftId}`]));
-                                    }
+                                    // if (!record.spacer) {
+                                    //     navigate(concatUrl([routeTarget.main, `loft-details/${record.loftId}`]));
+                                    // }
                                     
                                 },
                             })}
@@ -356,4 +356,4 @@ const getData = async () => {
             </Layout>
         )
     }
-export default LoftsManagmentTable;
+export default LoftsBookingTable;

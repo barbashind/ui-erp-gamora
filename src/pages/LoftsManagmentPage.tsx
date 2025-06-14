@@ -3,7 +3,7 @@ import { routeTarget } from "../routers/routes";
 import { concatUrl } from "../utils/urlUtils";
 import { AntIcon } from "../utils/AntIcon";
 import { cnMixFontSize } from "../utils/MixFontSize";
-import { BlockOutlined, HomeOutlined, PlusOutlined } from "@ant-design/icons";
+import { BlockOutlined, FilterOutlined, HomeOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button } from "@consta/uikit/Button";
 import { Card } from "@consta/uikit/Card";
 import { Layout } from "@consta/uikit/Layout";
@@ -105,7 +105,20 @@ const LoftsManagmentPage = () => {
                                                                         ))}
                                                                         view="secondary"
                                                                         size="s"
-                                                                        label={'Добавить новое'}
+                                                                        label={'Новое помещение'}
+                                                                        className={cnMixSpace({mR:'m'})}
+                                                                        onClick={()=>{
+                                                                                navigate(concatUrl([routeTarget.main, `loft-details/new`]));
+                                                                        }}
+                                                                />
+                                                                <Button
+                                                                        iconLeft={AntIcon.asIconComponent(() => (
+                                                                                <FilterOutlined
+                                                                                        className={cnMixFontSize('l')}
+                                                                                />
+                                                                        ))}
+                                                                        view="secondary"
+                                                                        size="s"
                                                                 />
                                                         </Layout>
                                                 </Layout>
