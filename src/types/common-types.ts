@@ -2,6 +2,7 @@ export type UserInfo = {
         role?: string;
         username?: string;
         valid?: boolean;
+        companyId?: number;
 }
 
 export type CodeText = {

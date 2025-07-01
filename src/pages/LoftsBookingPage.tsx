@@ -11,13 +11,12 @@ import { cnMixSpace } from "@consta/uikit/MixSpace";
 import { Text } from "@consta/uikit/Text";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LoftFilter, LoftSortFields } from "../types/lofts-managment-types";
+import { Loft, LoftFilter, LoftSortFields } from "../types/lofts-managment-types";
 import { Sort, useTableSorter } from "../hooks/useTableSorter";
 import LoftsBookingTable from "./LoftBookingPage/LoftsBookingTable";
-import { convertDayMonth } from "../services/utils";
 import { ChoiceGroup } from "@consta/uikit/ChoiceGroup";
 import { getBokingsToday } from "../services/LoftBookingService";
-import { DiagramGanta, Task } from "../global/DiagramGanta";
+import { DiagramBooking, Task } from "../global/DiagramBooking";
 
 const LoftsBookingPage = () => {
 
@@ -69,42 +68,21 @@ const LoftsBookingPage = () => {
         );
         const [updateFlag, setUpdateFlag] = useState<boolean>(true);
 
-        const [month, setMonth] = useState<Date[]>([]);
-        const [startPeriod, setStartPeriod] = useState<Date>(new Date());
-        const [endPeriod, setEndPeriod] = useState<Date>(new Date());
+        
         const [bookingsToday, setBookingsToday] = useState<Task[]>([]);
+
+        const [lofts, setLofts] = useState<Loft[]>([]);
 
         // Инициализация данных
         useEffect(() => {
-                const today = new Date();
-                const datesArray: Date[] = [];
-                for (let i = 1; i < 31; i++) {
-                        const nextDate = new Date(today);
-                        nextDate.setDate(today.getDate() + i);
-                        datesArray.push(nextDate);
-                }
-                setMonth(datesArray);
-
-                const now = new Date();
-                now.setSeconds(0);
-                now.setMilliseconds(0);
-                now.setMinutes(0);
-                setStartPeriod(now);
-
-                const end = new Date();
-                end.setSeconds(0);
-                end.setMilliseconds(0);
-                end.setMinutes(0);
-                end.setDate(new Date().getDay() + 1)
-                setEndPeriod(end)
-
                 if (activeTab.id === 0) {
                         const getBookingTodayData = async () => {
                                 await getBokingsToday((resp)=>{
-                                        setBookingsToday(resp.map(el => ({startDate: el.startDate, endDate: el.endDate, name: el.loftName})));
+                                        setBookingsToday(resp.map(el => ({startDate: el.startDate, endDate: el.endDate, loftName: el.loftName, loftId: Number(el.loftId), clientName: el.client ?? ''})));
                                 })
                         };
                         void getBookingTodayData();
+
                 }
         }, []);
 
@@ -171,19 +149,14 @@ const LoftsBookingPage = () => {
                                                 </Layout>
                                                 {activeTab.id === 0 && (
                                                         <Layout direction="column" className={cnMixSpace({pL:'xl', pT:'xl'})}>
+                                                                
                                                                 <Card style={{minWidth:'290px', border: '1px solid var(--color-gray-200)'}} className={cnMixSpace({p:'m', mR: 'm', mB:'m'})}>
-                                                                        <Text size="l" weight="semibold" view="secondary">Сегодня</Text>
-                                                                        <DiagramGanta startPeriod={startPeriod} endPeriod={endPeriod} tasks={bookingsToday}/>
+                                                                        <DiagramBooking tasks={bookingsToday} period={60}/>
                                                                 </Card>
                                                                 <Layout direction="row" style={{flexWrap: 'wrap'}}>
-                                                                        {month && month.length > 0 && month.map((day)=> (
                                                                                 <Card style={{minWidth:'250px'}} className={cnMixSpace({p:'m', mR: 'm', mB:'m'})}>
-                                                                                        <Text size="l" weight="semibold" view="secondary">{convertDayMonth(day)}</Text>
-                                                                                        <Layout>
-                                                                                                
-                                                                                        </Layout>
+                                                                                        <Text size="l" weight="semibold" view="secondary">Лофт №1</Text>
                                                                                 </Card>
-                                                                        ))}
                                                                 </Layout>
                                                         </Layout>
                                                 )}

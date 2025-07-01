@@ -3,6 +3,8 @@ import { Text } from '@consta/uikit/Text';
 import classes from './FileEmtyText.module.css';
 import { useRef } from 'react';
 import { Loader } from '@consta/uikit/Loader';
+import { Layout } from '@consta/uikit/Layout';
+import { LoftImage } from '#/types/loft-details-types';
 
 interface ErrorText {
     fileName: string | undefined;
@@ -11,7 +13,7 @@ interface ErrorText {
 
 interface FileEmptyTextProps {
     files: File[];
-    setFiles: React.Dispatch<React.SetStateAction<File[]>>;
+    setFiles: React.Dispatch<React.SetStateAction<LoftImage[]>>;
     isMultiple: boolean;
     callbackAfter: (files: File[]) => void;
     fileMaxSize: boolean;
@@ -27,7 +29,7 @@ const FileEmptyText = (props: FileEmptyTextProps) => {
     return (
         <div className={classes.fileDropArea} id="dropzone">
             <DragNDropField
-                style={{ padding: 0, height: 'fit-content', minHeight: '44px' }}
+                style={{ padding: 0, height: 'fit-content', minHeight: '100px', maxWidth: '250px' }}
                 multiple={props.isMultiple}
                 onClick={(event) => {
                     if (event.currentTarget !== link.current) {
@@ -35,11 +37,12 @@ const FileEmptyText = (props: FileEmptyTextProps) => {
                         return undefined;
                     }
                 }}
+                accept="image/*"
                 onDropFiles={(items) => {
                     if (props.isMultiple) {
                         const copy: File[] = [];
                         copy.push(...items);
-                        props.setFiles(copy);
+                        props.setFiles((prev) => ([...prev, ...copy.map((el) => ({documentId: undefined, image: el}))]));
                         props.callbackAfter(copy);
                         props.setErrorText([]);
                         for (const item of items) {
@@ -54,7 +57,7 @@ const FileEmptyText = (props: FileEmptyTextProps) => {
                         const copy: File[] = [...props.files];
                         if (copy[0]) copy[0] = items[0];
                         else copy.push(...items);
-                        props.setFiles(copy);
+                        props.setFiles([{documentId: undefined, image: copy[0]}]);
                         props.callbackAfter([items[0]]);
                         if (items[0].size > 20 * 1024 * 1024) {
                             props.setErrorText([]);
@@ -71,7 +74,7 @@ const FileEmptyText = (props: FileEmptyTextProps) => {
                         {props.isLoading ? (
                             <Loader size="s" />
                         ) : (
-                            <>
+                            <Layout direction='column'>
                                 <Text
                                     size="s"
                                     style={{
@@ -79,22 +82,22 @@ const FileEmptyText = (props: FileEmptyTextProps) => {
                                         alignItems: 'center',
                                     }}
                                 >
-                                    Перетащите файл или
-                                    <div className={classes.link} ref={link}>
+                                    Перетащите фото или
+                                    
+                                </Text>
+                                <Text className={classes.link} ref={link} size="s">
                                         <span
                                             onClick={openFileDialog}
                                             style={{
                                                 color: 'var(--color-bg-link)',
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                marginLeft: 4,
                                             }}
                                         >
                                             нажмите для выбора{' '}
                                         </span>
-                                    </div>
                                 </Text>
-                            </>
+                            </Layout>
                         )}
                     </>
                 )}

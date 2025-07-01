@@ -32,7 +32,7 @@ function App() {
 }, []);
 
   return (
-      <Theme preset={themePreset} className={classes.App}>
+      <Theme preset={themePreset} className={classes.BarbaShlyakhov}>
         <div style={{width: 'calc(100vw - 20px)', height: '100vh', minWidth: '350px'}}>
            <AppRouter/>
         </div>

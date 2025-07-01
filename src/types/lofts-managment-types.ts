@@ -1,8 +1,8 @@
 import { SortOrder } from "../global/TableColumnHeader";
 
 export type Loft = {
-        loftId: number | undefined;
-        companyId: number | undefined;
+        loftId?: number;
+        companyId?: number;
         name: string | null;
         address: string | null;
         size: number | null;
@@ -10,8 +10,10 @@ export type Loft = {
         valid: boolean;
         typeText: string | null;
         type: string | null;
+        loftDescription: string | null;
         createdAt: Date | null;
         updatedAt: Date | null;
+        photo?: File;
 }
 
 export type LoftRow = Loft & {
@@ -27,5 +29,6 @@ export interface LoftFilter {
 export interface LoftSortFields {
         loftId: SortOrder;
         size: SortOrder;
+        guestCountMax: SortOrder;
         createdAt: SortOrder;
 }

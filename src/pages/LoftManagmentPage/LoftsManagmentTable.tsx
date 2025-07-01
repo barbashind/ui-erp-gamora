@@ -19,10 +19,11 @@ import { Badge } from "@consta/uikit/Badge";
 import { classnames } from "@bem-react/classnames";
 import { NoDataImage } from "../../assets/images/NoDataImage";
 import { Loft, LoftFilter, LoftRow, LoftSortFields } from "../../types/lofts-managment-types";
-import { getLofts } from "../../services/LoftManagment";
+import { getImage, getLoftMainImage, getLofts } from "../../services/LoftManagmentService";
 import { useNavigate } from "react-router-dom";
 import { concatUrl } from "../../utils/urlUtils";
 import { routeTarget } from "../../routers/routes";
+import { SkeletonBrick } from '@consta/uikit/Skeleton';
 
 interface LoftsManagmentTableProps {
         updateFlag: boolean;
@@ -59,6 +60,7 @@ const LoftsManagmentTable = ({
                 });        
         const [rows, setRows] = useState<LoftRow[]>([]);
         const [isLoading, setIsLoading] = useState<boolean>(false);
+        const [updatePhoto, setUpdatePhoto] = useState<boolean>(false);
         const navigate = useNavigate();
     
        
@@ -69,7 +71,39 @@ useEffect(() => {
 useEffect(() => {
         setUpdateFlag(true);
 }, [columnSort, setUpdateFlag]);
+useEffect(() => {
+        setUpdatePhoto(true);
+}, [updateFlag, setUpdateFlag, filterValues, columnSort, currentPage, pagination.pageSize, setCount]);
     
+
+useEffect(() => {
+    if (updatePhoto) {
+        rows.map((row) => {
+            if (!row.spacer) {
+                const getMainPhoto = async (loftId: number) => {
+                    try {
+                        await getLoftMainImage(Number(loftId), (async (resp)=> {
+                            if (resp) {
+                               await getImage(resp).then((response) => {
+                                if (response) {
+                                    setRows(prev => (prev.map((item) => (item.loftId === loftId) ? {...item, photo: response} : item )))
+                                }
+                               })
+                            }
+                        }))
+                    } catch(error) {
+                        console.log(error);
+                    }
+                    
+                }
+                void getMainPhoto(Number(row.loftId))
+            }
+        })
+        setUpdatePhoto(false);
+    }
+    
+}, [rows, updatePhoto]);
+
 useEffect(() => {
 if (updateFlag) {
         setIsLoading(true);
@@ -77,10 +111,10 @@ if (updateFlag) {
                 fieldname: value.column,
                 isAsc: value.sortOrder === 'asc',
         }));
-const filterParam : LoftFilter = filterValues 
+        const filterParam : LoftFilter = filterValues 
 
-const getData = async () => {
-        try {
+        const getData = async () => {
+            try {
                 const serverData: TPageableResponse<Loft> = await getLofts({
                 page: currentPage,
                 size: pagination.pageSize,
@@ -91,18 +125,17 @@ const getData = async () => {
                 const spacerRow: LoftRow = {} as LoftRow;
                 spacerRow.spacer = true;
                 serverData.content.forEach((item, index) => {
-                dataRes.push(
-                        
-                        {
-                        ...item,
-                        spacer: false,
-                        rowNumber: (serverData.pageable.pageNumber || 0) + index + 1,
-                        },
-                        {
-                        ...spacerRow,
-                        rowNumber: (serverData.pageable.pageNumber || 0) + index + 1,
-                        }
-                );
+                    dataRes.push(
+                            {
+                            ...item,
+                            spacer: false,
+                            rowNumber: (serverData.pageable.pageNumber || 0) + index + 1,
+                            },
+                            {
+                            ...spacerRow,
+                            rowNumber: (serverData.pageable.pageNumber || 0) + index + 1,
+                            }
+                    );
                 });
 
                 setRows(
@@ -144,16 +177,29 @@ const getData = async () => {
             dataIndex: 'login',
             key: 'login',
             align: 'left',
-            width: '50px',
+            width: '80px',
             render: (_value: string, record: LoftRow) => {
+                console.log(record.photo)
+
                 return record.spacer ? (
                     <></>
                 ) : (
-                    <Layout direction="column" style={{width: 'fit-content'}}>
-                        <Text size="s"  weight="medium" style={{ minWidth: '50px', maxWidth: '50px'  }}>
-                            {Number(rows.indexOf(record)) + 1 + Number(currentPage) * Number(pagination.pageSize)}
-                        </Text>
-                    </Layout>
+                    record.photo ? 
+                        <Layout 
+                            direction="column" 
+                            style={{
+                                overflow: 'hidden', 
+                                borderRadius: '4px',
+                                backgroundImage: record.photo && !record.spacer ? `url(${URL.createObjectURL(record.photo)})` : undefined,
+                                backgroundSize: 'cover', 
+                                backgroundPosition: 'center',
+                                width: !record.spacer ? '80px' : 0,
+                                height: !record.spacer ? '80px' : 0
+                            }}
+                        /> 
+                    :
+                            <SkeletonBrick height={80} width={80}/>
+
                 );
             },
         },
@@ -168,14 +214,17 @@ const getData = async () => {
             dataIndex: 'name',
             key: 'name',
             align: 'left',
-            width: '150px',
+            width: '100%',
             render: (value: string, record: LoftRow) => {
                 return record.spacer ? (
                     <></>
                 ) : (
                     <Layout direction="column" style={{width: 'fit-content'}}>
-                        <Text size="s"  weight="medium" style={{ minWidth: '150px', maxWidth: '150px'  }} className={cnMixSpace({mV:'s'})}>
+                        <Text size="s"  weight="medium" style={{ minWidth: '350px', maxWidth: '350px'  }} className={cnMixSpace({mV:'s'})}>
                              {value}
+                        </Text>
+                        <Text size="s" view='secondary' weight="medium" style={{ minWidth: '350px', maxWidth: '350px'  }}>
+                            {record.address || '-'}
                         </Text>
                     </Layout>
                 );
@@ -184,21 +233,25 @@ const getData = async () => {
         {
             title: (
                 <TableColumnHeader
-                    header="Адрес"
+                    header="Число гостей"
                     align="left"
-                    withoutSort
+                    sortOrder={getColumnSortOrder('guestCountMax')}
+                    sortOrderIndex={getColumnSortOrderIndex('guestCountMax')}
+                    onSort={(sortOrder, isAdd) => {
+                        onColumnSort('guestCountMax', sortOrder, isAdd);
+                    }}
                 />
             ),
-            dataIndex: 'address',
-            key: 'address',
+            dataIndex: 'guestCountMax',
+            key: 'guestCountMax',
             align: 'left',
-            width: '150px',
+            width: '100px',
             render: (value: string, record: LoftRow) => {
                 return record.spacer ? (
                     <></>
                 ) : (
                     <Layout direction="column">
-                        <Text size="s" view='primary' weight="medium" style={{ minWidth: '150px', maxWidth: '150px'  }}>
+                        <Text size="s" view='primary' weight="medium" style={{ minWidth: '50px', maxWidth: '50px'  }}>
                             {value || '-'}
                         </Text>
                     </Layout>
@@ -220,13 +273,13 @@ const getData = async () => {
             dataIndex: 'size',
             key: 'size',
             align: 'left',
-            width: '150px',
+            width: '100px',
             render: (value: string, record: LoftRow) => {
                 return record.spacer ? (
                     <></>
                 ) : (
                     <Layout direction="column" style={{width: 'fit-content'}}>
-                        <Text size="s" view='primary' weight="medium" style={{ minWidth: '150px', maxWidth: '150px'  }}>
+                        <Text size="s" view='primary' weight="medium" style={{ minWidth: '50px', maxWidth: '50px'  }}>
                             {value ? value + 'кв.м.' : '-'}
                         </Text>
                     </Layout>
@@ -250,7 +303,7 @@ const getData = async () => {
                     <></>
                 ) : (
                     <Layout direction="column" style={{width: 'fit-content'}}>
-                        {value  ? <Badge status="success" label="Работает"/> :  <Badge status="alert" label="Не работает"/> }
+                        {value  ? <Badge status="success" label="Работает"/> :  <Badge status="alert" label="не работает"/> }
                     </Layout>
                 );
             },
@@ -293,7 +346,7 @@ const getData = async () => {
                                 className: record.spacer ? 'data-is-spacer' : `data-is-row`,
                                 onClick: () => {
                                     if (!record.spacer) {
-                                        navigate(concatUrl([routeTarget.main, `loft-details/${record.loftId}`]));
+                                        navigate(concatUrl([routeTarget.main, `loft-details/${record.loftId}`, routeTarget.commonData]));
                                     }
                                     
                                 },

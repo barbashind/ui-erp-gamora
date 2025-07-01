@@ -1,0 +1,77 @@
+.BarbaShlyakhov :global(.Tabs .TabsLine) {
+    --line-thickness: 1px;
+}
+
+.BarbaShlyakhov :global(.Tabs .TabsLine),
+.BarbaShlyakhov :global(.Tabs .TabsTab_checked) {
+    color: var(--color-control-bg-primary) !important;
+}
+
+
+.BarbaShlyakhov
+    :global(
+        .Tabs
+            .Text.ListItem.TabsTab:hover:not(.Text.ListItem.TabsTab_checked):not(.TabsTab_disabled)
+    ) {
+    color: var(--color-control-bg-primary) !important;
+}
+
+.BarbaShlyakhov :global(.Tabs .Text.ListItem:not(.Text.ListItem.TabsTab_checked):not(.TabsTab_disabled)) {
+    color: var(--color-typo-primary) !important;
+}
+
+.BarbaShlyakhov :global(.Tabs .Text.ListItem.TabsTab_disabled) {
+    color: var(--color-typo-secondary);
+}
+
+.BarbaShlyakhov :global(.Tabs) {
+    --list-offset: var(--space-m) !important;
+}
+
+.BarbaShlyakhov :global(.Tabs .Text.ListItem) {
+    font-family: 'PT Root UI' !important;
+    font-size: medium;
+}
+
+.BarbaShlyakhov :global(.Tabs .Tabs-Tab_direction_vertical) {
+    margin-bottom: var(--space-m);
+}
+
+.BarbaShlyakhov :global(.Tabs-Tab_direction_horizontal) {
+    height: 40px !important;
+    margin-right: var(--space-xl);
+}
+
+.BarbaShlyakhov :global(.Tabs-Tab) {
+    height: 56px;
+    display: flex;
+    align-items: center;
+}
+
+.BarbaShlyakhov :global(.ProgressStepBarItem_status_alert) {
+    --progress-step-bar-item-point-background: var(--color-red-400) !important;
+    --progress-step-bar-item-point-content-color: var(--color-control-typo-primary);
+}
+.BarbaShlyakhov :global(.ProgressStepBarLine) {
+    background-color: var(--color-red-400) !important;
+    --progress-step-bar-item-point-content-color: var(--color-control-typo-primary);
+}
+.BarbaShlyakhov :global(.ProgressStepBarItem_status_success) {
+    --progress-step-bar-item-point-background: var(--color-aquamarine-700) !important;
+    --progress-step-bar-item-point-content-color: var(--color-control-typo-primary);
+}
+.BarbaShlyakhov :global(.ProgressStepBarItem-Label) {
+        font-weight: 500 !important;
+        font-size: 16px;
+        color: var(--color-typo-secondary);
+        margin-top: 3px;
+        margin-left: 8px;
+}
+
+.tooltip {
+    z-index: 200;
+    padding: 8px !important;
+}
+.tooltipArrow {
+    color: white !important;
+}

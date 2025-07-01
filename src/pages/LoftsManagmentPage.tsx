@@ -3,7 +3,7 @@ import { routeTarget } from "../routers/routes";
 import { concatUrl } from "../utils/urlUtils";
 import { AntIcon } from "../utils/AntIcon";
 import { cnMixFontSize } from "../utils/MixFontSize";
-import { BlockOutlined, FilterOutlined, HomeOutlined, PlusOutlined } from "@ant-design/icons";
+import { BlockOutlined, FilterOutlined, HomeOutlined, PlusOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { Button } from "@consta/uikit/Button";
 import { Card } from "@consta/uikit/Card";
 import { Layout } from "@consta/uikit/Layout";
@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import LoftsManagmentTable from "./LoftManagmentPage/LoftsManagmentTable";
 import { LoftFilter, LoftSortFields } from "../types/lofts-managment-types";
 import { Sort, useTableSorter } from "../hooks/useTableSorter";
+import ParametersManagmentModal from "./LoftManagmentPage/ParametersManagmentModal";
 
 const LoftsManagmentPage = () => {
 
@@ -41,6 +42,7 @@ const LoftsManagmentPage = () => {
                 PageSettings.filterValues ?? defaultFilter
         );
         const [updateFlag, setUpdateFlag] = useState<boolean>(true);
+        const [isSettingModalOpen, setIsSettingModalOpen] = useState<boolean>(false)
 
         return (
                 <Layout direction="column" style={{width: '100%'}}>
@@ -99,6 +101,25 @@ const LoftsManagmentPage = () => {
                                                         <Layout direction="row" style={{alignItems: 'center', justifyContent: 'right'}}>
                                                                 <Button
                                                                         iconLeft={AntIcon.asIconComponent(() => (
+                                                                                <UnorderedListOutlined
+                                                                                        className={cnMixFontSize('l') + ' ' + cnMixSpace({mR:'xs'})}
+                                                                                />
+                                                                        ))}
+                                                                        view="secondary"
+                                                                        size="s"
+                                                                        label={'Списки параметров'}
+                                                                        className={cnMixSpace({mR:'m'})}
+                                                                        onClick={()=>{
+                                                                                setIsSettingModalOpen(true);
+                                                                        }}
+                                                                />
+                                                                <ParametersManagmentModal 
+                                                                        isOpen={isSettingModalOpen}
+                                                                        setIsOpen={setIsSettingModalOpen}
+                                                                />
+
+                                                                <Button
+                                                                        iconLeft={AntIcon.asIconComponent(() => (
                                                                                 <PlusOutlined
                                                                                         className={cnMixFontSize('l') + ' ' + cnMixSpace({mR:'xs'})}
                                                                                 />
@@ -108,7 +129,7 @@ const LoftsManagmentPage = () => {
                                                                         label={'Новое помещение'}
                                                                         className={cnMixSpace({mR:'m'})}
                                                                         onClick={()=>{
-                                                                                navigate(concatUrl([routeTarget.main, `loft-details/new`]));
+                                                                                navigate(concatUrl([routeTarget.main, `loft-details/new`, routeTarget.commonData]));
                                                                         }}
                                                                 />
                                                                 <Button

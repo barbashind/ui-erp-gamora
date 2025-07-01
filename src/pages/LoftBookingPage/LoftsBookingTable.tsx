@@ -19,7 +19,9 @@ import { Badge } from "@consta/uikit/Badge";
 import { classnames } from "@bem-react/classnames";
 import { NoDataImage } from "../../assets/images/NoDataImage";
 import { Loft, LoftFilter, LoftRow, LoftSortFields } from "../../types/lofts-managment-types";
-import { getLofts } from "../../services/LoftManagment";
+import { getLofts } from "../../services/LoftManagmentService";
+import { getBokingsToday } from "../../services/LoftBookingService";
+import { Task } from "../../global/DiagramBooking";
 // import { useNavigate } from "react-router-dom";
 // import { concatUrl } from "../../utils/urlUtils";
 // import { routeTarget } from "../../routers/routes";
@@ -130,33 +132,30 @@ const getData = async () => {
         void getData();
 }
 }, [updateFlag, setUpdateFlag, filterValues, columnSort, currentPage, pagination.pageSize, setCount]);
+
+const [bookingsToday, setBookingsToday] = useState<Task[]>([]);
+
+  function getHHMMFromDate(date: Date) {
+    const newDate = new Date(date)
+    const hours = newDate.getHours();
+    const minutes = newDate.getMinutes();
+    return `${hours}:${minutes}`;
+}
+
+
+        // Инициализация данных
+        useEffect(() => {
+                        const getBookingTodayData = async () => {
+                                await getBokingsToday((resp)=>{
+                                        setBookingsToday(resp.map(el => ({startDate: el.startDate, endDate: el.endDate, loftName: el.loftName, loftId: Number(el.loftId), clientName: el.client ?? ''})));
+                                })
+                        };
+                        void getBookingTodayData();
+
+        }, []);
     
     
     const columns: ColumnType<LoftRow>[] = [
-        {
-            title: (
-                <TableColumnHeader
-                    header=""
-                    withoutSort
-                    align="left"
-                />
-            ),
-            dataIndex: 'login',
-            key: 'login',
-            align: 'left',
-            width: '50px',
-            render: (_value: string, record: LoftRow) => {
-                return record.spacer ? (
-                    <></>
-                ) : (
-                    <Layout direction="column" style={{width: 'fit-content'}}>
-                        <Text size="s"  weight="medium" style={{ minWidth: '50px', maxWidth: '50px'  }}>
-                            {Number(rows.indexOf(record)) + 1 + Number(currentPage) * Number(pagination.pageSize)}
-                        </Text>
-                    </Layout>
-                );
-            },
-        },
         {
             title: (
                 <TableColumnHeader
@@ -174,83 +173,38 @@ const getData = async () => {
                     <></>
                 ) : (
                     <Layout direction="column" style={{width: 'fit-content'}}>
-                        <Text size="s"  weight="medium" style={{ minWidth: '150px', maxWidth: '150px'  }} className={cnMixSpace({mV:'s'})}>
+                        <Text size="s"  weight="medium" style={{ minWidth: '150px', maxWidth: '150px'  }}>
                              {value}
                         </Text>
-                    </Layout>
-                );
-            },
-        },
-        {
-            title: (
-                <TableColumnHeader
-                    header="Адрес"
-                    align="left"
-                    withoutSort
-                />
-            ),
-            dataIndex: 'address',
-            key: 'address',
-            align: 'left',
-            width: '150px',
-            render: (value: string, record: LoftRow) => {
-                return record.spacer ? (
-                    <></>
-                ) : (
-                    <Layout direction="column">
-                        <Text size="s" view='primary' weight="medium" style={{ minWidth: '150px', maxWidth: '150px'  }}>
-                            {value || '-'}
+                        <Text size="s" view="secondary"  weight="medium" style={{ minWidth: '150px', maxWidth: '150px'  }} className={cnMixSpace({mT:'xs'})}>
+                             {record.address}
                         </Text>
                     </Layout>
                 );
             },
         },
-        {
+                {
             title: (
                 <TableColumnHeader
-                    header="Площадь"
-                    align="left"
-                    sortOrder={getColumnSortOrder('size')}
-                    sortOrderIndex={getColumnSortOrderIndex('size')}
-                    onSort={(sortOrder, isAdd) => {
-                        onColumnSort('size', sortOrder, isAdd);
-                    }}
-                />
-            ),
-            dataIndex: 'size',
-            key: 'size',
-            align: 'left',
-            width: '150px',
-            render: (value: string, record: LoftRow) => {
-                return record.spacer ? (
-                    <></>
-                ) : (
-                    <Layout direction="column" style={{width: 'fit-content'}}>
-                        <Text size="s" view='primary' weight="medium" style={{ minWidth: '150px', maxWidth: '150px'  }}>
-                            {value ? value + 'кв.м.' : '-'}
-                        </Text>
-                    </Layout>
-                );
-            },
-        },
-        {
-            title: (
-                <TableColumnHeader
-                    header="Статус"
+                    header="Бронирование"
                     withoutSort
                     align="center"
                 />
             ),
-            dataIndex: 'valid',
-            key: 'valid',
+            dataIndex: 'loftId',
+            key: 'loftId',
             align: 'center',
-            width: '50px',
+            width: '100%',
             render: (value: string, record: LoftRow) => {
                 return record.spacer ? (
                     <></>
                 ) : (
-                    <Layout direction="column" style={{width: 'fit-content'}}>
-                        {value  ? <Badge status="success" label="Работает"/> :  <Badge status="alert" label="Не работает"/> }
+                    <Layout direction="row" style={{width: 'fit-content'}}>
+                        {bookingsToday?.filter(elem => (elem.loftId === Number(value)))?.map(task => (
+                            <Layout style={{padding: 8, border: '1px solid var(--color-blue-ui)'}}>
+                                <Text size="s"  weight="medium" >{task.loftName + ' - ' + task.clientName + ' - ' + getHHMMFromDate(task.startDate) + '-' + getHHMMFromDate(task.endDate)}</Text>
+                            </Layout>
+                        ))}
                     </Layout>
                 );
             },
