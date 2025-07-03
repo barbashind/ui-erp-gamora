@@ -17,6 +17,7 @@ import LoftsBookingTable from "./LoftBookingPage/LoftsBookingTable";
 import { ChoiceGroup } from "@consta/uikit/ChoiceGroup";
 import { getBokingsToday } from "../services/LoftBookingService";
 import { DiagramBooking, Task } from "../global/DiagramBooking";
+import  LoftsBookingList from "./LoftBookingPage/LoftBookingList"
 
 const LoftsBookingPage = () => {
 
@@ -162,7 +163,7 @@ const LoftsBookingPage = () => {
                                                 )}
                                                 {activeTab.id === 1 && (
                                                         <Layout direction="row" style={{flexWrap: 'wrap'}}>
-                                                                <div className={cnMixSpace({ m:'2xl'})}>В разработке</div>
+                                                                <div className={cnMixSpace({ m:'2xl'})}><LoftsBookingList bookingsToday={bookingsToday}/></div>
                                                         </Layout>
                                                 )}
                                                 {activeTab.id === 2 && (
