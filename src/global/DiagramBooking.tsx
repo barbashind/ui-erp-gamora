@@ -108,7 +108,19 @@ export const DiagramBooking = ({ tasks, period } : DiagramBookingProps) => {
                                 }}
                                 direction='row'
                             >
-                               
+                               {uniqueLoftIds && uniqueLoftIds?.length > 0 && uniqueLoftIds.map((loftId) => (
+                                    <Layout 
+                                        style={{
+                                            minHeight: '20px',
+                                            minWidth: '100px',
+                                            borderLeft: '1px solid',
+                                            borderRight: '1px solid',
+                                            marginRight: '16px',
+                                            backgroundColor:
+                                                tasks?.find((elem)=> (getMinutesFromDate(elem.startDate) <= getTimeInMinutes(time) && getMinutesFromDate(elem.endDate) >= getTimeInMinutes(time) && (loftId === elem.loftId) )) ? 'var(--color-royal-blue-200)' : 'var(--color-gray-200)',
+                                            }}
+                                    />
+                               ))}
 
                             </Layout>
                         </Layout>
