@@ -1,0 +1,7 @@
+.BookingCard {
+        border: 1px solid var(--color-gray-300);
+}
+
+.BookingCard:hover {
+        border: 2px solid var(--color-blue-ui);
+}

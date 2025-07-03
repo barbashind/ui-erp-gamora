@@ -15,16 +15,12 @@ import { useEffect, useState } from "react";
 import { Loader } from '@consta/uikit/Loader';
 import { cnMixSpace } from "@consta/uikit/MixSpace";
 import classNames from "classnames";
-import { Badge } from "@consta/uikit/Badge";
 import { classnames } from "@bem-react/classnames";
 import { NoDataImage } from "../../assets/images/NoDataImage";
 import { Loft, LoftFilter, LoftRow, LoftSortFields } from "../../types/lofts-managment-types";
 import { getLofts } from "../../services/LoftManagmentService";
 import { getBokingsToday } from "../../services/LoftBookingService";
 import { Task } from "../../global/DiagramBooking";
-// import { useNavigate } from "react-router-dom";
-// import { concatUrl } from "../../utils/urlUtils";
-// import { routeTarget } from "../../routers/routes";
 
 interface LoftsBookingTableProps {
         updateFlag: boolean;
@@ -201,7 +197,7 @@ const [bookingsToday, setBookingsToday] = useState<Task[]>([]);
                 ) : (
                     <Layout direction="row" style={{width: 'fit-content'}}>
                         {bookingsToday?.filter(elem => (elem.loftId === Number(value)))?.map(task => (
-                            <Layout style={{padding: 8, border: '1px solid var(--color-blue-ui)'}}>
+                            <Layout style={{padding: 8, border: '1px solid var(--color-blue-ui)', borderRadius: '4px'}}>
                                 <Text size="s"  weight="medium" >{task.loftName + ' - ' + task.clientName + ' - ' + getHHMMFromDate(task.startDate) + '-' + getHHMMFromDate(task.endDate)}</Text>
                             </Layout>
                         ))}

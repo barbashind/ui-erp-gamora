@@ -154,11 +154,6 @@ const LoftsBookingPage = () => {
                                                                 <Card style={{minWidth:'290px', border: '1px solid var(--color-gray-200)'}} className={cnMixSpace({p:'m', mR: 'm', mB:'m'})}>
                                                                         <DiagramBooking tasks={bookingsToday} period={60}/>
                                                                 </Card>
-                                                                <Layout direction="row" style={{flexWrap: 'wrap'}}>
-                                                                                <Card style={{minWidth:'250px'}} className={cnMixSpace({p:'m', mR: 'm', mB:'m'})}>
-                                                                                        <Text size="l" weight="semibold" view="secondary">Лофт №1</Text>
-                                                                                </Card>
-                                                                </Layout>
                                                         </Layout>
                                                 )}
                                                 {activeTab.id === 1 && (

@@ -179,7 +179,6 @@ if (updateFlag) {
             align: 'left',
             width: '80px',
             render: (_value: string, record: LoftRow) => {
-                console.log(record.photo)
 
                 return record.spacer ? (
                     <></>
