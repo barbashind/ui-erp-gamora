@@ -131,14 +131,15 @@ const getData = async () => {
 
 const [bookingsToday, setBookingsToday] = useState<Task[]>([]);
 
-  function getHHMMFromDate(date: Date) {
-    const newDate = new Date(date)
-    const hours = newDate.getHours();
-    const minutes = newDate.getMinutes();
-    return `${hours}:${minutes}`;
-}
+  
 
+const formatDateTimeHHMM = (isoString: string | number | Date): string => {
+            const date = new Date(isoString);
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
 
+            return `${hours}.${minutes}`;
+        };
         // Инициализация данных
         useEffect(() => {
                         const getBookingTodayData = async () => {
@@ -198,7 +199,7 @@ const [bookingsToday, setBookingsToday] = useState<Task[]>([]);
                     <Layout direction="row" style={{width: 'fit-content'}}>
                         {bookingsToday?.filter(elem => (elem.loftId === Number(value)))?.map(task => (
                             <Layout style={{padding: 8, border: '1px solid var(--color-blue-ui)', borderRadius: '4px'}}>
-                                <Text size="s"  weight="medium" >{task.loftName + ' - ' + task.clientName + ' - ' + getHHMMFromDate(task.startDate) + '-' + getHHMMFromDate(task.endDate)}</Text>
+                                <Text size="s"  weight="medium" >{task.loftName + ' - ' + task.clientName + ' - ' + formatDateTimeHHMM(task.startDate) + '-' + formatDateTimeHHMM(task.endDate)}</Text>
                             </Layout>
                         ))}
                     </Layout>

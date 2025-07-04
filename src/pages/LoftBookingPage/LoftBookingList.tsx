@@ -82,7 +82,7 @@ const LoftsBookingList = ({
                                             backgroundImage: 
                                                photoes && photoes.length > 0 && photoes?.find((el) => (el.loftId === booking.loftId))?.photo ? 
                                                     `url(${URL.createObjectURL(photoes.find((el) => (el.loftId === booking.loftId)).photo)})` 
-                                                    : undefined 
+                                                    : undefined ,
                                         }} 
                                     />
                                 )}
