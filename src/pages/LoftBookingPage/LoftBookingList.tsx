@@ -6,6 +6,13 @@ import { cnMixSpace } from "@consta/uikit/MixSpace";
 import classes from './LoftBookingList.module.css'
 import { useEffect, useState } from "react";
 import { getImage, getLoftMainImage } from "../../services/LoftManagmentService";
+import LoftBookingListModal from './LoftBookingListModal'
+
+  
+
+
+
+
 
 interface LoftsBookingListProps {
         bookingsToday: Task[];
@@ -37,7 +44,10 @@ const LoftsBookingList = ({
             return `${day} ${month}, ${year}`;
         };
 
-        const [photoes, setPhotoes] = useState<LoftPhoto[]>([])
+        const [photoes, setPhotoes] = useState<LoftPhoto[]>([]);
+        const [isLoftBookingListModalOpen, setIsLoftBookingListModalOpen] = useState(false);
+        const [isLoftOpenid, setLoftOpenid] = useState<number>();
+
 
     useEffect(() => {
             bookingsToday.map((row : Task) => {
@@ -68,7 +78,9 @@ const LoftsBookingList = ({
                 <Layout direction="row" style={{flexWrap: 'wrap'}} >
 
                     {bookingsToday && bookingsToday?.length > 0 && bookingsToday.map((booking) => (
-                        <Card className={cnMixSpace({mT:'m', mR:'m', p:'m' }) + ' ' + classes.BookingCard} >
+                        <Card className={cnMixSpace({mT:'m', mR:'m', p:'m' }) + ' ' + classes.BookingCard}onClick={()=>{setIsLoftBookingListModalOpen(true);setLoftOpenid(booking.loftId)}} >
+                                                        
+ 
                             <Layout direction="row" style={{ alignItems: 'center'}}>
                                 {photoes && photoes?.find((el) => (el.loftId === booking.loftId))?.photo && (
                                     <Layout 
@@ -93,7 +105,15 @@ const LoftsBookingList = ({
                                             <Text size="s" view="secondary">{ formatDateTimeMonthDD(booking.startDate) + ' · ' + formatDateTimeHHMM(booking.startDate) + ' - ' + formatDateTimeHHMM(booking.endDate)}</Text>
                                         </Layout>
                             </Layout>
+
+                            
                         </Card>))}
+                        <LoftBookingListModal
+                             isModalOpen={isLoftBookingListModalOpen}
+                             setIsModalOpen={setIsLoftBookingListModalOpen}
+                             id={isLoftOpenid}
+                             setId={setLoftOpenid}
+                            />
 
                 </Layout>
 
