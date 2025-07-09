@@ -1,172 +1,226 @@
-import { useState } from 'react';
 import { Layout } from '@consta/uikit/Layout';
 import { Text } from '@consta/uikit/Text';
 import { Button } from '@consta/uikit/Button';
 import { cnMixSpace } from '@consta/uikit/MixSpace';
-import { IconClose } from '@consta/icons/IconClose';
 import { Modal } from '@consta/uikit/Modal';
-import {UserOutlined,DollarOutlined,HomeOutlined } from "@ant-design/icons";
-import classes from './LoftBookingList.module.css'
+import {UserOutlined, DollarOutlined, CloseOutlined, PhoneFilled, MailOutlined, DesktopOutlined } from "@ant-design/icons";
+import { useEffect, useState } from 'react';
+import { getImage, getLoftMainImage } from '../../services/LoftManagmentService';
+import { AntIcon } from '../../utils/AntIcon';
+import { cnMixFontSize } from '../../utils/MixFontSize';
+import { Card } from '@consta/uikit/Card';
+import { Avatar } from '@consta/uikit/Avatar';
+import { SkeletonBrick } from '@consta/uikit/Skeleton';
 
  
 export interface TLoftBookingListModalProps {
     isModalOpen: boolean;
     setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    id: number | undefined;
-    setId: React.Dispatch<React.SetStateAction<number | undefined>>;
+    loftId: number | undefined;
+    setLoftId: React.Dispatch<React.SetStateAction<number | undefined>>;
     
 }
 
 const  LoftBookingListModal = ({
     isModalOpen,
     setIsModalOpen,
-    id,
-    setId,
-    
-    
+    loftId,
+    setLoftId,
+        
 }: TLoftBookingListModalProps) => {
-    
-    
-const closeModal = () => {
-        setId(undefined);
-        setIsModalOpen(false);
-    };
-    
+
+const [mainPhoto, setMainPhoto] = useState<Blob>()
+const [photoLoading, setPhotoLoading] = useState<boolean>(false)
+
+    // Инициализация данных
+    useEffect(() => {
+        setPhotoLoading(true);
+            const getMainPhoto = async (loftId: number) => {
+                try {
+                    await getLoftMainImage(Number(loftId), (async (resp)=> {
+                        if (resp) {
+                        await getImage(resp).then((response) => {
+                            if (response) {
+                                setMainPhoto(response);
+                                setPhotoLoading(false);
+                            }
+                        })
+                        }
+                    }))
+                } catch(error) {
+                    console.log(error);
+                }
+                
+            }
+            void getMainPhoto(Number(loftId))
+    }, [loftId]);
+        
+    const closeModal = () => {
+            setLoftId(undefined);
+            setIsModalOpen(false);
+        };
+        
     return (
         <Modal 
-        isOpen={isModalOpen}
-        style={{ width: '50%' }}
-        hasOverlay
-        className={cnMixSpace({ p: 'm' })}>
+            isOpen={isModalOpen}
+            style={{ width: '50%' }}
+            hasOverlay
+            
+        >
             
                 
-            <Layout direction='column'className={cnMixSpace({ pL: 'm' })} >
-                <Layout direction="row"
-                        style={{ alignItems: 'center', justifyContent: 'space-between' }}>
+            <Layout direction='column' className={cnMixSpace({ pL: '2xl', pR: 'm', pV: 'm' })}>
+                <Layout direction="row"  style={{ alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text
-                        size="2xl"
+                        size="xl"
                         style={{ width: '100%' }}
                         weight="semibold"
                         view="primary"
                     >
-                     {`${id}` }   
+                        Наименование лофта - время бронирования
                     </Text>
                     <Button
                         size="m"
                         view="clear"
                         style={{ color: '#0078d2' }}
-                        iconLeft={IconClose}
+                        iconLeft={AntIcon.asIconComponent(() => (
+                                    <CloseOutlined
+                                            className={cnMixFontSize('l')}
+                                    />
+                            ))}
                         onClick={() => {
-                        closeModal();
-                        }}
+                                closeModal();
+                            }}
                     />
                 </Layout>    
-                <Layout direction="column"
-                        style={{ alignItems: 'center', justifyContent: 'space-between' }}
-                        className={cnMixSpace({mT:'m', mR:'m', p:'m' }) + ' ' + classes.BookingCard}>
-                    <Text
-                        size="l"  
-                        align="left"
-                        style={{ width: '100%' }}
-                        weight="semibold"
-                        view="primary"
+                <Layout direction='row' style={{  justifyContent: 'space-between' }}>
+                    <Layout 
+                        direction="column"
+                        className={cnMixSpace({mT:'m', mR:'m' })}
+                        flex={1}
                     >
-                        {"Авг     25,2024"}
-                    </Text>
-                    <Text
-                        size="l"  
-                        align="left"
-                        style={{ width: '100%' }}
-                        weight="semibold"
-                        view="primary"
-                    >
-                        {"10:00 AM - 04:00PM"}
-                    </Text>
-                </Layout>
-                
-                <Layout direction="column"
-                        style={{ alignItems: 'normal', justifyContent: 'left' }} 
-                        className={cnMixSpace({mT:'m', mR:'m', p:'m' }) + ' ' + classes.BookingCard}>
-                    <Layout direction="row"
-                            style={{ alignItems: 'center', justifyContent: 'left' }}
-                             >
-                    <UserOutlined style={{ fontSize: '2em', color: 'var(--color-blue-ui)'}}className={cnMixSpace({ mR: 'm' })} />
-                    <Text
-                        size="l"  
-                        align="left"
-                        style={{ width: '100%' }}
-                        weight="semibold"
-                        view="primary"
-                    >
-                        Kлиент
-                    </Text>
+                        <Card border className={cnMixSpace({ p: 'm' })} style={{ width: '100%' }}>
+                            <Layout 
+                                direction="row"
+                                style={{ alignItems: 'center', justifyContent: 'left', width: '100%', borderBottom: '1px solid var(--color-gray-200)' }}
+                                className={cnMixSpace({ pB: 'xs' })}
+                            >
+                                <UserOutlined style={{ fontSize: '1.5em', color: 'var(--color-gray-400)'}} className={cnMixSpace({ mR: 's' })} />
+                                <Text
+                                    size="m"  
+                                    align="left"
+                                    style={{ width: '100%', color: 'var(--color-gray-400)' }}
+                                    weight="semibold"
+                                >
+                                    Данные клиента
+                                </Text>
+                            </Layout>
+                            <Layout direction="column"  >
+                                <Layout direction='row' className={cnMixSpace({mT: 'l' })} style={{alignItems: 'center'}}>
+                                    <Avatar
+                                            name={'Павел'}
+                                            className={cnMixSpace({ mR: 's' })}
+                                            size='s'
+                                    />
+                                    <Text
+                                        size="m"  
+                                        align="left"
+                                        view="primary"
+                                        
+                                    >
+                                        {"Павел"}
+                                    </Text>
+                                </Layout>
+                                <Layout direction='row' className={cnMixSpace({mT: 'm' })}>
+                                    <PhoneFilled style={{ fontSize: '1em', color: 'var(--color-blue-ui)'}} className={cnMixSpace({ mR: 'xs' })} />
+                                    <Text
+                                        size="m"  
+                                        align="left"
+                                        style={{ width: '100%' }}
+                                        view="primary"
+                                        
+                                    >
+                                        {"+12345678900"}
+                                    </Text>
+                                </Layout>
+                                <Layout direction='row' className={cnMixSpace({mT: 'm' })}>
+                                    <MailOutlined style={{ fontSize: '1em', color: 'var(--color-blue-ui)'}} className={cnMixSpace({ mR: 's' })} />
+                                    <Text
+                                        size="m"  
+                                        align="left"
+                                        style={{ width: '100%' }}
+                                        view="primary"
+                                        
+                                    >
+                                        {"ivanov@mail.ru"}
+                                    </Text>
+                                </Layout>
+                            </Layout>
+
+                        </Card>
                     </Layout>
-                    <Layout direction="column"className={cnMixSpace({mT:'s', mR:'m', p:'m',pL:'xl' })} >
-                    <Text
-                        size="l"  
-                        align="left"
-                        style={{ width: '100%' }}
-                        weight="semibold"
-                        view="primary"
-                    >
-                        {"Иванов Иван"}
-                    </Text>
-                    <Text
-                        size="l"  
-                        align="left"
-                        style={{ width: '100%' }}
-                        weight="semibold"
-                        view="primary"
-                    >
-                        {"+12345678900"}
-                    </Text>
-                    <Text
-                        size="l"  
-                        align="left"
-                        style={{ width: '100%' }}
-                        weight="semibold"
-                        view="primary"
-                    >
-                        {"ivanov.ivan @ e-mail"}
-                    </Text>
-                    </Layout>
+                    {mainPhoto && !photoLoading ? (
+                        <Layout 
+                            style={{
+                                minHeight: '270px', 
+                                minWidth: '380px', 
+                                backgroundSize: 'cover', 
+                                backgroundPosition: 'center',
+                                backgroundImage: `url(${URL.createObjectURL(mainPhoto)})` ,
+                                borderRadius: '8px'
+                            }} 
+                            flex={1}
+                            className={cnMixSpace({ mT: 'm', mR: 'xl' })}
+                        />
+                        ) : (
+                        <SkeletonBrick style={{ flex: 1}} height={270} width={380}/>
+                    )}
                 </Layout>
-                <Layout direction="row"
-                        style={{ alignItems: 'center', justifyContent: "space-between" }}
-                        className={cnMixSpace({mT:'m', mR:'m', p:'m' }) + ' ' + classes.BookingCard}>
-                    <DollarOutlined style={{ fontSize: '2em', color: 'var(--color-blue-ui)'}} />
-                    <Text
-                        size="l"  
-                        align="left"
-                        style={{ width: '100%' }}
-                        weight="semibold"
-                        view="primary"
-                    >
-                        Ценообразование
-                    </Text>
-                    <Text
-                        size="l"
-                        view="primary"
-                        weight="bold"
-                        align="left"
-                    >
-                       { "$300"}
-                    </Text>
+                <Layout direction='row' className={cnMixSpace({ mT: 'l' })}>
+                    <Card border style={{ flex: 1 }} className={cnMixSpace({ p: 'm', mR: 'l' })}>
+                        <Layout 
+                            direction="row"
+                            style={{ alignItems: 'center', justifyContent: 'left', borderBottom: '1px solid var(--color-gray-200)' }}
+                            className={cnMixSpace({ pB: 'xs' })}
+                        >
+                            <DollarOutlined style={{ fontSize: '1.5em', color: 'var(--color-gray-400)'}} className={cnMixSpace({ mR: 's' })} />
+                            <Text
+                                size="m"  
+                                align="left"
+                                style={{ width: '100%', color: 'var(--color-gray-400)' }}
+                                weight="semibold"
+                            >
+                                Расчет стоимости броинрования
+                            </Text>
+                        </Layout>
+                        {/* Перечень доп услуг*/}
+                        <Layout direction='column'>
+
+                        </Layout>
+                    </Card>
+                    <Card border style={{ flex: 1 }} className={cnMixSpace({ p: 'm', mR: 'm' })}>
+                        <Layout 
+                            direction="row"
+                            style={{ alignItems: 'center', justifyContent: 'left', borderBottom: '1px solid var(--color-gray-200)' }}
+                            className={cnMixSpace({ pB: 'xs' })}
+                        >
+                            <DesktopOutlined style={{ fontSize: '1.5em', color: 'var(--color-gray-400)'}} className={cnMixSpace({ mR: 's' })} />
+                            <Text
+                                size="m"  
+                                align="left"
+                                style={{ width: '100%', color: 'var(--color-gray-400)' }}
+                                weight="semibold"
+                            >
+                                Оборудование и мебель
+                            </Text>
+                        </Layout>
+
+                        {/* Перечень оборудования и мебели */}
+                        <Layout direction='column'>
+
+                        </Layout>
+                    </Card>
                 </Layout>
-                <Layout direction="row"
-                        style={{ alignItems: 'center', justifyContent: 'space-between', }}
-                        className={cnMixSpace({mT:'m', mR:'m', p:'m' }) + ' ' + classes.BookingCard}>
-                    <HomeOutlined style={{ fontSize: '2em', color: 'var(--color-blue-ui)'}} />
-                    <Text
-                        size="l"  
-                        align="left"
-                        style={{ width: '100%' }}
-                        weight="semibold"
-                        view="primary"
-                    >
-                        Оборудование
-                    </Text>
-                </Layout>    
             </Layout>
         </Modal>
     );

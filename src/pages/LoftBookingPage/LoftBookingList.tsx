@@ -114,12 +114,15 @@ const LoftsBookingList = ({
 
                             
                         </Card>))}
+                    
+                    {/* Модальное окно с подробными данными броинрвоания */}
+                    
                         <LoftBookingListModal
-                             isModalOpen={isLoftBookingListModalOpen}
-                             setIsModalOpen={setIsLoftBookingListModalOpen}
-                             id={isLoftOpenid}
-                             setId={setLoftOpenid}
-                            />
+                            isModalOpen={isLoftBookingListModalOpen}
+                            setIsModalOpen={setIsLoftBookingListModalOpen}
+                            loftId={isLoftOpenid}
+                            setLoftId={setLoftOpenid}
+                        />
 
                 </Layout>
 
