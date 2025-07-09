@@ -10,7 +10,7 @@ import { concatUrl } from "../utils/urlUtils";
 import { routeTarget } from "../routers/routes";
 
 // иконки
-import { AuditOutlined, DeleteOutlined, EditOutlined, HomeOutlined, PlusOutlined, SaveOutlined, UsergroupAddOutlined } from "@ant-design/icons";
+import { AuditOutlined, DeleteOutlined, EditOutlined, HomeOutlined, PlusOutlined,UserOutlined,DollarOutlined, SaveOutlined, UsergroupAddOutlined } from "@ant-design/icons";
 
 // компоненты Consta
 import { TextField } from "@consta/uikit/TextField";
