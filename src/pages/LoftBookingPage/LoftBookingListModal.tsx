@@ -27,7 +27,10 @@ const  LoftBookingListModal = ({
 }: TLoftBookingListModalProps) => {
     
     
-
+const closeModal = () => {
+        setId(undefined);
+        setIsModalOpen(false);
+    };
     
     return (
         <Modal 
@@ -54,7 +57,7 @@ const  LoftBookingListModal = ({
                         style={{ color: '#0078d2' }}
                         iconLeft={IconClose}
                         onClick={() => {
-                        setIsModalOpen(false);
+                        closeModal();
                         }}
                     />
                 </Layout>    
