@@ -71,6 +71,7 @@ useEffect(() => {
 useEffect(() => {
         setUpdateFlag(true);
 }, [columnSort, setUpdateFlag]);
+
 useEffect(() => {
         setUpdatePhoto(true);
 }, [updateFlag, setUpdateFlag, filterValues, columnSort, currentPage, pagination.pageSize, setCount]);

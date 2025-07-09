@@ -20,7 +20,7 @@ import { NoDataImage } from "../../assets/images/NoDataImage";
 import { Loft, LoftFilter, LoftRow, LoftSortFields } from "../../types/lofts-managment-types";
 import { getLofts } from "../../services/LoftManagmentService";
 import { getBokingsToday } from "../../services/LoftBookingService";
-import { Task } from "../../global/DiagramBooking";
+import { Task } from "./DiagramBooking";
 
 interface LoftsBookingTableProps {
         updateFlag: boolean;

@@ -1,18 +1,17 @@
 import { Card } from "@consta/uikit/Card";
 import { Layout } from "@consta/uikit/Layout";
 import { Text } from "@consta/uikit/Text";
-import { Task } from "../../global/DiagramBooking";
 import { cnMixSpace } from "@consta/uikit/MixSpace";
-import classes from './LoftBookingList.module.css'
 import { useEffect, useState } from "react";
 import { getImage, getLoftMainImage } from "../../services/LoftManagmentService";
+import { SkeletonBrick } from "@consta/uikit/Skeleton";
+import { Task } from "./DiagramBooking";
 
 interface LoftsBookingListProps {
         bookingsToday: Task[];
     }
 
-interface LoftPhoto {
-    loftId: number;
+type BookingLoft = Task & {
     photo: Blob;
 }
 
@@ -37,40 +36,48 @@ const LoftsBookingList = ({
             return `${day} ${month}, ${year}`;
         };
 
-        const [photoes, setPhotoes] = useState<LoftPhoto[]>([])
+        const [bookings, setBookings] = useState<BookingLoft[]>([])
+        const [updatePhoto, setUpdatePhoto] = useState<boolean>(false);
 
-    useEffect(() => {
-            bookingsToday.map((row : Task) => {
-                    const getMainPhoto = async (loftId: number) => {
-                        try {
-                            await getLoftMainImage(Number(loftId), (async (resp)=> {
-                                if (resp) {
-                                await getImage(resp).then((response) => {
-                                    if (response) {
-                                        setPhotoes(prev => (!prev ? [{loftId: loftId, photo: response }] : [...prev, {loftId: loftId, photo: response }]))
+        useEffect(() => {
+            setUpdatePhoto(true);
+        }, [bookingsToday, setUpdatePhoto]);
+
+        useEffect(() => {
+            if (updatePhoto) {
+                bookingsToday.map((row : Task) => {
+                        const getMainPhoto = async (loftId: number) => {
+                            try {
+                                await getLoftMainImage(Number(loftId), (async (resp)=> {
+                                    if (resp) {
+                                    await getImage(resp).then((response) => {
+                                        if (response) {
+                                            setBookings(prev => (!prev ? [{...row, photo: response }] : [...prev, {...row, photo: response }]))
+                                        }
+                                    })
                                     }
-                                })
-                                }
-                            }))
-                        } catch(error) {
-                            console.log(error);
+                                }))
+                            } catch(error) {
+                                console.log(error);
+                            }
+                            
                         }
-                        
-                    }
-                    void getMainPhoto(Number(row.loftId))
-            })
-        
-    }, [bookingsToday]);
+                        void getMainPhoto(Number(row.loftId))
+                        setUpdatePhoto(false)
+                })
+            }
+                
+        }, [bookingsToday, updatePhoto, setUpdatePhoto]);
 
     return(
 
         <Layout direction="column" style={{width: '100%'}}>
                 <Layout direction="row" style={{flexWrap: 'wrap'}} >
 
-                    {bookingsToday && bookingsToday?.length > 0 && bookingsToday.map((booking) => (
-                        <Card className={cnMixSpace({mT:'m', mR:'m', p:'m' }) + ' ' + classes.BookingCard} >
+                    {bookings && bookings?.length > 0 && bookings.map((booking) => (
+                        <Card className={cnMixSpace({mT:'m', mR:'m', p:'m' }) + ' Button_view_secondary'} >
                             <Layout direction="row" style={{ alignItems: 'center'}}>
-                                {photoes && photoes?.find((el) => (el.loftId === booking.loftId))?.photo && (
+                                {booking.photo ? (
                                     <Layout 
                                         style={{
                                             minHeight: '70px', 
@@ -79,16 +86,15 @@ const LoftsBookingList = ({
                                             maxWidth: '80px', 
                                             backgroundSize: 'cover', 
                                             backgroundPosition: 'center',
-                                            backgroundImage: 
-                                               photoes && photoes.length > 0 && photoes?.find((el) => (el.loftId === booking.loftId))?.photo ? 
-                                                    `url(${URL.createObjectURL(photoes.find((el) => (el.loftId === booking.loftId)).photo)})` 
-                                                    : undefined ,
+                                            backgroundImage: `url(${URL.createObjectURL(booking.photo)})` ,
                                         }} 
                                     />
+                                ) : (
+                                    <SkeletonBrick height={80} width={80}/>
                                 )}
                                 
                                         <Layout direction="column" className={cnMixSpace({mL:'m' })}>
-                                            <Text size="m" weight="semibold" view="primary" onClick={() => console.log(photoes)}>{booking.loftName}</Text>
+                                            <Text size="m" weight="semibold" view="primary">{booking.loftName}</Text>
                                             <Text size="s" view="secondary">{booking.clientName}</Text>
                                             <Text size="s" view="secondary">{ formatDateTimeMonthDD(booking.startDate) + ' · ' + formatDateTimeHHMM(booking.startDate) + ' - ' + formatDateTimeHHMM(booking.endDate)}</Text>
                                         </Layout>

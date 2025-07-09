@@ -75,3 +75,7 @@
 .tooltipArrow {
     color: white !important;
 }
+
+.BarbaShlyakhov :global .DateTimeItem_disabled {
+        opacity: 0.4;
+}

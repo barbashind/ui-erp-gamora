@@ -11,13 +11,13 @@ import { cnMixSpace } from "@consta/uikit/MixSpace";
 import { Text } from "@consta/uikit/Text";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loft, LoftFilter, LoftSortFields } from "../types/lofts-managment-types";
+import { LoftFilter, LoftSortFields } from "../types/lofts-managment-types";
 import { Sort, useTableSorter } from "../hooks/useTableSorter";
 import LoftsBookingTable from "./LoftBookingPage/LoftsBookingTable";
 import { ChoiceGroup } from "@consta/uikit/ChoiceGroup";
 import { getBokingsToday } from "../services/LoftBookingService";
-import { DiagramBooking, Task } from "../global/DiagramBooking";
 import  LoftsBookingList from "./LoftBookingPage/LoftBookingList"
+import { DiagramBooking, Task } from "./LoftBookingPage/DiagramBooking";
 
 const LoftsBookingPage = () => {
 
@@ -72,8 +72,6 @@ const LoftsBookingPage = () => {
         
         const [bookingsToday, setBookingsToday] = useState<Task[]>([]);
 
-        const [lofts, setLofts] = useState<Loft[]>([]);
-
         // Инициализация данных
         useEffect(() => {
                 if (activeTab.id === 0) {
@@ -85,7 +83,7 @@ const LoftsBookingPage = () => {
                         void getBookingTodayData();
 
                 }
-        }, []);
+        }, [activeTab.id]);
 
 
         return (

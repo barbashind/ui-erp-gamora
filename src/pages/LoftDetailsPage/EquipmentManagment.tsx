@@ -10,6 +10,11 @@ import { TextField } from "@consta/uikit/TextField";
 import { getEquipment, getFurniture } from "../../services/LoftListSettingsManagmentService";
 import { Checkbox } from "@consta/uikit/Checkbox";
 import { Furniture, FurnitureLoft } from "../../types/loft-details-types";
+import { Button } from "@consta/uikit/Button";
+import { AntIcon } from "../../utils/AntIcon";
+import { UnorderedListOutlined } from "@ant-design/icons";
+import { cnMixFontSize } from "../../utils/MixFontSize";
+import ParametersManagmentModal from "../LoftManagmentPage/ParametersManagmentModal";
 
 const EquipmentManagment = () => {
 
@@ -36,11 +41,16 @@ const EquipmentManagment = () => {
                                 void getFurnitureData();
         }, []);
 
+        const [isSettingModalOpen, setIsSettingModalOpen] = useState<boolean>(false)
+
         return (
                 <Layout direction="row" style={{flexWrap:'wrap', width: '100%'}}>
-                        <Layout direction="column" flex={1} className={cnMixSpace({ p:'xl' })}>
+                        <Layout direction="column"  className={cnMixSpace({ p:'xl' })} style={{width: 'fit-content'}}>
                                 
                                 <Layout direction="column"> 
+                                        <Layout direction="row">
+                                                <Text>Выберите оборудование из списка ниже</Text>
+                                        </Layout>
                                         {equipments && equipments.length > 0 && equipments.map((equipment) => (
                                                 <Layout direction="row" className={cnMixSpace({p:'m', mT: 's'})} style={{border: '1px solid var(--color-gray-200)', borderRadius: '4px', alignItems: 'center'}}>
                                                         <Checkbox 
@@ -67,20 +77,24 @@ const EquipmentManagment = () => {
 
                                                                         }
                                                                 }}
-                                                                placeholder="Цена"
+                                                                placeholder="0"
                                                                 rightSide={()=> (
-                                                                        <Text>₽</Text>
+                                                                        <Text view="secondary" size="s">ШТ</Text>
                                                                 )}
                                                                 size="s"
                                                                 style={{width: '150px'}}
                                                                 incrementButtons={false}
+                                                                disabled={!loftEquipments.find((item) => (item.equipmentCode === equipment.equipmentCode))}
                                                         />
                                                 </Layout>
                                         ))}
                                 </Layout>
                         </Layout>
                         <Layout direction="column" flex={1} className={cnMixSpace({ p:'xl' })}>
-                                                        <Layout direction="column"> 
+                                                        <Layout direction="column" style={{width: 'fit-content'}}> 
+                                                                <Layout direction="row">
+                                                                        <Text>Выберите мебель из списка ниже</Text>
+                                                                </Layout>
                                                                 {furnitures && furnitures.length > 0 && furnitures.map((furniture) => (
                                                                         <Layout direction="row" className={cnMixSpace({p:'m', mT: 's'})} style={{border: '1px solid var(--color-gray-200)', borderRadius: '4px', alignItems: 'center'}}>
                                                                                 <Checkbox 
@@ -107,7 +121,7 @@ const EquipmentManagment = () => {
                         
                                                                                                 }
                                                                                         }}
-                                                                                        placeholder="Кол-во"
+                                                                                        placeholder="0"
                                                                                         rightSide={()=> (
                                                                                                 <Text view="secondary" size="s">ШТ</Text>
                                                                                         )}
@@ -120,6 +134,24 @@ const EquipmentManagment = () => {
                                                                 ))}
                                                         </Layout>
                                                 </Layout>
+                                                <Button
+                                                        iconLeft={AntIcon.asIconComponent(() => (
+                                                                <UnorderedListOutlined
+                                                                        className={cnMixFontSize('l') + ' ' + cnMixSpace({mR:'xs'})}
+                                                                />
+                                                        ))}
+                                                        view="secondary"
+                                                        size="s"
+                                                        label={'Списки параметров'}
+                                                        className={cnMixSpace({mR:'m', mT:'xl'})}
+                                                        onClick={()=>{
+                                                                setIsSettingModalOpen(true);
+                                                        }}
+                                                />
+                                                <ParametersManagmentModal
+                                                        isOpen={isSettingModalOpen}
+                                                        setIsOpen={setIsSettingModalOpen}
+                                                />
                                         </Layout>
                         
         )

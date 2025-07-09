@@ -109,8 +109,6 @@
 
 .Theme_control_barbashDesign .Select-ClearIndicator .IconClear:before,
 .Theme_control_barbashDesign .deprecated--Select-ClearIndicator .IconClear:before {
-    width: 12px;
-    height: 12px;
     content: url('../../../src/assets/IconClear.svg');
 }
 
