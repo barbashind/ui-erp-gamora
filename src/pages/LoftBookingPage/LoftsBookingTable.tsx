@@ -200,6 +200,7 @@ const formatDateTimeHHMM = (isoString: string | number | Date): string => {
                         {bookingsToday?.filter(elem => (elem.loftId === Number(value)))?.map(task => (
                             <Layout style={{padding: 8, border: '1px solid var(--color-blue-ui)', borderRadius: '4px'}}>
                                 <Text size="s"  weight="medium" >{task.loftName + ' - ' + task.clientName + ' - ' + formatDateTimeHHMM(task.startDate) + '-' + formatDateTimeHHMM(task.endDate)}</Text>
+                                
                             </Layout>
                         ))}
                     </Layout>

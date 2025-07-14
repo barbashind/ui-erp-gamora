@@ -3,7 +3,7 @@ import { Text } from '@consta/uikit/Text';
 import { Button } from '@consta/uikit/Button';
 import { cnMixSpace } from '@consta/uikit/MixSpace';
 import { Modal } from '@consta/uikit/Modal';
-import {UserOutlined, DollarOutlined, CloseOutlined, PhoneFilled, MailOutlined, DesktopOutlined } from "@ant-design/icons";
+import {UserOutlined, DollarOutlined, CloseOutlined, PhoneFilled, MailOutlined, DesktopOutlined,CheckOutlined} from "@ant-design/icons";
 import { useEffect, useState } from 'react';
 import { getImage, getLoftMainImage } from '../../services/LoftManagmentService';
 import { AntIcon } from '../../utils/AntIcon';
@@ -11,6 +11,7 @@ import { cnMixFontSize } from '../../utils/MixFontSize';
 import { Card } from '@consta/uikit/Card';
 import { Avatar } from '@consta/uikit/Avatar';
 import { SkeletonBrick } from '@consta/uikit/Skeleton';
+import { Tag } from '@consta/uikit/Tag';
 
  
 export interface TLoftBookingListModalProps {
@@ -31,6 +32,7 @@ const  LoftBookingListModal = ({
 
 const [mainPhoto, setMainPhoto] = useState<Blob>()
 const [photoLoading, setPhotoLoading] = useState<boolean>(false)
+const [flagcheck, setflagcheck] = useState<boolean>(false)
 
     // Инициализация данных
     useEffect(() => {
@@ -58,6 +60,7 @@ const [photoLoading, setPhotoLoading] = useState<boolean>(false)
     const closeModal = () => {
             setLoftId(undefined);
             setIsModalOpen(false);
+            setflagcheck(false);
         };
         
     return (
@@ -204,7 +207,22 @@ const [photoLoading, setPhotoLoading] = useState<boolean>(false)
                             style={{ alignItems: 'center', justifyContent: 'left', borderBottom: '1px solid var(--color-gray-200)' }}
                             className={cnMixSpace({ pB: 'xs' })}
                         >
-                            <DesktopOutlined style={{ fontSize: '1.5em', color: 'var(--color-gray-400)'}} className={cnMixSpace({ mR: 's' })} />
+                            {!flagcheck ? (<Button
+                        size="m"
+                        view="clear"
+                        label="Проверено"
+                        style={{ color: '#0078d2' }}
+                        iconLeft={AntIcon.asIconComponent(() => (
+                                    <CheckOutlined
+                                            className={cnMixFontSize('l')}
+                                    />
+                            ))}
+                        onClick={() => {
+                               setflagcheck(true) ;
+                            }}
+                            
+                    />) : (<Tag mode="info"  label="Проверено" style={{ color: '#53f266' }} /> ) }
+                            <DesktopOutlined style={{ fontSize: '1.5em', color: 'var(--color-gray-400)'}} className={cnMixSpace({ mL: 's' })} />
                             <Text
                                 size="m"  
                                 align="left"
@@ -221,8 +239,32 @@ const [photoLoading, setPhotoLoading] = useState<boolean>(false)
                         </Layout>
                     </Card>
                 </Layout>
+                <Layout direction="row" style={{ justifyContent: 'right' }} className={cnMixSpace({ mT: 'xs' })}>
+                            <Button
+                                size="s"
+                                view="secondary"
+                                label="Завершить аренду"
+                                width="default"
+                                onClick={() => {
+                                    closeModal();
+                                }}
+                            />
+
+                            <Button
+                                className={cnMixSpace({ mL: 'm' })}
+                                size="s"
+                                label="Закрыть"
+                                width="default"
+                                onClick={() => {
+                                    closeModal()
+                                }}
+                            />
+
+                            
+                        </Layout>
             </Layout>
         </Modal>
+    
     );
 };
 export default LoftBookingListModal;
