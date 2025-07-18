@@ -73,6 +73,7 @@ const navigate = useNavigate()
                                         <BookOutlined style={{ fontSize: '3em', color: 'var(--color-blue-ui)'}} className={cnMixSpace({mB:'xs'})}/>
                                         <Text size="m" weight='semibold' style={{minWidth:'130px', maxWidth: '130px', color: 'var(--color-blue-ui)'}} align="center">Управление бронированиями</Text>
                                 </Card>
+                                
                                 <Card 
                                         style={{ 
                                                 justifyItems: 'center',  
