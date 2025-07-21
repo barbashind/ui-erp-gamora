@@ -21,6 +21,8 @@ import { Layout } from "@consta/uikit/Layout";
 import { Loader } from "@consta/uikit/Loader";
 import { cnMixSpace } from "@consta/uikit/MixSpace";
 import { Text } from "@consta/uikit/Text";
+import AddUsersModal from "./LoftChartPage/AddUsersModal";
+import DataOrganizationModal from "./LoftChartPage/DataOrganizationModal";
 
 
 
@@ -71,6 +73,8 @@ const OrganizationPage = () => {
         const [dataDef, setDataDef] = useState<Organization>(defaultData)
         const [isEdit, setIsEdit] = useState<boolean>(false)
         const [isLoading, setIsLoading] = useState<boolean>(true)
+        const [isAddUsersModalOpen, setIsAddUsersModalOpen] = useState(false);
+        const [isDataOrganizationModalOpen, setIsDataOrganizationModalOpen] = useState(false);
 
         useEffect(() => {
                 if (activeTab.id === 0) {
@@ -293,6 +297,14 @@ const OrganizationPage = () => {
                                                                                                                 updateCompany();
                                                                                                         }}
                                                                                                 />
+                                                                                                <Button
+                                                                                                        label={'Добавить'}
+                                                                                                        view="primary"
+                                                                                                        size="s"
+                                                                                                        onClick={()=>{setIsDataOrganizationModalOpen(true)
+                                                                                                                
+                                                                                                        }}
+                                                                                                />
                                                                                         </>
                                                                                 )}
                                                                                 
@@ -341,6 +353,7 @@ const OrganizationPage = () => {
                                                                 <Layout direction="row" style={{justifyContent: 'center'}}>
                                                                         <Button 
                                                                                 label={'Добавить еще'}
+                                                                                onClick={()=>{setIsAddUsersModalOpen(true)}}
                                                                                 iconLeft={AntIcon.asIconComponent(() => (
                                                                                         <PlusOutlined
                                                                                                 className={cnMixFontSize('l') + ' ' + cnMixSpace({mR:'xs'})}
@@ -363,6 +376,16 @@ const OrganizationPage = () => {
 
                                         </Layout>
                                 </Card>
+                                <AddUsersModal
+                            isModalOpen={isAddUsersModalOpen}
+                            setIsModalOpen={setIsAddUsersModalOpen}
+                            
+                        />
+                        <DataOrganizationModal
+                            isModalOpen={isDataOrganizationModalOpen}
+                            setIsModalOpen={setIsDataOrganizationModalOpen}
+                            
+                        />
                                 
                         </Layout>
                 </Layout>
