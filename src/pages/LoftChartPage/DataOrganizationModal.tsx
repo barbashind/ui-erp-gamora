@@ -13,6 +13,8 @@ import { Avatar } from '@consta/uikit/Avatar';
 import { SkeletonBrick } from '@consta/uikit/Skeleton';
 import { Tag } from '@consta/uikit/Tag';
 import { TextField } from '@consta/uikit/TextField';
+import { YMaps,Map } from '@pbe/react-yandex-maps';
+import { Placemark } from '@pbe/react-yandex-maps/typings/geo-objects/Placemark';
 
  
 export interface TDataOrganizationModalProps {
@@ -118,7 +120,14 @@ const [flagcheck, setflagcheck] = useState<boolean>(false)
                                     
                                 }}
                             />
-                        </Layout>   
+                        </Layout>
+                                 <Layout direction="row" style={{ alignItems: 'end' }}>
+                                    <YMaps><Map defaultState={{ center: [51.66749022, 39.1956443], zoom: 9 }}
+                                    
+                                      />
+                                      
+                                    </YMaps>
+                                </Layout>   
                 
             </Layout>
         </Modal>

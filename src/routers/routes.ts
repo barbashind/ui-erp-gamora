@@ -11,6 +11,7 @@ export interface TRouteTarget {
         loftsDetails: string,
         bookingManagment: string;
         loftTimePage: string;
+        mapLofts: string;
     }
 
 export const routeTarget: TRouteTarget = {
@@ -26,4 +27,5 @@ export const routeTarget: TRouteTarget = {
         organization: 'organization',
         bookingManagment: 'booking-managment',
         loftTimePage: 'lofttime',
+        mapLofts: 'maplofts'
     };
