@@ -7,8 +7,7 @@ import { useEffect, useState } from 'react';
 import { AntIcon } from '../../utils/AntIcon';
 import { cnMixFontSize } from '../../utils/MixFontSize';
 import { Card } from '@consta/uikit/Card';
-import { YMaps,Map } from '@pbe/react-yandex-maps';
-import { Placemark } from '@pbe/react-yandex-maps/typings/geo-objects/Placemark';
+import { YMaps,Map,Placemark } from '@pbe/react-yandex-maps';
 import { concatUrl } from "../../utils/urlUtils";
 import { routeTarget } from "../../routers/routes";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +18,6 @@ const MapLofts = () => {
 
 
 const navigate = useNavigate()
-        
     return (
         
             
@@ -46,10 +44,16 @@ const navigate = useNavigate()
                                 
                                 
                                  <Layout direction="row" style={{ alignItems: 'end' }}>
-                                    <YMaps><Map defaultState={{ center: [51.66749022, 39.1956443], zoom: 9 }}
+                                    <YMaps>
+                                        <Map defaultState={{ center: [51.66749022, 39.1956443], zoom: 9 }}>
                                     
+                                      <Placemark 
+                                        geometry={[51.751574, 39.573856]} 
+                                        properties={{
+                                        iconContent: '100$'
+                                        }} 
                                       />
-                                      
+                                       </Map>
                                     </YMaps>
                                 </Layout>   
                 
