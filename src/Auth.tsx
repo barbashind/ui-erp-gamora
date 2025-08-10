@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import bcrypt from 'bcryptjs';
 
+// import { ReactMaskOpts, useIMask } from 'react-imask';
+
 // компоненты Consta
 import { Text } from '@consta/uikit/Text';
 import { Layout } from '@consta/uikit/Layout';
@@ -12,10 +14,13 @@ import { Card } from '@consta/uikit/Card';
 import { Theme } from '@consta/uikit/Theme';
 import { presetBarbashDesignDefault } from './barbashDesign/presets/presetBarbasDesignDefault';
 import { presetBarbashDesignDark } from './barbashDesign/presets/presetBarbashDesignDark';
+import RegistrationModal from './RegistrationModal';
 
 const Auth = () => {
     const [username, setUsername] = useState('');
     const [NHPassword, setNHPassword] = useState('');
+    const [regIsOpen, setRegIsOpen] = useState<boolean>(false);
+
     const handleLogin = async () => {
       const password = await bcrypt.hash(NHPassword, 10);
         try {
@@ -51,16 +56,33 @@ const Auth = () => {
         };
     }, []);
 
+  //  const { ref } = useIMask<
+  //   HTMLInputElement,
+  //   ReactMaskOpts
+  // >({
+  //   mask: '+ 7 (000)000-00-00',
+  // });
 
     return (
       <div className="App" >
             <Theme preset={themePreset}>
-              <div style={{width: '100vw', height: '100vh', alignContent: 'center', justifyItems: 'center', backgroundColor: '#ecf1f4'}}>
-                <Card className={cnMixSpace({p: 'xl'})} style={{ alignSelf: 'center', backgroundColor: '#ffff'}}>
-                  <Text view='brand' size='2xl'>RENTIFY</Text>
+              <div 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '100vw',
+                  height: '100vh',
+                  backgroundImage: themePreset === presetBarbashDesignDark ? 'url(src/assets/images/BackgroundImage.jpg)' : 'url(src/assets/images/BackgroundLightImage.jpg)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat'
+                }}
+              >
+                <Card className={cnMixSpace({p: 'xl'})} style={{ alignSelf: 'center', backgroundColor: 'var(--color-control-bg-default)'}}>
+                  <Text view='brand' size='2xl' align='center' style={{width: '100%',  }}>RENTIFY</Text>
                   <Layout direction='column' >
                     <Layout direction='column' style={{width: '100%',  }} className={cnMixSpace({mT: 'm'})}>
-                        <Text align='left'>НОМЕР ТЕЛЕФОНА:</Text>
                         <TextField 
                           value={username}
                           onChange={(value) =>{
@@ -68,14 +90,16 @@ const Auth = () => {
                                 setUsername(value)
                               } else {
                                 setUsername('')
+                                
                               }
                             }}
+                            placeholder='+ 7 (***) ***-**-**'
                             className={cnMixSpace({mT: 'xs'})}
-                            size='s'
+                            size='m'
+                            caption='Укажите номер телефона'
                         />
                     </Layout>
                     <Layout direction='column' style={{width: '100%',  alignSelf: 'center'}} className={cnMixSpace({mT: 'm'})}>
-                        <Text align='left'>ПАРОЛЬ:</Text>
                         <TextField 
                           value={NHPassword}
                           type={'password'}
@@ -87,7 +111,8 @@ const Auth = () => {
                               }
                             }}
                             className={cnMixSpace({mT: 'xs'})}
-                            size='s'
+                            size='m'
+                            caption='Введите пароль'
                           />
                     </Layout>
                     <Layout direction='row' className={cnMixSpace({mT: 'm'})}>
@@ -100,7 +125,7 @@ const Auth = () => {
                       />
                       <Button 
                         label={'РЕГИСТРАЦИЯ'} 
-                        onClick={()=>{void handleLogin()}} 
+                        onClick={()=>{setRegIsOpen(true)}} 
                         style={{width: '150px', alignSelf: 'center'}} 
                         size='s'
                         view='secondary'
@@ -110,6 +135,10 @@ const Auth = () => {
                   </Layout>
                     
                 </Card>
+                <RegistrationModal
+                  isModalOpen={regIsOpen}
+                  setIsModalOpen={setRegIsOpen}
+                />
               </div>
           </Theme>
       </div>

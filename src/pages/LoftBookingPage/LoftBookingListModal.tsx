@@ -18,7 +18,6 @@ export interface TLoftBookingListModalProps {
     setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
     loftId: number | undefined;
     setLoftId: React.Dispatch<React.SetStateAction<number | undefined>>;
-    
 }
 
 const  LoftBookingListModal = ({

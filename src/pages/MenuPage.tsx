@@ -39,7 +39,7 @@ const navigate = useNavigate()
                                         }}
                                 >
                                         <BankOutlined style={{ fontSize: '3em', color: 'var(--color-blue-ui)'}} className={cnMixSpace({mB:'xs'})}/>
-                                        <Text size="m" weight='semibold' style={{minWidth:'130px', maxWidth: '130px', color: 'var(--color-blue-ui)'}} align="center"> организации</Text>
+                                        <Text size="m" weight='semibold' style={{minWidth:'130px', maxWidth: '130px', color: 'var(--color-blue-ui)'}} align="center">Основные данные организации</Text>
                                 </Card>
                                 <Card 
                                         style={{ 
