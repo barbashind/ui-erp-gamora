@@ -21,6 +21,9 @@ import { Loft, LoftFilter, LoftRow, LoftSortFields } from "../../types/lofts-man
 import { getLofts } from "../../services/LoftManagmentService";
 import { getBokingsToday } from "../../services/LoftBookingService";
 import { Task } from "./DiagramBooking";
+import { useNavigate } from "react-router-dom";
+import { routeTarget } from "../../routers/routes";
+import { concatUrl } from "../../utils/urlUtils";
 
 interface LoftsBookingTableProps {
         updateFlag: boolean;
@@ -57,7 +60,7 @@ const LoftsBookingTable = ({
                 });        
         const [rows, setRows] = useState<LoftRow[]>([]);
         const [isLoading, setIsLoading] = useState<boolean>(false);
-        // const navigate = useNavigate();
+         const navigate = useNavigate();
     
        
 useEffect(() => {
@@ -200,6 +203,7 @@ const formatDateTimeHHMM = (isoString: string | number | Date): string => {
                         {bookingsToday?.filter(elem => (elem.loftId === Number(value)))?.map(task => (
                             <Layout style={{padding: 8, border: '1px solid var(--color-blue-ui)', borderRadius: '4px'}}>
                                 <Text size="s"  weight="medium" >{task.loftName + ' - ' + task.clientName + ' - ' + formatDateTimeHHMM(task.startDate) + '-' + formatDateTimeHHMM(task.endDate)}</Text>
+                                
                             </Layout>
                         ))}
                     </Layout>
@@ -243,9 +247,9 @@ const formatDateTimeHHMM = (isoString: string | number | Date): string => {
                             onRow={record => ({
                                 className: record.spacer ? 'data-is-spacer' : `data-is-row`,
                                 onClick: () => {
-                                    // if (!record.spacer) {
-                                    //     navigate(concatUrl([routeTarget.main, `loft-details/${record.loftId}`]));
-                                    // }
+                                     if (!record.spacer) {
+                                         navigate(concatUrl([routeTarget.main, routeTarget.loftTimePage]));
+                                     }
                                     
                                 },
                             })}

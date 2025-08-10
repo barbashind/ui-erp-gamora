@@ -1,6 +1,6 @@
 import { routeTarget } from "../routers/routes";
 import { concatUrl } from "../utils/urlUtils";
-import { AreaChartOutlined, BankOutlined, BlockOutlined, BookOutlined } from "@ant-design/icons";
+import { AreaChartOutlined, BankOutlined, BlockOutlined, BookOutlined,UsergroupAddOutlined } from "@ant-design/icons";
 import { Card } from "@consta/uikit/Card";
 import { cnMixSpace } from "@consta/uikit/MixSpace";
 import { Text } from "@consta/uikit/Text";
@@ -73,6 +73,7 @@ const navigate = useNavigate()
                                         <BookOutlined style={{ fontSize: '3em', color: 'var(--color-blue-ui)'}} className={cnMixSpace({mB:'xs'})}/>
                                         <Text size="m" weight='semibold' style={{minWidth:'130px', maxWidth: '130px', color: 'var(--color-blue-ui)'}} align="center">Управление бронированиями</Text>
                                 </Card>
+                                
                                 <Card 
                                         style={{ 
                                                 justifyItems: 'center',  
@@ -86,6 +87,22 @@ const navigate = useNavigate()
                                 >
                                         <AreaChartOutlined style={{ fontSize: '3em', color: 'var(--color-blue-ui)'}} className={cnMixSpace({mB:'xs'})}/>
                                         <Text size="m" weight='semibold' style={{minWidth:'130px', maxWidth: '130px', color: 'var(--color-blue-ui)'}} align="center">Аналитика компании</Text>
+                                </Card>
+                                <Card 
+                                        style={{ 
+                                                justifyItems: 'center',  
+                                                backgroundColor: 'var(--color-bg-default)', 
+                                                cursor: 'pointer',
+                                                minHeight: '130px',
+                                                maxHeight: '130px'
+                                        }} 
+                                        className={cnMixSpace({p:'m'})}
+                                       onClick={() => {
+                                                navigate(concatUrl([routeTarget.main, routeTarget.mapLofts]));
+                                        }}
+                                >
+                                        <UsergroupAddOutlined style={{ fontSize: '3em', color: 'var(--color-blue-ui)'}} className={cnMixSpace({mB:'xs'})}/>
+                                        <Text size="m" weight='semibold' style={{minWidth:'130px', maxWidth: '130px', color: 'var(--color-blue-ui)'}} align="center">Пользователи</Text>
                                 </Card>
                         </Layout>
                 </Layout>
