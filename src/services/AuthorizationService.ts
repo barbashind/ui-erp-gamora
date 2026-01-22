@@ -9,7 +9,7 @@ type Token = {
 }
  // Авторизация
     export const auth = async (data: User): Promise<Token> => {
-        const response = await fetch('/api/gamora/login', {
+        const response = await fetch('/api/ufch/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -36,7 +36,7 @@ export  const checkToken = async (): Promise<Valid> => {
     // Проверка действительности токена, например, через запрос к вашему API
     const token = localStorage.getItem('token');
     console.log(token)
-    const response = await fetch('/api/gamora/check-token', {
+    const response = await fetch('/api/ufch/check-token', {
         headers: {
             'Authorization': `Bearer ${token}`,
         },
@@ -58,7 +58,7 @@ export  const checkToken = async (): Promise<Valid> => {
 export  const getUserInfo = async (): Promise<UserInfo> => {
 const token = localStorage.getItem('token');
 console.log(token)
-const response = await fetch('/api/gamora/get-user-info', {
+const response = await fetch('/api/ufch/get-user-info', {
     headers: {
         'Authorization': `Bearer ${token}`,
     },

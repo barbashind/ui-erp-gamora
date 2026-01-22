@@ -10,6 +10,11 @@ export interface IdLabel {
         label: string;
 }
 
+export interface IdStrLabel {
+        id: string;
+        label: string;
+}
+
 export interface TCaption {
         state: string | undefined;
         caption: string;

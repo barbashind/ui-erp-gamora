@@ -7,14 +7,30 @@ export default defineConfig({
     server: {
         // port: 80,
         proxy: {
-            '/api': {
-                target: 'http://localhost:5003',
+            '/api/ufch': {
+                target: 'http://10.100.60.90',
+                changeOrigin: true,
+                secure: false,
+            },
+            '/api/exchanger': {
+                target: 'https://vsgm.graphql.mstroy.tech',
+                changeOrigin: true,
+                secure: false,
+            },
+            '/api/auth/': {
+                target: 'https://facereg.avtoban.ru:4040',
+                changeOrigin: true,
+                secure: false,
+            },
+            '/api/qr_recognition': {
+                target: 'https://facereg.avtoban.ru:4040',
                 changeOrigin: true,
                 secure: false,
             },
         },
     },
 });
+
 // export default defineConfig({
 //   plugins: [react()],
 //   server: {

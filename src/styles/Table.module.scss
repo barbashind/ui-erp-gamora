@@ -92,7 +92,7 @@ $cell-border-radius: 4px;
 
 .table,
 .table :global(.rcta--RcTable-container) {
-    overflow: hidden;
+    overflow: auto;
     // display: flex;
     flex-direction: column;
     flex: 1;
