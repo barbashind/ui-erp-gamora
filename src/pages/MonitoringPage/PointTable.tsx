@@ -213,10 +213,10 @@ const getData = async () => {
             title: (
                 <TableColumnHeader
                     header="Наименование"
-                    sortOrder={getColumnSortOrder('pointId')}
-                    sortOrderIndex={getColumnSortOrderIndex('pointId')}
+                    sortOrder={getColumnSortOrder('name')}
+                    sortOrderIndex={getColumnSortOrderIndex('name')}
                     onSort={(sortOrder, isAdd) => {
-                        onColumnSort('pointId', sortOrder, isAdd);
+                        onColumnSort('name', sortOrder, isAdd);
                     }}
                 />
             ),

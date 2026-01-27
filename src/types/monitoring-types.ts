@@ -42,6 +42,7 @@ export interface PointFilter {
 export interface PointSortFields {
         pointId: SortOrder;
         status: SortOrder;
+        name: SortOrder;
         createdAt: SortOrder;
         connecting: SortOrder;
         responsibleObj: SortOrder;
