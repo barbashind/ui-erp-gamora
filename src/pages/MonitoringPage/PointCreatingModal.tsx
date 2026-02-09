@@ -107,7 +107,7 @@ useEffect(() => {
         }
 }, [id, isOpen])
 
-const types : IdStrLabel[] = [{id: 'FR', label: 'Точка прохода FR'}, {id: 'ST', label: 'Столовая'},{id: 'VS', label: 'Весовая'},]
+const types : IdStrLabel[] = [{id: 'FR', label: 'Точка прохода FR'}, {id: 'ST', label: 'OVISION'},{id: 'VS', label: 'Камера'},]
 
         return (
                 <Modal

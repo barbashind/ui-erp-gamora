@@ -31,7 +31,7 @@ import { MiddleConnectingIcon } from "../../assets/images/MiddleConnectingIcon";
 import { BadConnectingIcon } from "../../assets/images/BadConnectingIcon";
 import { FaceregFilter } from "../../types/integration-mstroy-types";
 import { formatDateEndOfDay, formatDateStartOfDay } from "../../utils/formatDate";
-import { getFaceregData } from "../../services/IntegrationFaceReg";
+import { authFaceReg, getFaceregData } from "../../services/IntegrationFaceReg";
 
 interface PointTableProps {
         updateFlag: boolean;
@@ -111,7 +111,7 @@ const filterParam : PointFilter = filterValues
 
 const getData = async () => {
         try {
-            
+                await authFaceReg({username: 'd.barbashin@avtoban.ru', password: 'kat-xy6-CVk-ziA'});
                 const serverData: TPageableResponse<Point> = await getPoints({
                 page: currentPage,
                 size: pagination.pageSize,
@@ -257,13 +257,13 @@ const getData = async () => {
                 ) : (
                     <Layout direction="column">
                         {(value === 'FR') && (<Text size="s" weight="medium" style={{ minWidth: '150px', maxWidth: '150px'  }} className={cnMixSpace({mV:'s'})}>
-                            {'Точка прохода FR'}
+                            {'FaceReg'}
                         </Text>)}
                          {(value === 'ST') && (<Text size="s" weight="medium" style={{ minWidth: '150px', maxWidth: '150px'  }} className={cnMixSpace({mV:'s'})}>
-                            {'Столовая'}
+                            {'Ovision'}
                         </Text>)}
                         {(value === 'VS') && (<Text size="s" weight="medium" style={{ minWidth: '150px', maxWidth: '150px'  }} className={cnMixSpace({mV:'s'})}>
-                            {'Весовая'}
+                            {'Камера'}
                         </Text>)}
                     </Layout>
                 );

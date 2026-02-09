@@ -3,6 +3,7 @@ export interface TRouteTarget {
         pointsManadgment: string;
         interagtionMStroy: string;
         settings: string;
+        map: string;
     }
 
 export const routeTarget: TRouteTarget = {
@@ -10,4 +11,5 @@ export const routeTarget: TRouteTarget = {
         pointsManadgment: 'pointsManadgment',
         interagtionMStroy: 'interagtionMStroy',
         settings: 'settings',
+        map: 'map',
     };

@@ -4,7 +4,8 @@ import { cnMixFontSize } from "../utils/MixFontSize";
 // import { concatUrl } from "../utils/urlUtils";
 import { 
         // ArrowLeftOutlined, 
-        DownloadOutlined, FundOutlined, PlusOutlined } from "@ant-design/icons";
+        // DownloadOutlined, 
+        FundOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button } from "@consta/uikit/Button";
 import { Card } from "@consta/uikit/Card";
 import { Layout } from "@consta/uikit/Layout";
@@ -15,14 +16,19 @@ import { useEffect, useState } from "react";
 import { Sort, useTableSorter } from "../hooks/useTableSorter";
 import PointTable from "./MonitoringPage/PointTable";
 import PointCreatingModal from "./MonitoringPage/PointCreatingModal";
-import { Point, PointFilter, PointSortFields, ReportData, Test } from "../types/monitoring-types";
+import { 
+        // Point, 
+        PointFilter, PointSortFields, 
+        // ReportData, Test 
+} from "../types/monitoring-types";
 // import { Checkbox } from "@consta/uikit/Checkbox";
-import { DatePicker } from "@consta/uikit/DatePicker";
-import { FaceregFilter, InputDataFacereg } from "../types/integration-mstroy-types";
-import { formatDateEndOfDay, formatDateStartOfDay } from "../utils/formatDate";
-import { getAllPoints, getTestsMonth } from "../services/MonitoringService";
-import { authFaceReg, getFaceregData } from "../services/IntegrationFaceReg";
-import { exportToExcelReport } from "./IntegrationMStroyPage/ExportToExcelReport";
+// import { DatePicker } from "@consta/uikit/DatePicker";
+// import { FaceregFilter, InputDataFacereg } from "../types/integration-mstroy-types";
+// import { formatDateEndOfDay, formatDateStartOfDay } from "../utils/formatDate";
+// import { getAllPoints, getTestsMonth } from "../services/MonitoringService";
+// import { authFaceReg, getFaceregData } from "../services/IntegrationFaceReg";
+// import { exportToExcelReport } from "./IntegrationMStroyPage/ExportToExcelReport";
+import { Checkbox } from "@consta/uikit/Checkbox";
 
 const MonitoringPage = () => {
 
@@ -46,7 +52,7 @@ const [currentPage, setCurrentPage] = useState(PageSettings.currentPage);
 const { getColumnSortOrder, getColumnSortOrderIndex, columnSort, onColumnSort } =
         useTableSorter<PointSortFields>(PageSettings.columnSort);
 
-const [filterValues] = useState<PointFilter>(
+const [filterValues, setFilterValues] = useState<PointFilter>(
         PageSettings.filterValues ?? defaultFilter
 );
 const [updateFlag, setUpdateFlag] = useState<boolean>(true);
@@ -58,153 +64,153 @@ useEffect(() => {
         setUpdateFlag(true);
 }, [filterValues]);
 
-const today = new Date();
+// const today = new Date();
 const day = new Date();
 day.setDate(day.getDate() - 14);
 
-const [dateMin, setDateMin] = useState<Date | null> (day);
-const [dateMax, setDateMax] = useState<Date | null> (today);
+// const [dateMin, setDateMin] = useState<Date | null> (day);
+// const [dateMax, setDateMax] = useState<Date | null> (today);
 
-const [isLoadingDataAnalysis, setIsLoadingDataAnalysis] = useState<boolean>(false);
+// const [isLoadingDataAnalysis, setIsLoadingDataAnalysis] = useState<boolean>(false);
 
-const [faceregFilter, setFaceregFilter] = useState<FaceregFilter>(
-                {
-                        created_at__gte: formatDateStartOfDay(day),
-                        created_at__lte: formatDateEndOfDay(today),
-                }
-        )
+// const [faceregFilter, setFaceregFilter] = useState<FaceregFilter>(
+//                 {
+//                         created_at__gte: formatDateStartOfDay(day),
+//                         created_at__lte: formatDateEndOfDay(today),
+//                 }
+//         )
 
-const getReportData = async () => {
-        const allPoints: Point[] = [];
-        await getAllPoints((resp) => {
-                allPoints.push(...resp)
-        });
-        const reports: ReportData[] = [];
+// const getReportData = async () => {
+//         const allPoints: Point[] = [];
+//         await getAllPoints((resp) => {
+//                 allPoints.push(...resp)
+//         });
+//         const reports: ReportData[] = [];
 
-         for (const point of allPoints) {
-                if (!point.pointId) continue;
+//          for (const point of allPoints) {
+//                 if (!point.pointId) continue;
                 
-                // Получаем данные соединения
-                const connectionsData: Test[] = [];
-                await getTestsMonth(point.pointId, (resp) => {
-                const sortedData = resp.filter(el => (el.time !== null)).sort((a, b) => {
-                        const dateA = a.updatedAt ? new Date(a.updatedAt) : new Date(0);
-                        const dateB = b.updatedAt ? new Date(b.updatedAt) : new Date(0);
-                        return Number(dateA) - Number(dateB);
-                });
+//                 // Получаем данные соединения
+//                 const connectionsData: Test[] = [];
+//                 await getTestsMonth(point.pointId, (resp) => {
+//                 const sortedData = resp.filter(el => (el.time !== null)).sort((a, b) => {
+//                         const dateA = a.updatedAt ? new Date(a.updatedAt) : new Date(0);
+//                         const dateB = b.updatedAt ? new Date(b.updatedAt) : new Date(0);
+//                         return Number(dateA) - Number(dateB);
+//                 });
                 
-                connectionsData.push(...sortedData);
-                });
+//                 connectionsData.push(...sortedData);
+//                 });
                 
-                // Получаем данные FaceReg
-                const faceRegData: InputDataFacereg[] = [];
-                if (point.faceRegGUID) {
-                await authFaceReg({
-                        username: 'd.barbashin@avtoban.ru', 
-                        password: 'kat-xy6-CVk-ziA'
-                }).then(async () => {
-                        await getFaceregData(faceregFilter, point.faceRegGUID ?? '', (resp) => {
-                        faceRegData.push(...resp);
-                        });
-                });
-                }
+//                 // Получаем данные FaceReg
+//                 const faceRegData: InputDataFacereg[] = [];
+//                 if (point.faceRegGUID) {
+//                 await authFaceReg({
+//                         username: 'd.barbashin@avtoban.ru', 
+//                         password: 'kat-xy6-CVk-ziA'
+//                 }).then(async () => {
+//                         await getFaceregData(faceregFilter, point.faceRegGUID ?? '', (resp) => {
+//                         faceRegData.push(...resp);
+//                         });
+//                 });
+//                 }
                 
-                // Группируем данные по дате и часу
-                const groupedData: Map<string, Map<number, { 
-                connections: Test[], 
-                faceRegEvents: InputDataFacereg[] 
-                }>> = new Map();
+//                 // Группируем данные по дате и часу
+//                 const groupedData: Map<string, Map<number, { 
+//                 connections: Test[], 
+//                 faceRegEvents: InputDataFacereg[] 
+//                 }>> = new Map();
                 
-                // 1. Группируем данные соединений
-                connectionsData.forEach(connection => {
-                if (!connection.updatedAt) return;
+//                 // 1. Группируем данные соединений
+//                 connectionsData.forEach(connection => {
+//                 if (!connection.updatedAt) return;
                 
-                const date = new Date(connection.updatedAt);
-                const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
-                const hour = date.getHours();
+//                 const date = new Date(connection.updatedAt);
+//                 const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+//                 const hour = date.getHours();
                 
-                if (!groupedData.has(dateKey)) {
-                        groupedData.set(dateKey, new Map());
-                }
+//                 if (!groupedData.has(dateKey)) {
+//                         groupedData.set(dateKey, new Map());
+//                 }
                 
-                const hourMap = groupedData.get(dateKey)!;
-                if (!hourMap.has(hour)) {
-                        hourMap.set(hour, { connections: [], faceRegEvents: [] });
-                }
+//                 const hourMap = groupedData.get(dateKey)!;
+//                 if (!hourMap.has(hour)) {
+//                         hourMap.set(hour, { connections: [], faceRegEvents: [] });
+//                 }
                 
-                hourMap.get(hour)!.connections.push(connection);
-                });
+//                 hourMap.get(hour)!.connections.push(connection);
+//                 });
                 
-                // 2. Группируем данные FaceReg
-                faceRegData.forEach(event => {
-                if (!event.createdAt) return;
+//                 // 2. Группируем данные FaceReg
+//                 faceRegData.forEach(event => {
+//                 if (!event.createdAt) return;
                 
-                const date = new Date(event.createdAt);
-                const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
-                const hour = date.getHours();
+//                 const date = new Date(event.createdAt);
+//                 const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+//                 const hour = date.getHours();
                 
-                if (!groupedData.has(dateKey)) {
-                        groupedData.set(dateKey, new Map());
-                }
+//                 if (!groupedData.has(dateKey)) {
+//                         groupedData.set(dateKey, new Map());
+//                 }
                 
-                const hourMap = groupedData.get(dateKey)!;
-                if (!hourMap.has(hour)) {
-                        hourMap.set(hour, { connections: [], faceRegEvents: [] });
-                }
+//                 const hourMap = groupedData.get(dateKey)!;
+//                 if (!hourMap.has(hour)) {
+//                         hourMap.set(hour, { connections: [], faceRegEvents: [] });
+//                 }
                 
-                hourMap.get(hour)!.faceRegEvents.push(event);
-                });
+//                 hourMap.get(hour)!.faceRegEvents.push(event);
+//                 });
                 
-                // 3. Создаем отчет для каждой даты и часа
-                groupedData.forEach((hourMap, dateKey) => {
-                // Для каждого часа от 0 до 23
-                for (let hour = 0; hour < 24; hour++) {
-                        const data = hourMap.get(hour) || { 
-                        connections: [], 
-                        faceRegEvents: [] 
-                        };
+//                 // 3. Создаем отчет для каждой даты и часа
+//                 groupedData.forEach((hourMap, dateKey) => {
+//                 // Для каждого часа от 0 до 23
+//                 for (let hour = 0; hour < 24; hour++) {
+//                         const data = hourMap.get(hour) || { 
+//                         connections: [], 
+//                         faceRegEvents: [] 
+//                         };
                         
-                        // Рассчитываем среднюю скорость соединения
-                        let totalSpeed = 0;
-                        let validConnectionsCount = 0;
+//                         // Рассчитываем среднюю скорость соединения
+//                         let totalSpeed = 0;
+//                         let validConnectionsCount = 0;
                         
-                        data.connections.forEach(conn => {
-                        const timeValue = conn.time ?? '0';
-                        const numericTime = parseFloat(timeValue.toString());
+//                         data.connections.forEach(conn => {
+//                         const timeValue = conn.time ?? '0';
+//                         const numericTime = parseFloat(timeValue.toString());
                         
-                        if (numericTime > 0) {
-                                // Скорость = 1 / время
-                                totalSpeed += 1 / numericTime;
-                                validConnectionsCount++;
-                        }
-                        });
+//                         if (numericTime > 0) {
+//                                 // Скорость = 1 / время
+//                                 totalSpeed += 1 / numericTime;
+//                                 validConnectionsCount++;
+//                         }
+//                         });
                         
-                        const averageSpeed = validConnectionsCount > 0 
-                        ? totalSpeed / validConnectionsCount 
-                        : 0;
+//                         const averageSpeed = validConnectionsCount > 0 
+//                         ? totalSpeed / validConnectionsCount 
+//                         : 0;
                         
-                        // Количество событий FaceReg (активность УЗ)
-                        const activityCount = data.faceRegEvents.length;
+//                         // Количество событий FaceReg (активность УЗ)
+//                         const activityCount = data.faceRegEvents.length;
                         
-                        // Создаем запись отчета
-                        const report: ReportData = {
-                                pointId: point.pointId,
-                                login: point.login || null,
-                                place: point.place || null,
-                                responsibleObj: point.responsibleObj || null,
-                                date: dateKey, // YYYY-MM-DD
-                                time: hour.toString().padStart(2, '0'), // "00", "01", ..., "23"
-                                connection: parseFloat(averageSpeed.toFixed(6)),
-                                active: activityCount
-                        };
+//                         // Создаем запись отчета
+//                         const report: ReportData = {
+//                                 pointId: point.pointId,
+//                                 login: point.login || null,
+//                                 place: point.place || null,
+//                                 responsibleObj: point.responsibleObj || null,
+//                                 date: dateKey, // YYYY-MM-DD
+//                                 time: hour.toString().padStart(2, '0'), // "00", "01", ..., "23"
+//                                 connection: parseFloat(averageSpeed.toFixed(6)),
+//                                 active: activityCount
+//                         };
                         
-                        reports.push(report);
-                }
-                });
-        }
-        exportToExcelReport(reports);
-        setIsLoadingDataAnalysis(false);
-}
+//                         reports.push(report);
+//                 }
+//                 });
+//         }
+//         exportToExcelReport(reports);
+//         setIsLoadingDataAnalysis(false);
+// }
  
         return (
                 <Layout direction="column" style={{minWidth: '1000px', maxWidth: '1500px', width: '100%'}}>
@@ -221,37 +227,40 @@ const getReportData = async () => {
                                                 
                                         </Layout>
                                         <Layout direction="row" style={{justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap'}} className={cnMixSpace({mT:'m'})}>
-                                                <Layout direction="column" className={cnMixSpace({ mL: 'xl'})}>
-                                                        <Text size="xs" className={cnMixSpace({ mB: '2xs'})}>Выберите период:</Text>
-                                                        <Layout direction="row"> 
-                                                                <DatePicker
-                                                                        type="date"
-                                                                        size="s"
-                                                                        value={dateMin}
-                                                                        maxDate={today}
-                                                                        onChange={(value) => {
-                                                                                        if (value) {
-                                                                                                setDateMin(value);
-                                                                                                setFaceregFilter((prev) => ({...prev, created_at__gte: formatDateStartOfDay(value)}))
-                                                                                        }
-                                                                                }}
-                                                                />
-                                                                <DatePicker
-                                                                        type="date"
-                                                                        size="s"
-                                                                        value={dateMax}
-                                                                        maxDate={today}
-                                                                        onChange={(value) => {
-                                                                                if (value) {
-                                                                                                setDateMax(value);
-                                                                                                setFaceregFilter((prev) => ({...prev, created_at__lte: formatDateStartOfDay(value)}))
-                                                                                        }
-                                                                        }}
-                                                                />  
-                                                        </Layout>
+                                                <Layout direction="row" className={cnMixSpace({ mL: 'xl'})}>
+                                                        <Text size="s" weight='semibold' view= 'secondary' className={cnMixSpace({mR:'m'})}>Выберите тип устройств:</Text>
+                                                        <Checkbox checked={filterValues.type?.includes('FR')}
+                                                                onChange={()=>{
+                                                                        if (filterValues.type?.includes('FR')) {
+                                                                                setFilterValues(prev=> ({...prev, type: prev.type?.filter((item) => (item !== 'FR'))}))
+                                                                        } else {
+                                                                                setFilterValues(prev=> ({...prev, type: prev.type && prev.type.length > 0 ? [...prev.type, 'FR'] : ['FR']}))
+                                                                        }
+                                                                }}
+                                                                label="FaceReg" 
+                                                                className={cnMixSpace({mR:'m'})}
+                                                         />
+                                                         <Checkbox checked={filterValues.type?.includes('ST')} label="Ovision" className={cnMixSpace({mR:'m'})}
+                                                                onChange={()=>{
+                                                                if (filterValues.type?.includes('ST')) {
+                                                                        setFilterValues(prev=> ({...prev, type: prev.type?.filter((item) => (item !== 'ST'))}))
+                                                                } else {
+                                                                        setFilterValues(prev=> ({...prev, type: prev.type && prev.type.length > 0 ? [...prev.type, 'ST'] : ['ST']}))
+                                                                }
+                                                        }}
+                                                        />
+                                                        <Checkbox checked={filterValues.type?.includes('VS')} label="Камеры" className={cnMixSpace({mR:'m'})}
+                                                        onChange={()=>{
+                                                                if (filterValues.type?.includes('VS')) {
+                                                                        setFilterValues(prev=> ({...prev, type: prev.type?.filter((item) => (item !== 'VS'))}))
+                                                                } else {
+                                                                        setFilterValues(prev=> ({...prev, type: prev.type && prev.type.length > 0 ? [...prev.type, 'VS'] : ['VS']}))
+                                                                }
+                                                        }}
+                                                        />
                                                 </Layout>
                                                 <Layout direction="row">
-                                                        <Button
+                                                        {/* <Button
                                                                 label={"Загрузить отчет"}
                                                                 size="s"
                                                                 iconLeft={AntIcon.asIconComponent(() => (
@@ -266,7 +275,7 @@ const getReportData = async () => {
                                                                 }}
                                                                 disabled={isLoadingDataAnalysis}
                                                                 className={cnMixSpace({ mT: 's', mR: 'm'})}
-                                                        />
+                                                        /> */}
                                                 
                                                         <Button
                                                                 label={'Добавить'}
