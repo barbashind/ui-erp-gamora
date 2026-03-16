@@ -4,6 +4,10 @@ import react from '@vitejs/plugin-react';
 // https://vite.dev/config/
 export default defineConfig({
     plugins: [react()],
+    optimizeDeps: {
+    include: ['leaflet', 'react-leaflet'],
+    exclude: [] // если проблема, добавьте сюда проблемные пакеты
+    },
     server: {
         // port: 80,
         proxy: {

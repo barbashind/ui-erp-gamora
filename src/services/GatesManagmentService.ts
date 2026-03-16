@@ -38,6 +38,18 @@ export const getPlaces = async (
             });
     };    
 
+export const getToken = async (
+        getCallback: (arg0: Place[]) => void
+    ) => {
+        await HttpService.get<Place[]>(`/api/ufch/places`)
+            .then((response) => {
+                getCallback(response);
+            })
+            .catch(() => {
+                console.log('failed');
+            });
+    }; 
+
 
 
 

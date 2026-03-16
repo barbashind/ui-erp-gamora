@@ -31,7 +31,7 @@ const MainPage = () => {
                 },
                 {
                         id: 1,
-                        label: 'Структура точек УФЧ',
+                        label: 'Карта ВСМ-1',
                         navTo: routeTarget.map,
                 },
                 {
@@ -56,7 +56,7 @@ const MainPage = () => {
                         },
                         {
                                 id: 1,
-                                label: 'Структура точек УФЧ',
+                                label: 'Карта ВСМ-1',
                                 navTo: routeTarget.map,
                         },
                         {
