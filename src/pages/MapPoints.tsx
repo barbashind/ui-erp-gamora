@@ -160,10 +160,10 @@ const MapPoints = () => {
     { name: 'в.г. Афримово, СУ905', actions: null, color: 'success' },
     { name: 'Полигон №7, СУ905', actions: null, color: 'success' },
     { name: 'в.г. Бухолово, СУ926', actions: null, color: 'success' },
-    { name: 'в.г. Ям-Григино, СУ910', actions: ['Подключение оптики до 01.04', 'Обеспечение связью диспетчерской АТФ до 31.04'], color: 'warning' },
+    { name: 'в.г. Ям-Григино, СУ910', actions: ['Подключение оптики до 01.04', 'Подключение диспетчерской АТФ до 31.04'], color: 'warning' },
     { name: 'Штаб геодезии, н.п. Бологое, СУ910', actions: null, color: 'success' },
-    { name: 'в.г. Ям-Григино, А-Мост', actions: ['Подключение оптики до 30.06'], color: 'warning' },
-    { name: 'в.г. Ям-Григино, А-Бетон', actions: ['Подключение оптики до 30.06'], color: 'warning' },
+    { name: 'в.г. Ям-Григино, А-Мост', actions: ['Согласование договора с МТС', 'Подключение оптики до 30.05'], color: 'warning' },
+    { name: 'в.г. Ям-Григино, А-Бетон', actions: ['Подключение оптики до 30.05'], color: 'warning' },
     { name: 'в.г. Княщины, СУ920', actions: ['Подключение LTE до 20.03', 'Подключение оптики до 20.05'], color: 'alert' },
   ];
 
@@ -205,7 +205,7 @@ const MapPoints = () => {
                           
                           mode='info' 
                           size='s' 
-                          style={{textWrap:'nowrap'}} 
+                          style={{textWrap:'wrap'}} 
                           label={action} 
                           className={cnMixSpace({mB: '2xs'})}
                           />
