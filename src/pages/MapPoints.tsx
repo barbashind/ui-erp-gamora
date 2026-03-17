@@ -162,7 +162,8 @@ const MapPoints = () => {
     { name: 'в.г. Бухолово, СУ926', actions: null, color: 'success' },
     { name: 'в.г. Ям-Григино, СУ910', actions: ['Подключение оптики до 15.04'], color: 'warning' },
     { name: 'Штаб геодезии, н.п. Бологое, СУ910', actions: null, color: 'success' },
-    { name: 'в.г. Ям-Григино, А-Мост и А-Бетон', actions: ['30.05, договор с МТС на согласовании  в А-МОСТ'], color: 'warning' },
+    { name: 'в.г. Ям-Григино, А-Мост', actions: ['30.06, договор с МТС на согласовании  в А-МОСТ'], color: 'warning' },
+    { name: 'в.г. Ям-Григино, А-Бетон', actions: ['Подключение оптики до 30.06'], color: 'warning' },
     { name: 'в.г. Княщины, СУ920', actions: ['Подключение LTE до 20.03', 'Оптика Ростелеком до 20.05, согласовываем договор'], color: 'alert' },
   ];
 
@@ -183,7 +184,7 @@ const MapPoints = () => {
               <Layout direction='row' className={cnMixSpace({pH:'m'})}>
                 <div style={{textWrap:'nowrap', minWidth:'20px', maxWidth:'20px'}} ></div>
                 <Text size='s' style={{textWrap:'nowrap', minWidth:'235px', maxWidth:'235px'}} align='left' weight='semibold' >Наименование участка</Text>
-                <Text size='s' style={{textWrap:'nowrap', minWidth:'305px', maxWidth:'305px'}} align='left' weight='semibold' >План мероприятий</Text>
+                <Text size='s' style={{textWrap:'nowrap', minWidth:'335px', maxWidth:'335px'}} align='left' weight='semibold' >План мероприятий</Text>
               </Layout>
               {pointsList.map((point) => (
                 <Layout direction='row' style={{border:'1px solid var(--color-bg-border)', borderRadius: '6px', alignItems:'center'}} className={cnMixSpace({p:'xs', mT: 's'})}>
