@@ -156,15 +156,14 @@ const MapPoints = () => {
 
 
   const pointsList: Point[] = [
-    { name: 'в.г. Жилотково, СУ909', actions: ['Подключение оптики для СУ967 до 31.04'], color: 'success' },
+    { name: 'в.г. Жилотково, СУ909', actions: ['Подключение оптики для СУ967 – 31.04'], color: 'success' },
     { name: 'в.г. Афримово, СУ905', actions: null, color: 'success' },
     { name: 'Полигон №7, СУ905', actions: null, color: 'success' },
     { name: 'в.г. Бухолово, СУ926', actions: null, color: 'success' },
-    { name: 'в.г. Ям-Григино, СУ910', actions: ['Подключение оптики до 01.04', 'Подключение диспетчерской АТФ до 31.04'], color: 'warning' },
+    { name: 'в.г. Ям-Григино, СУ910', actions: ['Подключение оптики до 15.04'], color: 'warning' },
     { name: 'Штаб геодезии, н.п. Бологое, СУ910', actions: null, color: 'success' },
-    { name: 'в.г. Ям-Григино, А-Мост', actions: ['Согласование договора с МТС', 'Подключение оптики до 30.05'], color: 'warning' },
-    { name: 'в.г. Ям-Григино, А-Бетон', actions: ['Подключение оптики до 30.05'], color: 'warning' },
-    { name: 'в.г. Княщины, СУ920', actions: ['Подключение LTE до 20.03', 'Подключение оптики до 20.05'], color: 'alert' },
+    { name: 'в.г. Ям-Григино, А-Мост и А-Бетон', actions: ['30.05, договор с МТС на согласовании  в А-МОСТ'], color: 'warning' },
+    { name: 'в.г. Княщины, СУ920', actions: ['Подключение LTE до 20.03', 'Оптика Ростелеком до 20.05, согласовываем договор'], color: 'alert' },
   ];
 
   return (
@@ -183,8 +182,8 @@ const MapPoints = () => {
           <Layout direction='column' className={cnMixSpace({p:'s'})}>
               <Layout direction='row' className={cnMixSpace({pH:'m'})}>
                 <div style={{textWrap:'nowrap', minWidth:'20px', maxWidth:'20px'}} ></div>
-                <Text size='s' style={{textWrap:'nowrap', minWidth:'265px', maxWidth:'265px'}} align='left' weight='semibold' >Наименование участка</Text>
-                <Text size='s' style={{textWrap:'nowrap', minWidth:'265px', maxWidth:'265px'}} align='left' weight='semibold' >План мероприятий</Text>
+                <Text size='s' style={{textWrap:'nowrap', minWidth:'235px', maxWidth:'235px'}} align='left' weight='semibold' >Наименование участка</Text>
+                <Text size='s' style={{textWrap:'nowrap', minWidth:'305px', maxWidth:'305px'}} align='left' weight='semibold' >План мероприятий</Text>
               </Layout>
               {pointsList.map((point) => (
                 <Layout direction='row' style={{border:'1px solid var(--color-bg-border)', borderRadius: '6px', alignItems:'center'}} className={cnMixSpace({p:'xs', mT: 's'})}>
@@ -192,9 +191,9 @@ const MapPoints = () => {
                   <Layout style={{justifyContent:'center', minWidth:'20px', maxWidth:'20px'}}>
                     <Badge size='xs' status={point.color}/>
                   </Layout>
-                  <Text size='xs' style={{textWrap:'nowrap', minWidth:'265px', maxWidth:'265px'}}>{point.name}</Text>
+                  <Text size='xs' style={{textWrap:'nowrap', minWidth:'235px', maxWidth:'235px'}}>{point.name}</Text>
                   {point.actions && (
-                    <Layout direction='column'>
+                    <Layout direction='column' style={{textWrap:'nowrap', minWidth:'335px', maxWidth:'335px'}}>
                       {point.actions.map((action) => (
                         <Tag 
                           icon={AntIcon.asIconComponent(() => (
