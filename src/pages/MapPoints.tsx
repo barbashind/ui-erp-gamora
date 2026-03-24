@@ -26,6 +26,11 @@ interface MapPoint {
   color: string;
 }
 
+interface Action {
+  text: string;
+  color: string;
+}
+
  const curvePoints: [number, number][] = [
     [57.894577, 33.837985],
     [57.841099, 33.922756],
@@ -56,7 +61,7 @@ interface MapPoint {
 
 interface Point {
   name: string;
-  actions: string[] | null;
+  actions: Action[] | null;
   color: BadgePropStatus;
 }
   
@@ -156,15 +161,16 @@ const MapPoints = () => {
 
 
   const pointsList: Point[] = [
-    { name: 'в.г. Жилотково, СУ909', actions: ['Подключение оптики для СУ967 – 31.04'], color: 'success' },
+    { name: 'в.г. Жилотково, СУ909', actions: null, color: 'success' },
+    { name: 'в.г. Жилотково, СУ967', actions: [{text: 'Подключение оптики для СУ967 – реализовано', color: 'var(--color-bg-green)'}], color: 'success' },
     { name: 'в.г. Афримово, СУ905', actions: null, color: 'success' },
     { name: 'Полигон №7, СУ905', actions: null, color: 'success' },
     { name: 'в.г. Бухолово, СУ926', actions: null, color: 'success' },
-    { name: 'в.г. Ям-Григино, СУ910', actions: ['Подключение оптики до 15.04'], color: 'warning' },
+    { name: 'в.г. Ям-Григино, СУ910', actions: [{text: 'Подключение оптики до 30.04', color: 'var(--color-bg-caution)'}], color: 'warning' },
     { name: 'Штаб геодезии, н.п. Бологое, СУ910', actions: null, color: 'success' },
-    { name: 'в.г. Ям-Григино, А-Мост', actions: ['30.06, договор с МТС на согласовании  в А-МОСТ'], color: 'warning' },
-    { name: 'в.г. Ям-Григино, А-Бетон', actions: ['Подключение оптики до 30.06'], color: 'warning' },
-    { name: 'в.г. Княщины, СУ920', actions: ['Подключение LTE до 27.03', 'Оптика Ростелеком до 20.05, согласовываем договор'], color: 'alert' },
+    { name: 'в.г. Ям-Григино, А-Мост', actions: [{text: '30.06, договор с МТС на согласовании  в А-МОСТ', color: 'var(--color-bg-caution)'}], color: 'warning' },
+    { name: 'в.г. Ям-Григино, А-Бетон', actions: [{text: 'Подключение оптики до 30.06', color: 'var(--color-bg-caution)'}], color: 'warning' },
+    { name: 'в.г. Княщины, СУ920', actions: [{text: 'LTE подключено с 17.03', color: 'var(--color-bg-green)'}, {text: 'Оптика Ростелеком до 20.05, согласовываем договор', color: 'var(--color-bg-caution)'}], color: 'alert' },
   ];
 
   return (
@@ -202,11 +208,10 @@ const MapPoints = () => {
                                           className={cnMixFontSize('l') + cnMixSpace({mR:'xs'})}
                                   />
                             ))}
-                          
                           mode='info' 
                           size='s' 
-                          style={{textWrap:'wrap'}} 
-                          label={action} 
+                          style={{textWrap:'nowrap', backgroundColor: action.color}} 
+                          label={action.text} 
                           className={cnMixSpace({mB: '2xs'})}
                           />
                       )
