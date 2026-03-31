@@ -48,13 +48,13 @@ interface Action {
   // Точки на карте
   const mapPoints: MapPoint[] = [
     { name: 'в.г. Жилотково, СУ909', coordinates: [57.533894, 34.231995], color: '#22c55e' },
+    { name: 'в.г. Жилотково, СУ967', coordinates: [57.535622, 34.239277], color: '#22c55e' },
     { name: 'в.г. Афримово, СУ905', coordinates: [57.130024, 35.022080], color: '#22c55e' },
     { name: 'Полигон №7, СУ905', coordinates: [57.310000, 34.583611], color: '#eab308' },
     { name: 'в.г. Бухолово, СУ926', coordinates: [57.358974, 34.435738], color: '#22c55e' },
     { name: 'в.г. Ям-Григино, СУ910', coordinates: [57.786357, 33.975612], color: '#eab308' },
-    { name: 'Штаб геодезии, н.п. Бологое, СУ910', coordinates: [57.880586, 34.038811], color: '#22c55e' },
     { name: 'в.г. Ям-Григино, А-Мост', coordinates: [57.790563, 34.015858], color: '#eab308' },
-    { name: 'в.г. Ям-Григино, А-Бетон', coordinates: [57.786548, 33.994254], color: '#eab308' },
+    { name: 'в.г. Ям-Григино, А-Бетон', coordinates: [57.790652, 34.014772], color: '#eab308' },
     { name: 'в.г. Княщины, СУ920', coordinates: [57.300811, 34.588637], color: '#ef4444' },
   ];
 
@@ -164,10 +164,9 @@ const MapPoints = () => {
     { name: 'в.г. Жилотково, СУ909', actions: null, color: 'success' },
     { name: 'в.г. Жилотково, СУ967', actions: [{text: 'Подключение оптики для СУ967 – реализовано', color: 'var(--color-bg-green)'}], color: 'success' },
     { name: 'в.г. Афримово, СУ905', actions: null, color: 'success' },
-    { name: 'Полигон №7, СУ905', actions: null, color: 'success' },
+    { name: 'Полигон №7, СУ905', actions: null, color: 'warning' },
     { name: 'в.г. Бухолово, СУ926', actions: null, color: 'success' },
     { name: 'в.г. Ям-Григино, СУ910', actions: [{text: 'Подключение оптики до 30.04', color: 'var(--color-bg-caution)'}], color: 'warning' },
-    { name: 'Штаб геодезии, н.п. Бологое, СУ910', actions: null, color: 'success' },
     { name: 'в.г. Ям-Григино, А-Мост', actions: [{text: '30.06, договор с МТС на согласовании  в А-МОСТ', color: 'var(--color-bg-caution)'}], color: 'warning' },
     { name: 'в.г. Ям-Григино, А-Бетон', actions: [{text: 'Подключение оптики до 30.06', color: 'var(--color-bg-caution)'}], color: 'warning' },
     { name: 'в.г. Княщины, СУ920', actions: [{text: 'LTE подключено с 17.03', color: 'var(--color-bg-green)'}, {text: 'Оптика Ростелеком до 20.05, согласовываем договор', color: 'var(--color-bg-caution)'}], color: 'alert' },
