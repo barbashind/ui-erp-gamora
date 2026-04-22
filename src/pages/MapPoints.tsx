@@ -167,9 +167,9 @@ const MapPoints = () => {
     { name: 'Полигон №7, СУ905', actions: null, color: 'warning' },
     { name: 'в.г. Бухолово, СУ926', actions: null, color: 'success' },
     { name: 'в.г. Ям-Григино, СУ910', actions: [{text: 'Подключение оптики до 30.04', color: 'var(--color-bg-caution)'}], color: 'warning' },
-    { name: 'в.г. Ям-Григино, А-Мост', actions: [{text: '30.06, договор с МТС на согласовании  в А-МОСТ', color: 'var(--color-bg-caution)'}], color: 'warning' },
-    { name: 'в.г. Ям-Григино, А-Бетон', actions: [{text: 'Подключение оптики до 30.06', color: 'var(--color-bg-caution)'}], color: 'warning' },
-    { name: 'в.г. Княщины, СУ920', actions: [{text: 'LTE подключено с 17.03', color: 'var(--color-bg-green)'}, {text: 'Оптика Ростелеком до 20.05, согласовываем договор', color: 'var(--color-bg-caution)'}], color: 'alert' },
+    { name: 'в.г. Ям-Григино, А-Мост', actions: [{text: '08.05, строительство БС', color: 'var(--color-bg-caution)'}], color: 'warning' },
+    { name: 'в.г. Ям-Григино, А-Бетон', actions: [{text: '22.05, подключение провода от А-Мост', color: 'var(--color-bg-caution)'}], color: 'warning' },
+    { name: 'в.г. Княщины, СУ920', actions: [{text: '30.05, подключена радиорелейная связь', color: 'var(--color-bg-green)'}, {text: 'Оптика Ростелеком до 25.05', color: 'var(--color-bg-caution)'}], color: 'warning' },
   ];
 
   return (
