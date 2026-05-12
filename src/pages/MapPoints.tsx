@@ -53,7 +53,7 @@ interface Action {
     { name: 'Полигон №7, СУ905', coordinates: [57.310000, 34.583611], color: '#eab308' },
     { name: 'в.г. Бухолово, СУ926', coordinates: [57.358974, 34.435738], color: '#22c55e' },
     { name: 'в.г. Ям-Григино, СУ910', coordinates: [57.786357, 33.975612], color: '#eab308' },
-    { name: 'в.г. Ям-Григино, А-Мост', coordinates: [57.790563, 34.015858], color: '#eab308' },
+    { name: 'в.г. Ям-Григино, А-Мост', coordinates: [57.790563, 34.015858], color: '#22c55e' },
     { name: 'в.г. Ям-Григино, А-Бетон', coordinates: [57.790652, 34.014772], color: '#eab308' },
     { name: 'в.г. Княщины, СУ920', coordinates: [57.300811, 34.588637], color: '#ef4444' },
   ];
@@ -166,10 +166,10 @@ const MapPoints = () => {
     { name: 'в.г. Афримово, СУ905', actions: null, color: 'success' },
     { name: 'Полигон №7, СУ905', actions: null, color: 'warning' },
     { name: 'в.г. Бухолово, СУ926', actions: null, color: 'success' },
-    { name: 'в.г. Ям-Григино, СУ910', actions: [{text: 'Подключение оптики до 30.04', color: 'var(--color-bg-caution)'}], color: 'warning' },
-    { name: 'в.г. Ям-Григино, А-Мост', actions: [{text: '30.06, договор с МТС на согласовании  в А-МОСТ', color: 'var(--color-bg-caution)'}], color: 'warning' },
-    { name: 'в.г. Ям-Григино, А-Бетон', actions: [{text: 'Подключение оптики до 30.06', color: 'var(--color-bg-caution)'}], color: 'warning' },
-    { name: 'в.г. Княщины, СУ920', actions: [{text: 'LTE подключено с 17.03', color: 'var(--color-bg-green)'}, {text: 'Оптика Ростелеком до 20.05, согласовываем договор', color: 'var(--color-bg-caution)'}], color: 'alert' },
+    { name: 'в.г. Ям-Григино, СУ910', actions: [{text: 'Подключение оптики до 30.06', color: 'var(--color-bg-caution)'}], color: 'warning' },
+    { name: 'в.г. Ям-Григино, А-Мост', actions: [{text: 'Подключено с 06.05', color: 'var(--color-bg-green)'}], color: 'success' },
+    { name: 'в.г. Ям-Григино, А-Бетон', actions: [{text: 'Подключение оптики до 30.05', color: 'var(--color-bg-caution)'}], color: 'warning' },
+    { name: 'в.г. Княщины, СУ920', actions: [{text: 'Радиоканал подключен с 28.04', color: 'var(--color-bg-green)'}, {text: 'Оптика Ростелеком до 20.05', color: 'var(--color-bg-caution)'}], color: 'warning' },
   ];
 
   return (
