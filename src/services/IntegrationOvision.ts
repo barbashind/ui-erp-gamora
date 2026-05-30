@@ -73,8 +73,7 @@ export const fetchDepartmentTree = async (
   flatten(json.data);
 
   const rootForId = new Map<number, string>();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  for (const [id, node] of nodeMap.entries()) {
+  for (const [id] of nodeMap.entries()) {
     let currId = id;
     while (true) {
       const currNode = nodeMap.get(currId);
