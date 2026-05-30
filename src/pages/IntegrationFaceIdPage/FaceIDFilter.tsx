@@ -98,8 +98,8 @@ const FaceIDFilter = () => {
                         try {
                                 const token : OvisionToken = await authOvision()
                                 const filter : OvisionFilter = {
-                                        dateFrom: dateMin?.toDateString() || '',
-                                        dateTo: dateMax?.toDateString() || '',
+                                        dateFrom: dateMin?.toISOString() || '',
+                                        dateTo: dateMax?.toISOString() || '',
                                         }
                                 const events = await getOvisionData(filter, token.access_token);
                                 const deptMap = await fetchDepartmentTree(token.access_token);
@@ -136,6 +136,32 @@ const FaceIDFilter = () => {
 
                         loadData();
                 }, [dateMin, dateMax]);
+                        
+                useEffect(() => {
+                        const aggregateByOrganizationDateObject = (
+                                        items: MergedItem[]
+                                        ): AggregatedItem[] => {
+                                        const map = new Map<string, AggregatedItem>();
+
+                                        for (const item of items) {
+                                        const key = `${item.organization}|${item.date}|${item.object}`;
+                                        const existing = map.get(key);
+                                        if (existing) {
+                                        existing.count += 1;
+                                        } else {
+                                        map.set(key, {
+                                                organization: item.organization,
+                                                date: item.date,
+                                                object: item.object,
+                                                count: 1,
+                                        });
+                                        }
+                                        }
+
+                                return Array.from(map.values());
+                                };
+                        setDataAgr(aggregateByOrganizationDateObject(data))
+                }, [data]);
 
 
          const colorMapLine: { [key: string]: string } = {

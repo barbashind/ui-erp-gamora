@@ -26,7 +26,7 @@ export const authOvision = async (): Promise<OvisionToken> => {
 };
 
 export const getOvisionData = async (data: OvisionFilter, token: string): Promise<OvisionResponse> => {
-    const response = await fetch(`/api/v2/events?type[]=pass&timeRange[]=${data.dateFrom}&timeRange[]=${data.dateTo}`, {
+    const response = await fetch(`/api/v2/events?type[]=pass&timeRange[]=${data.dateFrom}&timeRange[]=${data.dateTo}&limit=10000`, {
         method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,
