@@ -12,7 +12,7 @@ export type OvisionToken = {
 // Авторизация
 export const authOvision = async (): Promise<OvisionToken> => {
     const response = await fetch('/oauth2/token?username=ab_admin&password=Buxzyk-gusnyj-0xofso', {
-        method: 'POST',
+        method: 'GET',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
@@ -31,6 +31,7 @@ export const getOvisionData = async (data: OvisionFilter, token: string): Promis
         headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
+            mode: 'cors',
         },
     });
     if (!response.ok) {
