@@ -31,6 +31,16 @@ export default defineConfig({
                 changeOrigin: true,
                 secure: false,
             },
+            '/oauth2': {
+                target: 'https://ovision-rs-ebs.avtoban.ru',
+                changeOrigin: true,
+                secure: false,
+            },
+            '/api/v2': {
+                target: 'https://ovision-rs-ebs.avtoban.ru',
+                changeOrigin: true,
+                secure: false,
+            },
         },
     },
 });

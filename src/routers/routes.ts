@@ -1,7 +1,7 @@
 export interface TRouteTarget {
         main: string;
         pointsManadgment: string;
-        interagtionMStroy: string;
+        faceIDReportPage: string;
         settings: string;
         map: string;
     }
@@ -9,7 +9,7 @@ export interface TRouteTarget {
 export const routeTarget: TRouteTarget = {
         main: '/ufch',
         pointsManadgment: 'pointsManadgment',
-        interagtionMStroy: 'interagtionMStroy',
+        faceIDReportPage: 'FaceID-report',
         settings: 'settings',
         map: 'map',
     };

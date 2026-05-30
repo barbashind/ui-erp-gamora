@@ -4,19 +4,28 @@ import { Layout } from "@consta/uikit/Layout"
 import { useEffect, useState } from "react";
 import { Text } from "@consta/uikit/Text";
 import { DatePicker } from "@consta/uikit/DatePicker";
-import { DataAnalysisForExcel, FaceregFilter, FilterMS, InputDataFacereg, InputDataMS, Organization, ProjectMS } from "../../types/integration-mstroy-types";
-import { getCompanies, getProjectMS, mstroyDataFilter } from "../../services/IntegrationMSService";
+import { DataAnalysis, FaceregFilter, FilterMS, InputDataFacereg, InputDataMS, Organization, ProjectMS,
+        //  UnfireData 
+        } from "../../types/integration-mstroy-types";
+import { getCompanies, getProjectMS, mstroyDataFilter, 
+        // mstroyDataUnfire 
+} from "../../services/IntegrationMSService";
 import { Button } from "@consta/uikit/Button";
+import { Line } from '@consta/charts/Line';
+import { Column } from '@consta/charts/Column';
 import { authFaceReg, getFaceregData } from "../../services/IntegrationFaceReg";
 import { Gates } from "../../types/gates-types";
 import { getGates } from "../../services/GatesManagmentService";
 import { AntIcon } from "../../utils/AntIcon";
 import { ReloadOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
 import { cnMixFontSize } from "../../utils/MixFontSize";
+import { Loader } from "@consta/uikit/Loader";
 import { formatDateEndOfDay, formatDateShort, formatDateStartOfDay } from "../../utils/formatDate";
-import { exportToExcelAdvanced } from "./ExportToExcelAdvanced";
+import { Card } from "@consta/uikit/Card";
+// import { TextField } from "@consta/uikit/TextField";
+// import { ComboboxSingle } from "../../global/ComboboxSingle";
 
-const MStroyReport = () => {
+const MStroyFilter = () => {
         const [projectsMS, setProjectsMS] = useState<ProjectMS[]> ([]);
         const [companies, setCompanies] = useState<Organization[]> ([]);
         
@@ -86,12 +95,29 @@ const MStroyReport = () => {
                 
         }, []);
 
+        const [dataAnalysis, setDataAnalysis] = useState<DataAnalysis[]>([]);
+        const [handleDataAnalysis, setHandleDataAnalysis] = useState<DataAnalysis[]>([]);
 
-        const [dataAnalysisForExcel, setDataAnalysisForExcel] = useState<DataAnalysisForExcel[]>([]);
 
-        const [isLoadingDataAnalysisForExcel, setIsLoadingDataAnalysisForExcel] = useState<boolean>(false);
+        // Обновление данных
+        useEffect(() => {
+                setHandleDataAnalysis(
+                        [
+                                ...dataAnalysis.filter(el=> el.system === 'FaceReg').map((elem)=> ({...elem, system: 'FaceID (%)', value: (dataAnalysis?.find(el=> (el.system === 'MStroy' && el.date === elem.date))?.value ?? 0) > elem.value ? Number(((elem.value * 100 / (dataAnalysis?.find(el=> (el.system === 'MStroy' && el.date === elem.date))?.value ?? 1)).toFixed(0))) : 100 })), 
+                                ...dataAnalysis.filter(el=> el.system === 'MStroy').map((elem)=> (
+                                        {
+                                                ...elem, system: 'Вручную (%)', 
+                                                value: (elem.value > (dataAnalysis?.find(el=> (el.system === 'FaceReg' && el.date === elem.date))?.value ?? 0)) ? 
+                                                Number(((elem.value - (dataAnalysis?.find(el=> (el.system === 'FaceReg' && el.date === elem.date))?.value ?? 0)) * 100 / (dataAnalysis?.find(el=> (el.system === 'MStroy' && el.date === elem.date))?.value ?? 1)).toFixed(0)) :
+                                                0
+                                        }
+                                ))
+                        ])
+        }, [dataAnalysis]);
+
+        const [isLoadingDataAnalysis, setIsLoadingDataAnalysis] = useState<boolean>(false);
         
-        function transformData(input: InputDataMS[], orgId: number): DataAnalysisForExcel[] {
+        function transformData(input: InputDataMS[]): DataAnalysis[] {
         // Создаем Map для группировки по дате и подсчета статусов
                 const dateMap = new Map<string, number>();
                 
@@ -103,15 +129,13 @@ const MStroyReport = () => {
                 });
                 
                 // Преобразуем Map в массив объектов
-                const result: DataAnalysisForExcel[] = [];
+                const result: DataAnalysis[] = [];
                 
                 dateMap.forEach((value, date) => {
                         result.push({
                         system: 'MStroy',
-                        organization: companies.find((elem) => (orgId === elem.mstroyCompanyId))?.name ?? '',
-                        mainOrganization: companies.find(el => (companies.find((elem) => (orgId === elem.mstroyCompanyId))?.mainCompanyID === el.companyId))?.name || companies.find((elem) => (orgId === elem.mstroyCompanyId))?.name || '',
                         date: date,
-                        value: value,
+                        value: value
                         });
                 });
                 
@@ -121,193 +145,153 @@ const MStroyReport = () => {
                 return result;
         }        
         
-        interface EmployeeEvent {
-                type: 'entry' | 'exit';
-                date: string; // Дата в формате YYYY-MM-DD
-                datetime: Date;
-                employeeId: string;
-                organization: string; // Подразделение
-                mainOrganization: string; // Основная организация
+        function transformFaceregData(input: InputDataFacereg[]): DataAnalysis[] {
+                interface EmployeeEvent {
+                        type: 'entry' | 'exit';
+                        date: string; // Дата в формате YYYY-MM-DD
+                        datetime: Date;
+                        employeeId: string;
                 }
 
-                interface ShiftGroup {
-                date: string;
-                organization: string;
-                mainOrganization: string;
-                employeeSet: Set<string>; // Уникальные сотрудники в этой группе
-                }
+                const employeeEvents = new Map<string, EmployeeEvent[]>();
 
-        const transformFaceregData = (input: InputDataFacereg[]): DataAnalysisForExcel[] => {
-        const employeeEvents = new Map<string, EmployeeEvent[]>();
+                // Собираем все события (входы и выходы)
+                input.forEach(item => {
+                        if (item.qrScan && item.qrScan.employee) {
+                        const employeeId = item.qrScan.employee.id;
+                        const eventDate = new Date(item.qrScan.createdAt);
+                        const dateStr = eventDate.toISOString().split('T')[0];
+                        const eventType = item.qrScan.status as 'entry' | 'exit';
 
-        // Собираем все события (входы и выходы)
-        input.forEach((item: InputDataFacereg) => {
-                if (item.qrScan && item.qrScan.employee) {
-                const employeeId = item.qrScan.employee.id;
-                const eventDate = new Date(item.qrScan.createdAt);
-                const dateStr = eventDate.toISOString().split('T')[0];
-                const eventType = item.qrScan.status as 'entry' | 'exit';
-                
-                // Получаем название организации из gate.department.company.name
-                const mainOrganization = item.qrScan.gate?.department?.company?.name || "";
-                
-                // Получаем подразделение из employee.departments[0].name или gate.department.name
-                let organization = "";
-                if (item.qrScan.employee.departments && item.qrScan.employee.departments.length > 0) {
-                        // Берем первое подразделение из списка отделов сотрудника
-                        organization = item.qrScan.employee.departments[0].name || "";
-                } else if (item.qrScan.gate?.department?.name) {
-                        // Если у сотрудника нет отделов, берем из gate
-                        organization = item.qrScan.gate.department.name;
-                }
-
-                if (!employeeEvents.has(employeeId)) {
-                        employeeEvents.set(employeeId, []);
-                }
-
-                employeeEvents.get(employeeId)!.push({
-                        type: eventType,
-                        date: dateStr,
-                        datetime: eventDate,
-                        employeeId,
-                        organization,
-                        mainOrganization
-                });
-                }
-        });
-
-        // Группируем смены по дате, организации и подразделению
-        // Ключ: "date|organization|mainOrganization"
-        const shiftsGrouped = new Map<string, ShiftGroup>();
-
-        employeeEvents.forEach((events: EmployeeEvent[], employeeId: string) => {
-                // Сортируем события по времени
-                const sortedEvents = events.sort((a: EmployeeEvent, b: EmployeeEvent) => 
-                a.datetime.getTime() - b.datetime.getTime()
-                );
-                
-                // Для отслеживания уже найденных смен для этого сотрудника
-                // по комбинации дата+организация+подразделение
-                const usedShifts = new Set<string>(); // храним ключи "date|organization|mainOrganization"
-                
-                for (let i = 0; i < sortedEvents.length; i++) {
-                const currentEvent = sortedEvents[i];
-                
-                if (currentEvent.type === 'entry') {
-                        const shiftKey = `${currentEvent.date}|${currentEvent.organization}|${currentEvent.mainOrganization}`;
-                        
-                        // Проверяем, не учли ли уже смену для этого сотрудника в эту дату+организацию
-                        if (usedShifts.has(shiftKey)) {
-                        continue;
+                        if (!employeeEvents.has(employeeId)) {
+                                employeeEvents.set(employeeId, []);
                         }
+
+                        employeeEvents.get(employeeId)!.push({
+                                type: eventType,
+                                date: dateStr,
+                                datetime: eventDate,
+                                employeeId
+                        });
+                        }
+                });
+
+                // Для отслеживания уже учтенных смен сотрудников по дням
+                const employeeShiftsByDay = new Map<string, Set<string>>(); // date -> Set of employeeIds
+
+                employeeEvents.forEach((events, employeeId) => {
+                        // Сортируем события по времени
+                        const sortedEvents = events.sort((a, b) => a.datetime.getTime() - b.datetime.getTime());
                         
-                        // Ищем ближайший выход после этого входа
-                        for (let j = i + 1; j < sortedEvents.length; j++) {
-                        const nextEvent = sortedEvents[j];
+                        // Для отслеживания уже найденных смен для этого сотрудника
+                        const usedShifts = new Set<string>(); // храним даты смен, которые уже учли
                         
-                        if (nextEvent.type === 'exit') {
-                                const entryDate = new Date(currentEvent.date);
-                                const exitDate = new Date(nextEvent.date);
-                                
-                                const timeDiff = exitDate.getTime() - entryDate.getTime();
-                                const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
-                                
-                                if (dayDiff === 0 || dayDiff === 1) {
-                                // Нашли завершенную смену
-                                // Используем организацию и подразделение из события входа
-                                const shiftDate = currentEvent.date;
-                                const organization = currentEvent.organization;
-                                const mainOrganization = currentEvent.mainOrganization;
-                                
-                                // Ключ для группировки
-                                const groupKey = `${shiftDate}|${organization}|${mainOrganization}`;
-                                
-                                // Помечаем, что для этого сотрудника в эту группу уже учли смену
-                                usedShifts.add(shiftKey);
-                                
-                                // Добавляем в соответствующую группу
-                                if (!shiftsGrouped.has(groupKey)) {
-                                        shiftsGrouped.set(groupKey, {
-                                        date: shiftDate,
-                                        organization: organization,
-                                        mainOrganization: mainOrganization,
-                                        employeeSet: new Set<string>()
-                                        });
+                        for (let i = 0; i < sortedEvents.length; i++) {
+                        const currentEvent = sortedEvents[i];
+                        
+                        if (currentEvent.type === 'entry') {
+                                // Проверяем, не учли ли уже смену для этого сотрудника в этот день
+                                if (usedShifts.has(currentEvent.date)) {
+                                continue; // Уже учли смену в этот день, пропускаем
                                 }
-                                shiftsGrouped.get(groupKey)!.employeeSet.add(employeeId);
                                 
-                                // Пропускаем рассмотренные события
-                                i = j;
-                                break;
+                                // Ищем ближайший выход после этого входа
+                                for (let j = i + 1; j < sortedEvents.length; j++) {
+                                const nextEvent = sortedEvents[j];
+                                
+                                if (nextEvent.type === 'exit') {
+                                        const entryDate = new Date(currentEvent.date);
+                                        const exitDate = new Date(nextEvent.date);
+                                        
+                                        const timeDiff = exitDate.getTime() - entryDate.getTime();
+                                        const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 16));
+                                        
+                                        if (dayDiff === 0 || dayDiff === 1) {
+                                        // Нашли завершенную смену
+                                        const shiftDate = currentEvent.date;
+                                        
+                                        // Помечаем, что для этого сотрудника в эту дату уже учли смену
+                                        usedShifts.add(shiftDate);
+                                        
+                                        // Добавляем в общий результат
+                                        if (!employeeShiftsByDay.has(shiftDate)) {
+                                                employeeShiftsByDay.set(shiftDate, new Set());
+                                        }
+                                        employeeShiftsByDay.get(shiftDate)!.add(employeeId);
+                                        
+                                        // Пропускаем рассмотренные события
+                                        i = j;
+                                        break;
+                                        }
+                                }
                                 }
                         }
                         }
-                }
-                }
-        });
-
-        // Преобразуем в выходной формат
-        const result: DataAnalysisForExcel[] = [];
-        
-        shiftsGrouped.forEach((groupData: ShiftGroup) => {
-                result.push({
-                system: 'FaceReg',
-                date: groupData.date,
-                value: groupData.employeeSet.size,
-                organization: companies.find(el=> (el.name === groupData.organization)) ?  groupData.mainOrganization : (groupData.mainOrganization === 'ДСК АВТОБАН АО' ? 'АТФ АО ДСК АВТОБАН' : groupData.mainOrganization) ,
-                mainOrganization: groupData.mainOrganization
                 });
-        });
 
-        // Сортируем по дате, затем по организации
-        result.sort((a: DataAnalysisForExcel, b: DataAnalysisForExcel) => {
-                // Сначала по дате
-                const dateCompare = new Date(a.date).getTime() - new Date(b.date).getTime();
-                if (dateCompare !== 0) return dateCompare;
+                // Преобразуем в выходной формат
+                const result: DataAnalysis[] = [];
                 
-                // Затем по основной организации
-                const mainOrgCompare = a.mainOrganization.localeCompare(b.mainOrganization);
-                if (mainOrgCompare !== 0) return mainOrgCompare;
-                
-                // Затем по подразделению
-                return a.organization.localeCompare(b.organization);
-        });
+                employeeShiftsByDay.forEach((employeeSet, date) => {
+                        result.push({
+                        system: 'FaceReg',
+                        date: date,
+                        value: employeeSet.size
+                        });
+                });
 
-        return result;
-        };
+                // Сортируем по дате
+                result.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+                return result;
+                }
 
         const getMSInfoData = async () => {
-
-                msFilter.organization_ids.map(async (el) => {
-                        const req : FilterMS = {
-                                organization_ids: [el],
-                                project_ids: msFilter.project_ids,
-                                date_range: msFilter.date_range
-                        }
-                        await mstroyDataFilter(req).then((resp) => {
-                                setDataAnalysisForExcel(prev => [...prev, ...transformData(resp, el)])
-                        })
-                })
-                        
-                await authFaceReg({username: 'd.barbashin@avtoban.ru', password: 'kat-xy6-CVk-ziA'}).then(async () => {
-                        const allFaceregData: InputDataFacereg[] = [];
-
-                        const faceregPromises = gates.map((el) => 
-                                new Promise<void>((resolve) => {
-                                        getFaceregData(faceregFilter, el.faceregId, (resp) => {
-                                        allFaceregData.push(...resp);
-                                        resolve();
-                                        });
+                        await mstroyDataFilter(msFilter).then((resp) => {
+                                setDataAnalysis(prev => [...prev, ...transformData(resp)])
+                        }).then(async () => {
+                                await authFaceReg({username: 'd.barbashin@avtoban.ru', password: 'kat-xy6-CVk-ziA'}).then(async () => {
+                                        const allFaceregData: InputDataFacereg[] = [];
+        
+                                        const faceregPromises = gates.map((el) => 
+                                                new Promise<void>((resolve) => {
+                                                        getFaceregData(faceregFilter, el.faceregId, (resp) => {
+                                                        allFaceregData.push(...resp);
+                                                        resolve();
+                                                        });
+                                                })
+                                        );
+                                        
+                                        await Promise.all(faceregPromises);
+                                        setDataAnalysis(prev => ([...prev, ...transformFaceregData(allFaceregData).filter((elem) => dateMin ? (new Date(elem.date).getDate() >= new Date(dateMin).getDate() && new Date(elem.date).getMonth() >= new Date(dateMin).getMonth() && new Date(elem.date).getFullYear() >= new Date(dateMin).getFullYear()) : new Date(elem.date))]));
+                                        }).finally(() => {
+                                                setIsLoadingDataAnalysis(false);
+                                        })
                                 })
-                        );
-                        
-                        await Promise.all(faceregPromises);
-                        setDataAnalysisForExcel(prev => ([...prev, ...transformFaceregData(allFaceregData).filter((elem) => dateMin ? (new Date(elem.date).getDate() >= new Date(dateMin).getDate() && new Date(elem.date).getMonth() >= new Date(dateMin).getMonth() && new Date(elem.date).getFullYear() >= new Date(dateMin).getFullYear()) : new Date(elem.date))]));
-                        }).finally(() => {
-                                setIsLoadingDataAnalysisForExcel(false);
-                        })
                 }
 
+        const colorMapLine: { [key: string]: string } = {
+                MStroy: '#063955',
+                FaceReg: '#ed7931',
+        };
+
+        // const [name, setName] = useState<string | null> (null);
+        // const [lastName, setLastName] = useState<string | null> (null);
+        // const [surname, setSurname] = useState<string | null> (null);
+        // const [tableNumber, setTableNumber] = useState<string | null> (null);
+        // const [organization, setOrganization] = useState<Organization | null> (null);
+        
+        // const sendUnfireData = async () => {
+        //                 const body : UnfireData = {
+        //                         first_name: name,
+        //                         last_name: lastName,
+        //                         surname: surname,
+        //                         table_number: tableNumber,
+        //                         organization_id: organization?.mstroyCompanyId ?? 61
+        //                 }
+        //                 await mstroyDataUnfire(body)
+        //         }
+        
         return (
                 <Layout direction="column">
                         <Layout direction="row" className={cnMixSpace({ mT: '2xl'})} style={{flexWrap: 'wrap'}}>
@@ -418,7 +402,7 @@ const MStroyReport = () => {
                                 </Layout>
 
                                 <Button
-                                        label={"Собрать данные"}
+                                        label={"Получить данные"}
                                         size="s"
                                         iconLeft={AntIcon.asIconComponent(() => (
                                                         <ReloadOutlined 
@@ -427,27 +411,63 @@ const MStroyReport = () => {
                                                 ))}
                                         view="primary"
                                         onClick={()=> {
-                                                setIsLoadingDataAnalysisForExcel(true);
-                                                setDataAnalysisForExcel([]);
+                                                setIsLoadingDataAnalysis(true);
+                                                setDataAnalysis([]);
                                                 void getMSInfoData();
                                         }}
-                                        disabled={isLoadingDataAnalysisForExcel}
+                                        disabled={isLoadingDataAnalysis}
                                         className={cnMixSpace({ mL: 'xl', mT: 'xl'  })}
                                 />
-                                <Button
-                                        label={"Сформировать отчет"}
-                                        size="s"
-                                        view="primary"
-                                        onClick={()=> {
-                                                exportToExcelAdvanced(dataAnalysisForExcel, 'Отчет по FaceID.xlsx')
-                                        }}
-                                        disabled={isLoadingDataAnalysisForExcel || dataAnalysisForExcel.length === 0}
-                                        className={cnMixSpace({ mL: 'xl', mT: 'xl'  })}
-                                />
+                                
                         </Layout>
                         
+                        <Layout direction="column" className={cnMixSpace({ mT: 'xl'})}>
+                                {isLoadingDataAnalysis ? (
+                                        <Layout style={{width: '100%', minHeight: '56vh', alignItems: 'center', justifyContent: 'center'}}>
+                                                <Loader size="m" />
+                                        </Layout>
+                                ) : (
+                                        <Layout direction="row" style={{flexWrap: 'wrap'}} >
+                                                <Card border style={{minWidth: '45vw', maxWidth: '80vw'}} className={cnMixSpace({ mL: 'xl', mT: 'm', p: 'm'})}>
+                                                        <Text view="brand" size="l" weight="semibold" className={cnMixSpace({ mB: 's'})}>Сравнение данных Mstroy и FaceReg </Text>
+                                                        <Line
+                                                                data={dataAnalysis} 
+                                                                xField="date" 
+                                                                yField="value"
+                                                                seriesField="system"
+                                                                slider={{
+                                                                        start: 0,
+                                                                        end: 1,
+                                                                }}
+                                                                color={Object.keys(colorMapLine).map((key) => colorMapLine[key])}
+                                                        />
+                                                </Card>
+                                                <Card border style={{minWidth: '45vw', maxWidth: '80vw'}} className={cnMixSpace({ mL: 'xl', mT: 'm', p: 'm'})}>
+                                                        <Text view="brand" size="l" weight="semibold" className={cnMixSpace({ mB: 's'})}>Соотношение объема ручного ввода к общему (%)</Text>
+                                                        <Column
+                                                                data={handleDataAnalysis} 
+                                                                xField="date" 
+                                                                yField="value"
+                                                                seriesField="system"
+                                                                slider={{
+                                                                        start: 0,
+                                                                        end: 1,
+                                                                }}
+                                                                isGroup
+                                                                color={Object.keys(colorMapLine).map((key) => colorMapLine[key])}
+                                                        />
+                                                </Card>
+                                                 
+
+                                        </Layout>
+                                       
+                                )}
+                                
+
+                                
+                        </Layout>
                         
                 </Layout>
         )
 }
-export default MStroyReport;
+export default MStroyFilter;

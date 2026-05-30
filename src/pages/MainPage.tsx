@@ -37,7 +37,7 @@ const MainPage = () => {
                 {
                         id: 2,
                         label: 'Дашборды по проходам',
-                        navTo: routeTarget.interagtionMStroy,
+                        navTo: routeTarget.faceIDReportPage,
                 },
 
         ]
@@ -62,7 +62,7 @@ const MainPage = () => {
                         {
                                 id: 2,
                                 label: 'Дашборды по проходам',
-                                navTo: routeTarget.interagtionMStroy,
+                                navTo: routeTarget.faceIDReportPage,
                         },
                 ]
                 tabsDef.findIndex(
@@ -136,7 +136,7 @@ const MainPage = () => {
                                                                 border 
                                                                 style={{cursor:'pointer', minWidth: '230px'}}
                                                                 onClick={()=> {
-                                                                                navigate(concatUrl([routeTarget.main, routeTarget.interagtionMStroy]));
+                                                                                navigate(concatUrl([routeTarget.main, routeTarget.faceIDReportPage]));
                                                                                 setActiveTab(tabs[2]);
                                                                         }}
                                                         >
