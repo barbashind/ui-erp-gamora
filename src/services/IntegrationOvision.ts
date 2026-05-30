@@ -12,9 +12,9 @@ export type OvisionToken = {
 // Авторизация
 export const authOvision = async (): Promise<OvisionToken> => {
     const response = await fetch('/oauth2/token?username=ab_admin&password=Buxzyk-gusnyj-0xofso', {
-        method: 'GET',
+        method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
         },
     });
     if (!response.ok) {
