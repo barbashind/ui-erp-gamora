@@ -18,7 +18,7 @@ export const exportToExcelReport = (data: MergedItem[], filename: string = 'data
             'Дата': item.date,
             'UID': item.employeeId,
             'ФИО': item.fullName,
-            'Организация': item.date,
+            'Организация': item.organization,
         }));
         
         const ws = XLSX.utils.json_to_sheet(wsData);
