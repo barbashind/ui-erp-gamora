@@ -159,7 +159,7 @@ const FaceIDFilter = () => {
                 const processIdGateData = async (dateFrom: Date, dateTo: Date, sessionId: string): Promise<MergedItem[]> => {
                 const filter: IdGateFilter = {
                 dateFrom: formatDateForIdGate(dateFrom, true),
-                dateTo: formatDateForIdGate(dateFrom, true),
+                dateTo: formatDateForIdGate(dateTo, true),
                 };
                 const passagesResponse: IdGateDataResponse = await getIDGateData(sessionId, filter);
                 // Предполагаем, что ответ - массив проходов (если нет, поправьте)
