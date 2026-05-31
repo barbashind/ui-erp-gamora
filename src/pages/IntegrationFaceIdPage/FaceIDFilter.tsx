@@ -12,7 +12,7 @@ import { Card } from "@consta/uikit/Card";
 import { authOvision, fetchDepartmentTree, getOvisionData, OvisionToken } from "../../services/IntegrationOvision";
 import { OvisionFilter } from "../../types/integration-ovision";
 import { Column } from "@consta/charts/Column";
-import { Pie } from '@consta/charts/Pie';
+import { Bar } from '@consta/charts/Bar';
 import { authIDGate, getIDGateData, getIDGateOrgs, getIDGateProfile } from "../../services/IntegrationIDGate";
 import { IdGateDataResponse, IdGateFilter, IdGateProfile, OrgUnitItem, PassageItem } from "../../types/integration-idgate";
 
@@ -250,9 +250,9 @@ const FaceIDFilter = () => {
   const colorMapLine: { [key: string]: string } = {
                 a: '#063955',
                 b: '#ed7931',
-                c: 'var(--color-typo-brand)',
-                d: 'var(--color-bg-caution)',
-                e: 'var(--color-royal-blue-300)',
+                c: 'rgb(40, 116, 252)',
+                d: 'rgb(255, 210, 50)',
+                e: 'rgba(177, 169, 255, 1)',
         };
 
 
@@ -268,6 +268,7 @@ const FaceIDFilter = () => {
               value={dateMin}
               maxDate={today}
               onChange={(value) => value && setDateMin(setStartOfDay(value))}
+              disabled
             />
             <DatePicker
               type="date"
@@ -275,11 +276,12 @@ const FaceIDFilter = () => {
               value={dateMax}
               maxDate={today}
               onChange={(value) => value && setDateMax(setEndOfDay(value))}
+              disabled
             />
           </Layout>
         </Layout>
         <Button
-          label="Получить данные"
+          label="Выгрузить данные"
           size="s"
           iconLeft={AntIcon.asIconComponent(() => <ReloadOutlined className={cnMixFontSize('l') + cnMixSpace({ mR: 'xs' })} />)}
           view="primary"
@@ -296,6 +298,31 @@ const FaceIDFilter = () => {
           </Layout>
         ) : (
           <Layout direction="column" style={{ flexWrap: 'wrap' }}>
+                <Text view="brand" size="l" weight="semibold" className={cnMixSpace({ mB: 's', mL: 'xl', mT: 'xl' })}>Данные за сегодня</Text>
+                {objects.map((obj) => (
+                <Layout direction="row" key={obj.id}>
+                        <Card border  className={cnMixSpace({ mL: 'xl', mT: 'm', p: 'm' })}>
+                        <Layout direction="column">
+                        <Text view="brand" size="m" weight="semibold" className={cnMixSpace({ mB: 's' })}>{obj.name + ' - ' + sum(todayData.filter((item) => item.object === obj.name)).toString() + 'чел.'}</Text>
+                        <Bar
+                                style={{ marginBottom: 'var(--space-m)', maxWidth: 300, maxHeight: 200 }}
+                                data={todayData.filter((item) => item.object === obj.name)}
+                                xField="count"
+                                yField="organization"
+                                label={{
+                                        position: 'middle',
+                                        layout: [
+                                        { type: 'interval-adjust-position' },
+                                        { type: 'interval-hide-overlap' },
+                                        { type: 'adjust-color' },
+                                        ],
+                                }}
+                        />
+                        </Layout>
+                        </Card>
+                </Layout>
+                ))}
+
             <Card border style={{ minWidth: '45vw', maxWidth: '80vw' }} className={cnMixSpace({ mL: 'xl', mT: 'm', p: 'm' })}>
               <Text view="brand" size="l" weight="semibold" className={cnMixSpace({ mB: 's' })}>Численность по СКУД</Text>
               <Column
@@ -307,48 +334,7 @@ const FaceIDFilter = () => {
                 color={Object.keys(colorMapLine).map((key) => colorMapLine[key])}
               />
             </Card>
-            <Text view="brand" size="l" weight="semibold" className={cnMixSpace({ mB: 's', mL: 'xl', mT: 'xl' })}>Данные за сегодня</Text>
-            {objects.map((obj) => (
-              <Layout direction="row" key={obj.id}>
-                <Card border style={{ minWidth: '30vw', maxWidth: '35vw' }} className={cnMixSpace({ mL: 'xl', mT: 'm', p: 'm' })}>
-                  <Layout direction="column">
-                    <Text view="brand" size="m" weight="semibold" className={cnMixSpace({ mB: 's' })}>{obj.name}</Text>
-                    <Pie
-                      style={{ width: 200, height: '100%' }}
-                      data={todayData.filter((item) => item.object === obj.name)}
-                      angleField="count"
-                      colorField="organization"
-                      radius={1}
-                      statistic={{
-                        title: {
-                          formatter: (v) => v?.count.toString() || 'Всего',
-                          style: { color: 'var(--color-typo-primary)' },
-                        },
-                        content: {
-                          customHtml: (_v, _v2, v3, v4) => (
-                            <Text size="3xl" view="primary" lineHeight="m">
-                              {v3?.count || sum(v4)}
-                            </Text>
-                          ),
-                        },
-                      }}
-                      innerRadius={0.64}
-                      label={{
-                        type: 'inner',
-                        offset: '-50%',
-                        content: '{count}',
-                        style: { textAlign: 'center', fontSize: 14 },
-                      }}
-                      interactions={[
-                        { type: 'element-selected' },
-                        { type: 'element-active' },
-                        { type: 'pie-statistic-active' },
-                      ]}
-                    />
-                  </Layout>
-                </Card>
-              </Layout>
-            ))}
+            
           </Layout>
         )}
       </Layout>
