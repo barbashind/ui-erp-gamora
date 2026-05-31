@@ -321,7 +321,7 @@ const FaceIDFilter = () => {
                                 <Layout direction="column">
                                 <Text view="brand" size="m" weight="semibold" className={cnMixSpace({ mB: 's' })}>{obj.name + ' - ' + sum(todayData.filter((item) => item.object === obj.name)).toString() + ' чел.'}</Text>
                                 <Bar
-                                        style={{ marginBottom: 'var(--space-m)', minWidth: 300, minHeight: 200, maxWidth: 300, maxHeight: 200 }}
+                                        style={{ marginBottom: 'var(--space-m)', minWidth: 450, minHeight: 200, maxWidth: 450, maxHeight: 200 }}
                                         data={todayData.filter((item) => item.object === obj.name)}
                                         xField="count"
                                         yField="organization"
