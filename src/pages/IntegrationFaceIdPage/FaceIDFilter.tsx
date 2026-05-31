@@ -33,6 +33,17 @@ export interface AggregatedItem {
   count: number;
 }
 
+ // Преобразует Date в строку вида "2026-05-30 00:00" (локальное время)
+export const formatDateForIdGate = (date: Date, withTime: boolean = true): string => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        if (!withTime) return `${year}-${month}-${day}`;
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}`;
+        };
+
 const FaceIDFilter = () => {
         
         const today = new Date();
@@ -99,8 +110,8 @@ const FaceIDFilter = () => {
                 const processOvisionData = async (dateFrom: Date, dateTo: Date): Promise<MergedItem[]> => {
                 const token: OvisionToken = await authOvision();
                 const filter: OvisionFilter = {
-                dateFrom: dateFrom.toISOString(),
-                dateTo: dateTo.toISOString(),
+                dateFrom: formatDateForIdGate(dateFrom, true),
+                dateTo: formatDateForIdGate(dateTo, true),
                 };
                 const events = await getOvisionData(filter, token.access_token);
                 const deptMap = await fetchDepartmentTree(token.access_token);
@@ -142,7 +153,8 @@ const FaceIDFilter = () => {
 
                 // ------------------- Основная загрузка: объединение данных -------------------
                 useEffect(() => {
-                     
+                
+               
                 // ------------------- Обработка IDGate (возвращает MergedItem[]) -------------------
                 const processIdGateData = async (dateFrom: Date, dateTo: Date, sessionId: string): Promise<MergedItem[]> => {
                 const filter: IdGateFilter = {
