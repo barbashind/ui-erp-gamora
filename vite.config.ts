@@ -41,6 +41,16 @@ export default defineConfig({
                 changeOrigin: true,
                 secure: false,
             },
+             '/api/v1': {
+                target: 'https://10.229.0.3',
+                changeOrigin: true,
+                secure: false,
+            },
+            '//ui/v1/': {
+                target: 'https://10.229.0.3',
+                changeOrigin: true,
+                secure: false,
+            },
         },
     },
 });
