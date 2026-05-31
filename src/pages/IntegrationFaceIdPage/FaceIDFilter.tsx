@@ -34,6 +34,7 @@ export interface AggregatedItem {
 }
 
  // Преобразует Date в строку вида "2026-05-30 00:00" (локальное время)
+// eslint-disable-next-line react-refresh/only-export-components
 export const formatDateForIdGate = (date: Date, withTime: boolean = true): string => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -264,7 +265,8 @@ const FaceIDFilter = () => {
                 };
 
                 loadAllData();
-                }, [dateMin, dateMax, profileOrgCache, orgUnitsMap]);
+                // eslint-disable-next-line react-hooks/exhaustive-deps
+                }, [dateMin, dateMax]);
 
                  useEffect(() => {
                         const todayStr = new Date().toISOString().split('T')[0];
