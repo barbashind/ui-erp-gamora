@@ -1,8 +1,8 @@
-import { ReportData } from '../../types/monitoring-types';
 import * as XLSX from 'xlsx';
+import { MergedItem } from './FaceIDFilter';
 
 
-export const exportToExcelReport = (data: ReportData[], filename: string = 'data_report.xlsx'): void => {
+export const exportToExcelReport = (data: MergedItem[], filename: string = 'data_report.xlsx'): void => {
     if (!data || data.length === 0) {
         console.warn('Нет данных для экспорта');
         return;
@@ -14,14 +14,11 @@ export const exportToExcelReport = (data: ReportData[], filename: string = 'data
         // Преобразуем данные
         const wsData = data.map((item, index) => ({
             '№': index + 1,
-            'Логин': item.login,
-            'Местоположение': item.place,
-            'Сис. админ': item.responsibleObj,
+            'Объект': item.object,
             'Дата': item.date,
-            'Время': item.time,
-            'Соединение': item.connection,
-            'Активность УЗ': item.active,
-
+            'UID': item.employeeId,
+            'ФИО': item.fullName,
+            'Организация': item.date,
         }));
         
         const ws = XLSX.utils.json_to_sheet(wsData);
@@ -52,7 +49,7 @@ export const exportToExcelReport = (data: ReportData[], filename: string = 'data
             { wch: 12 },
         ];
         
-        XLSX.utils.book_append_sheet(wb, ws, 'Отчет по точкам');
+        XLSX.utils.book_append_sheet(wb, ws, 'Отчет по СКУД');
         XLSX.writeFile(wb, filename);
         
     } catch (error) {

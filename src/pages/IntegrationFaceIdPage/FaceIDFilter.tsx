@@ -5,7 +5,7 @@ import { Text } from "@consta/uikit/Text";
 import { DatePicker } from "@consta/uikit/DatePicker";
 import { Button } from "@consta/uikit/Button";
 import { AntIcon } from "../../utils/AntIcon";
-import { ReloadOutlined } from "@ant-design/icons";
+import { DownloadOutlined } from "@ant-design/icons";
 import { cnMixFontSize } from "../../utils/MixFontSize";
 import { Loader } from "@consta/uikit/Loader";
 import { Card } from "@consta/uikit/Card";
@@ -15,6 +15,7 @@ import { Column } from "@consta/charts/Column";
 import { Bar } from '@consta/charts/Bar';
 import { authIDGate, getIDGateData, getIDGateOrgs, getIDGateProfile } from "../../services/IntegrationIDGate";
 import { IdGateDataResponse, IdGateFilter, IdGateProfile, OrgUnitItem, PassageItem } from "../../types/integration-idgate";
+import { exportToExcelReport } from "./ExportToExcelReport";
 
 export interface MergedItem {
   date: string;
@@ -282,7 +283,7 @@ const FaceIDFilter = () => {
               value={dateMin}
               maxDate={today}
               onChange={(value) => value && setDateMin(setStartOfDay(value))}
-              disabled
+        //       disabled
             />
             <DatePicker
               type="date"
@@ -290,16 +291,16 @@ const FaceIDFilter = () => {
               value={dateMax}
               maxDate={today}
               onChange={(value) => value && setDateMax(setEndOfDay(value))}
-              disabled
+        //       disabled
             />
           </Layout>
         </Layout>
         <Button
           label="Выгрузить данные"
           size="s"
-          iconLeft={AntIcon.asIconComponent(() => <ReloadOutlined className={cnMixFontSize('l') + cnMixSpace({ mR: 'xs' })} />)}
-          view="primary"
-          onClick={() => console.log(data)}
+          iconLeft={AntIcon.asIconComponent(() => <DownloadOutlined className={cnMixFontSize('l') + cnMixSpace({ mR: 'xs' })} />)}
+          view="secondary"
+          onClick={() => exportToExcelReport(data)}
           disabled={isLoadingDataAnalysis}
           className={cnMixSpace({ mL: 'xl', mT: 'xl' })}
         />
@@ -324,6 +325,7 @@ const FaceIDFilter = () => {
                                         data={todayData.filter((item) => item.object === obj.name)}
                                         xField="count"
                                         yField="organization"
+                                        seriesField="organization"
                                         label={{
                                                 position: 'middle',
                                                 layout: [
