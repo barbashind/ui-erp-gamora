@@ -110,8 +110,8 @@ const FaceIDFilter = () => {
                 const processOvisionData = async (dateFrom: Date, dateTo: Date): Promise<MergedItem[]> => {
                 const token: OvisionToken = await authOvision();
                 const filter: OvisionFilter = {
-                dateFrom: formatDateForIdGate(dateFrom, true),
-                dateTo: formatDateForIdGate(dateTo, true),
+                dateFrom: dateFrom.toISOString(),
+                dateTo: dateTo.toISOString(),
                 };
                 const events = await getOvisionData(filter, token.access_token);
                 const deptMap = await fetchDepartmentTree(token.access_token);
@@ -158,8 +158,8 @@ const FaceIDFilter = () => {
                 // ------------------- Обработка IDGate (возвращает MergedItem[]) -------------------
                 const processIdGateData = async (dateFrom: Date, dateTo: Date, sessionId: string): Promise<MergedItem[]> => {
                 const filter: IdGateFilter = {
-                dateFrom: dateFrom.toISOString(),
-                dateTo: dateTo.toISOString(),
+                dateFrom: formatDateForIdGate(dateFrom, true),
+                dateTo: formatDateForIdGate(dateFrom, true),
                 };
                 const passagesResponse: IdGateDataResponse = await getIDGateData(sessionId, filter);
                 // Предполагаем, что ответ - массив проходов (если нет, поправьте)
