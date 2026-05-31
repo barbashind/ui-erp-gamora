@@ -4,6 +4,7 @@ import { ErrorResponse, getErrorResponse } from "./utils";
 type User = {
         login: string;
         password: string;
+        passwordText: string;
 }
 type SessionId = {
     sessionid: string;
