@@ -7,7 +7,7 @@ type User = {
         passwordText: string;
 }
 type SessionId = {
-    sessionid: string;
+    sessionId: string;
 }
 
 // Авторизация

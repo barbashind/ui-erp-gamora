@@ -218,7 +218,7 @@ const FaceIDFilter = () => {
                 try {
                         // 1. Авторизация IDGate (нужны реальные логин/пароль)
                         const idGateAuth = await authIDGate({ login: "admin", password: 'e227e04df45b25701ca460ffe2626e6d', passwordText: "LRStZidYhEGaiBX" });
-                        const sessionId = idGateAuth.sessionid;
+                        const sessionId = idGateAuth.sessionId;
 
                         // 2. Загружаем справочник организаций IDGate (если ещё не загружен)
                         let currentOrgMap = orgUnitsMap;
