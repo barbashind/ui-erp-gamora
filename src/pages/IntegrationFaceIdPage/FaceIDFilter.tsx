@@ -75,7 +75,7 @@ const FaceIDFilter = () => {
   const aggregateItems = (items: MergedItem[]): AggregatedItem[] => {
     const map = new Map<string, AggregatedItem>();
     for (const item of items) {
-      const key = `${item.organization}|${item.date}|${item.object}`;
+      const key = `${item.date}|${item.object}`;
       const existing = map.get(key);
       if (existing) existing.count += 1;
       else map.set(key, { organization: item.organization, date: item.date, object: item.object, count: 1 });
@@ -299,30 +299,31 @@ const FaceIDFilter = () => {
         ) : (
           <Layout direction="column" style={{ flexWrap: 'wrap' }}>
                 <Text view="brand" size="l" weight="semibold" className={cnMixSpace({ mB: 's', mL: 'xl', mT: 'xl' })}>Данные за сегодня</Text>
-                {objects.map((obj) => (
-                <Layout direction="row" key={obj.id}>
-                        <Card border  className={cnMixSpace({ mL: 'xl', mT: 'm', p: 'm' })}>
-                        <Layout direction="column">
-                        <Text view="brand" size="m" weight="semibold" className={cnMixSpace({ mB: 's' })}>{obj.name + ' - ' + sum(todayData.filter((item) => item.object === obj.name)).toString() + 'чел.'}</Text>
-                        <Bar
-                                style={{ marginBottom: 'var(--space-m)', maxWidth: 300, maxHeight: 200 }}
-                                data={todayData.filter((item) => item.object === obj.name)}
-                                xField="count"
-                                yField="organization"
-                                label={{
-                                        position: 'middle',
-                                        layout: [
-                                        { type: 'interval-adjust-position' },
-                                        { type: 'interval-hide-overlap' },
-                                        { type: 'adjust-color' },
-                                        ],
-                                }}
-                        />
+                <Layout direction="row" style={{ flexWrap: 'wrap' }}>
+                        {objects.map((obj) => (
+                        <Layout direction="row" key={obj.id}>
+                                <Card border  className={cnMixSpace({ mL: 'xl', mT: 'm', p: 'm' })}>
+                                <Layout direction="column">
+                                <Text view="brand" size="m" weight="semibold" className={cnMixSpace({ mB: 's' })}>{obj.name + ' - ' + sum(todayData.filter((item) => item.object === obj.name)).toString() + ' чел.'}</Text>
+                                <Bar
+                                        style={{ marginBottom: 'var(--space-m)', minWidth: 300, minHeight: 200, maxWidth: 300, maxHeight: 200 }}
+                                        data={todayData.filter((item) => item.object === obj.name)}
+                                        xField="count"
+                                        yField="organization"
+                                        label={{
+                                                position: 'middle',
+                                                layout: [
+                                                { type: 'interval-adjust-position' },
+                                                { type: 'interval-hide-overlap' },
+                                                { type: 'adjust-color' },
+                                                ],
+                                        }}
+                                />
+                                </Layout>
+                                </Card>
                         </Layout>
-                        </Card>
+                        ))}
                 </Layout>
-                ))}
-
             <Card border style={{ minWidth: '45vw', maxWidth: '80vw' }} className={cnMixSpace({ mL: 'xl', mT: 'm', p: 'm' })}>
               <Text view="brand" size="l" weight="semibold" className={cnMixSpace({ mB: 's' })}>Численность по СКУД</Text>
               <Column
