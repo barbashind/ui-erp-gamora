@@ -69,10 +69,23 @@ const FaceIDFilter = () => {
 
   const [data, setData] = useState<MergedItem[]>([]);
   const [dataAgr, setDataAgr] = useState<AggregatedItem[]>([]);
+  const [dataAgr1, setDataAgr1] = useState<AggregatedItem[]>([]);
   const [todayData, setTodayData] = useState<AggregatedItem[]>([]);
   const [isLoadingDataAnalysis, setIsLoadingDataAnalysis] = useState<boolean>(false);
 
   const aggregateItems = (items: MergedItem[]): AggregatedItem[] => {
+    const map = new Map<string, AggregatedItem>();
+    for (const item of items) {
+      const key = `${item.organization}|${item.date}|${item.object}`;
+      const existing = map.get(key);
+      if (existing) existing.count += 1;
+      else map.set(key, { organization: item.organization, date: item.date, object: item.object, count: 1 });
+    }
+    const result = Array.from(map.values());
+    result.sort((a, b) => a.date.localeCompare(b.date));
+    return result;
+  };
+  const aggregateItems1 = (items: MergedItem[]): AggregatedItem[] => {
     const map = new Map<string, AggregatedItem>();
     for (const item of items) {
       const key = `${item.date}|${item.object}`;
@@ -226,6 +239,7 @@ const FaceIDFilter = () => {
 
         setData(mergedAll);
         setDataAgr(aggregateItems(mergedAll));
+        setDataAgr1(aggregateItems1(mergedAll));
       } catch (err) {
         console.error("Ошибка загрузки данных:", err);
       } finally {
@@ -327,7 +341,7 @@ const FaceIDFilter = () => {
             <Card border style={{ minWidth: '45vw', maxWidth: '80vw' }} className={cnMixSpace({ mL: 'xl', mT: 'm', p: 'm' })}>
               <Text view="brand" size="l" weight="semibold" className={cnMixSpace({ mB: 's' })}>Численность по СКУД</Text>
               <Column
-                data={dataAgr}
+                data={dataAgr1}
                 xField="date"
                 yField="count"
                 seriesField="object"
