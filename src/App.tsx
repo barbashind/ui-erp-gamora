@@ -33,7 +33,7 @@ function App() {
 
   return (
       <Theme preset={themePreset} className={classes.BarbaShlyakhov}>
-        <div style={{width: '100vw', height: '100vh', backgroundColor: 'var(--color-bg-green)'}}>
+        <div style={{width: '99vw', height: '99vh', backgroundColor: 'var(--color-bg-green)'}}>
            <AppRouter/>
         </div>
          

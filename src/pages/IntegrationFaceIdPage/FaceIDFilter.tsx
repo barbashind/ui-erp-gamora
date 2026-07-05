@@ -5,7 +5,9 @@ import { Text } from "@consta/uikit/Text";
 import { DatePicker } from "@consta/uikit/DatePicker";
 import { Button } from "@consta/uikit/Button";
 import { AntIcon } from "../../utils/AntIcon";
-import { DownloadOutlined } from "@ant-design/icons";
+import { DownloadOutlined
+  // , DownOutlined, UpOutlined 
+} from "@ant-design/icons";
 import { cnMixFontSize } from "../../utils/MixFontSize";
 import { Loader } from "@consta/uikit/Loader";
 import { Card } from "@consta/uikit/Card";
@@ -51,6 +53,7 @@ const FaceIDFilter = () => {
     { id: 0, name: 'СБВ' },
     { id: 1, name: 'Родниковая 1' },
     { id: 2, name: 'Кап. ремонт Киевское ш.53-65 км.' },
+    { id: 3, name: 'Ремонт моста над Пахрой' },
   ];
 
   const setStartOfDay = (date: Date): Date => {
@@ -115,7 +118,12 @@ const FaceIDFilter = () => {
       let objectName = '';
       if (zone === 'Outer area→Родниковая 22' || zone === 'Родниковая 22→Outer area') {
         objectName = 'СБВ';
-      } else {
+      } else if (zone === 'Outer area→Родниковая 5А' || zone === 'Родниковая 5А→Outer area') {
+        objectName = 'Родниковая 1';
+      } else if (zone === 'Outer area→Киевское 65' || zone === 'Киевское 65→Outer area') {
+        objectName = 'Ремонт моста над Пахрой';
+      }
+      else {
         objectName = 'Другая зона';
       }
       const department = ev.department || '';
@@ -269,6 +277,8 @@ const FaceIDFilter = () => {
                 d: 'rgb(255, 210, 50)',
                 e: 'rgba(177, 169, 255, 1)',
         };
+  
+  // const [viewStat, setViewStat] = useState<boolean>(false);
 
 
   return (
@@ -317,7 +327,7 @@ const FaceIDFilter = () => {
                 <Layout direction="row" style={{ flexWrap: 'wrap' }}>
                         {objects.map((obj) => (
                         <Layout direction="row" key={obj.id}>
-                                <Card border  className={cnMixSpace({ mL: 'xl', mT: 'm', p: 'm' })}>
+                                <Card border  className={cnMixSpace({ mL: 'xl',  p: 'm' })}>
                                 <Layout direction="column">
                                 <Text view="brand" size="m" weight="semibold" className={cnMixSpace({ mB: 's' })}>{obj.name + ' - ' + sum(todayData.filter((item) => item.object === obj.name)).toString() + ' чел.'}</Text>
                                 <Bar
@@ -326,6 +336,14 @@ const FaceIDFilter = () => {
                                         xField="count"
                                         yField="organization"
                                         seriesField="organization"
+                                        yAxis={{
+                                            label: {
+                                              formatter: (text) => {
+                                                const maxLen = 25;
+                                                return text.length > maxLen ? text.slice(0, maxLen) + '...' : text;
+                                              },
+                                            },
+                                          }}
                                         label={{
                                                 position: 'middle',
                                                 layout: [
@@ -340,6 +358,50 @@ const FaceIDFilter = () => {
                         </Layout>
                         ))}
                 </Layout>
+            {/* <Card border style={{ minWidth: '45vw', maxWidth: '80vw' }} className={cnMixSpace({ mL: 'xl', mT: 'm', p: 'm' })}>
+              <Layout direction="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text view="brand" size="l" weight="semibold">Статистика по регистрации биометрии</Text>
+                <Button
+                    view="clear"
+                    iconLeft={!viewStat ? 
+                        AntIcon.asIconComponent(() => <DownOutlined className={cnMixFontSize('l')} />) 
+                        : 
+                        AntIcon.asIconComponent(() => <UpOutlined className={cnMixFontSize('l')} />)
+                      }
+                    onClick={() => {setViewStat(!viewStat)}}
+                  />
+                  
+              </Layout>
+              {viewStat && (
+                    <Layout direction="column">
+                      <Layout direction="row" style={{ alignItems: 'center' }} className={cnMixSpace({p:'xs'})}>
+                        <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s" weight="bold" align="center">Объект</Text>
+                        <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s" weight="bold" align="center">Организация</Text>
+                        <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s" weight="bold" align="center">Загружено в СКУД</Text>
+                        <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s" weight="bold" align="center">С биометрией</Text>
+                        <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s" weight="bold" align="center">Проходят СКУД</Text>
+                      </Layout>
+
+                      <Layout direction="row" className={cnMixSpace({p:'xs'})} style={{border: '1px solid ', borderRadius:'9px', alignItems: 'center'}} >
+                        <Text style={{ minWidth: '150px', maxWidth: '150px' }} align="center">СБВ</Text>
+                        <Layout direction="column">
+                          <Layout direction="row" style={{alignItems: 'center'}}>
+                            <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s" align="center">ООО "Ромашка"</Text>
+                            <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s" align="center">145</Text>
+                            <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s" align="center">45 (32%)</Text>
+                            <Layout direction="column">
+                              <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s" >В среднем за день: 23</Text>
+                              <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s">Всего: 23</Text>
+                            </Layout>
+                            
+                          </Layout>
+                        </Layout>
+                      </Layout>
+
+                    </Layout>
+                  )}
+              
+            </Card> */}
             <Card border style={{ minWidth: '45vw', maxWidth: '80vw' }} className={cnMixSpace({ mL: 'xl', mT: 'm', p: 'm' })}>
               <Text view="brand" size="l" weight="semibold" className={cnMixSpace({ mB: 's' })}>Численность по СКУД</Text>
               <Column
