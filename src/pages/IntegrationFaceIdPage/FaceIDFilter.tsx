@@ -260,10 +260,10 @@ const FaceIDFilter = () => {
   }, [dateMin, dateMax]); // Зависимости только dateMin, dateMax
 
   useEffect(() => {
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = dateMax ? dateMax.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
     const filtered = dataAgr.filter(item => item.date === todayStr);
     setTodayData(filtered);
-  }, [dataAgr]);
+  }, [dataAgr, dateMax]);
 
   const sum = (array?: AggregatedItem[]) => {
     if (!array) return '0';
@@ -323,7 +323,7 @@ const FaceIDFilter = () => {
           </Layout>
         ) : (
           <Layout direction="column" style={{ flexWrap: 'wrap' }}>
-                <Text view="brand" size="l" weight="semibold" className={cnMixSpace({ mB: 's', mL: 'xl', mT: 'xl' })}>Данные за сегодня</Text>
+                <Text view="brand" size="l" weight="semibold" className={cnMixSpace({ mB: 's', mL: 'xl', mT: 'xl' })}>Данные за последний день</Text>
                 <Layout direction="row" style={{ flexWrap: 'wrap' }}>
                         {objects.map((obj) => (
                         <Layout direction="row" key={obj.id}>
