@@ -3,6 +3,7 @@ import { AntIcon } from "../utils/AntIcon";
 import { cnMixFontSize } from "../utils/MixFontSize";
 // import { concatUrl } from "../utils/urlUtils";
 import { 
+        DownloadOutlined,
         // ArrowLeftOutlined, 
         // DownloadOutlined, 
         FundOutlined, PlusOutlined } from "@ant-design/icons";
@@ -17,8 +18,11 @@ import { Sort, useTableSorter } from "../hooks/useTableSorter";
 import PointTable from "./MonitoringPage/PointTable";
 import PointCreatingModal from "./MonitoringPage/PointCreatingModal";
 import { 
+        Point,
         // Point, 
-        PointFilter, PointSortFields, 
+        PointFilter, PointSortFields,
+        // ReportData,
+        Test, 
         // ReportData, Test 
 } from "../types/monitoring-types";
 // import { Checkbox } from "@consta/uikit/Checkbox";
@@ -29,6 +33,10 @@ import {
 // import { authFaceReg, getFaceregData } from "../services/IntegrationFaceReg";
 // import { exportToExcelReport } from "./IntegrationMStroyPage/ExportToExcelReport";
 import { Checkbox } from "@consta/uikit/Checkbox";
+import { getAllPoints, getTests } from "../services/MonitoringService";
+import { exportToExcelReport1 } from "./IntegrationFaceIdPage/ExportToExcelReport1";
+// import { authFaceReg } from "#/services/IntegrationFaceReg";
+// import { exportToExcelReport1 } from "./IntegrationFaceIdPage/ExportToExcelReport1";
 
 const MonitoringPage = () => {
 
@@ -68,149 +76,105 @@ useEffect(() => {
 const day = new Date();
 day.setDate(day.getDate() - 14);
 
-// const [dateMin, setDateMin] = useState<Date | null> (day);
-// const [dateMax, setDateMax] = useState<Date | null> (today);
 
-// const [isLoadingDataAnalysis, setIsLoadingDataAnalysis] = useState<boolean>(false);
+const [isLoadingDataAnalysis, setIsLoadingDataAnalysis] = useState<boolean>(false);
 
-// const [faceregFilter, setFaceregFilter] = useState<FaceregFilter>(
-//                 {
-//                         created_at__gte: formatDateStartOfDay(day),
-//                         created_at__lte: formatDateEndOfDay(today),
-//                 }
-//         )
+// const [reportData, setReportData] = useState<(Test & Partial<Point>)[]>([])
 
-// const getReportData = async () => {
+const getReportData = async (pointIds?: number[]) => {
+    try {
+        // Получаем все точки
+        const allPoints: Point[] = [];
+        await getAllPoints((resp) => {
+            allPoints.push(...resp);
+        });
+
+        // Если pointIds не передан, берем все pointId из allPoints
+        const ids = pointIds || allPoints.map(p => p.pointId).filter((id): id is number => id !== undefined);
+        
+        // Массив для всех тестов
+        const allTests: Test[] = [];
+
+        // Для каждого pointId делаем запрос тестов
+        for (const pointId of ids) {
+            if (pointId === undefined) continue;
+            
+            await getTests(pointId, (resp) => {
+                // Фильтруем, сортируем и добавляем в общий массив
+                const filteredTests = resp
+                    .filter(el => el.time !== null)
+                    .sort((a, b) => {
+                        const dateA = a.updatedAt ? new Date(a.updatedAt) : new Date(0);
+                        const dateB = b.updatedAt ? new Date(b.updatedAt) : new Date(0);
+                        return Number(dateA) - Number(dateB);
+                    });
+                
+                allTests.push(...filteredTests);
+            });
+        }
+
+        // Объединяем все тесты с точками
+        const merged = allTests.map(test => {
+            const point = allPoints.find(p => p.pointId === test.pointId);
+            if (point) {
+                return {
+                    ...test,
+                    ...point
+                };
+            }
+            return test;
+        });
+
+        console.log('Всего тестов:', merged.length);
+        exportToExcelReport1(merged);
+        
+        setIsLoadingDataAnalysis(false);
+
+    } catch (error) {
+        console.log('Ошибка при объединении данных:', error);
+        setIsLoadingDataAnalysis(false);
+        return [];
+    }
+};
+// const getReportData = async (id?: number) => {
+//     try {
+//         // Получаем все точки
 //         const allPoints: Point[] = [];
 //         await getAllPoints((resp) => {
-//                 allPoints.push(...resp)
+//             allPoints.push(...resp);
 //         });
-//         const reports: ReportData[] = [];
 
-//          for (const point of allPoints) {
-//                 if (!point.pointId) continue;
-                
-//                 // Получаем данные соединения
-//                 const connectionsData: Test[] = [];
-//                 await getTestsMonth(point.pointId, (resp) => {
-//                 const sortedData = resp.filter(el => (el.time !== null)).sort((a, b) => {
-//                         const dateA = a.updatedAt ? new Date(a.updatedAt) : new Date(0);
-//                         const dateB = b.updatedAt ? new Date(b.updatedAt) : new Date(0);
-//                         return Number(dateA) - Number(dateB);
+//         // Получаем тесты (используем ваш getDataMonth, но модифицируем)
+//         let tests: Test[] = [];
+//         if (id) {
+//             await getTests(id, (resp) => {
+//                 tests = resp.filter(el => el.time !== null).sort((a, b) => {
+//                     const dateA = a.updatedAt ? new Date(a.updatedAt) : new Date(0);
+//                     const dateB = b.updatedAt ? new Date(b.updatedAt) : new Date(0);
+//                     return Number(dateA) - Number(dateB);
 //                 });
-                
-//                 connectionsData.push(...sortedData);
-//                 });
-                
-//                 // Получаем данные FaceReg
-//                 const faceRegData: InputDataFacereg[] = [];
-//                 if (point.faceRegGUID) {
-//                 await authFaceReg({
-//                         username: 'd.barbashin@avtoban.ru', 
-//                         password: 'kat-xy6-CVk-ziA'
-//                 }).then(async () => {
-//                         await getFaceregData(faceregFilter, point.faceRegGUID ?? '', (resp) => {
-//                         faceRegData.push(...resp);
-//                         });
-//                 });
-//                 }
-                
-//                 // Группируем данные по дате и часу
-//                 const groupedData: Map<string, Map<number, { 
-//                 connections: Test[], 
-//                 faceRegEvents: InputDataFacereg[] 
-//                 }>> = new Map();
-                
-//                 // 1. Группируем данные соединений
-//                 connectionsData.forEach(connection => {
-//                 if (!connection.updatedAt) return;
-                
-//                 const date = new Date(connection.updatedAt);
-//                 const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
-//                 const hour = date.getHours();
-                
-//                 if (!groupedData.has(dateKey)) {
-//                         groupedData.set(dateKey, new Map());
-//                 }
-                
-//                 const hourMap = groupedData.get(dateKey)!;
-//                 if (!hourMap.has(hour)) {
-//                         hourMap.set(hour, { connections: [], faceRegEvents: [] });
-//                 }
-                
-//                 hourMap.get(hour)!.connections.push(connection);
-//                 });
-                
-//                 // 2. Группируем данные FaceReg
-//                 faceRegData.forEach(event => {
-//                 if (!event.createdAt) return;
-                
-//                 const date = new Date(event.createdAt);
-//                 const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
-//                 const hour = date.getHours();
-                
-//                 if (!groupedData.has(dateKey)) {
-//                         groupedData.set(dateKey, new Map());
-//                 }
-                
-//                 const hourMap = groupedData.get(dateKey)!;
-//                 if (!hourMap.has(hour)) {
-//                         hourMap.set(hour, { connections: [], faceRegEvents: [] });
-//                 }
-                
-//                 hourMap.get(hour)!.faceRegEvents.push(event);
-//                 });
-                
-//                 // 3. Создаем отчет для каждой даты и часа
-//                 groupedData.forEach((hourMap, dateKey) => {
-//                 // Для каждого часа от 0 до 23
-//                 for (let hour = 0; hour < 24; hour++) {
-//                         const data = hourMap.get(hour) || { 
-//                         connections: [], 
-//                         faceRegEvents: [] 
-//                         };
-                        
-//                         // Рассчитываем среднюю скорость соединения
-//                         let totalSpeed = 0;
-//                         let validConnectionsCount = 0;
-                        
-//                         data.connections.forEach(conn => {
-//                         const timeValue = conn.time ?? '0';
-//                         const numericTime = parseFloat(timeValue.toString());
-                        
-//                         if (numericTime > 0) {
-//                                 // Скорость = 1 / время
-//                                 totalSpeed += 1 / numericTime;
-//                                 validConnectionsCount++;
-//                         }
-//                         });
-                        
-//                         const averageSpeed = validConnectionsCount > 0 
-//                         ? totalSpeed / validConnectionsCount 
-//                         : 0;
-                        
-//                         // Количество событий FaceReg (активность УЗ)
-//                         const activityCount = data.faceRegEvents.length;
-                        
-//                         // Создаем запись отчета
-//                         const report: ReportData = {
-//                                 pointId: point.pointId,
-//                                 login: point.login || null,
-//                                 place: point.place || null,
-//                                 responsibleObj: point.responsibleObj || null,
-//                                 date: dateKey, // YYYY-MM-DD
-//                                 time: hour.toString().padStart(2, '0'), // "00", "01", ..., "23"
-//                                 connection: parseFloat(averageSpeed.toFixed(6)),
-//                                 active: activityCount
-//                         };
-                        
-//                         reports.push(report);
-//                 }
-//                 });
+//             });
 //         }
-//         exportToExcelReport(reports);
+
+//         // Объединяем
+//         const merged = tests.map(test => {
+//             const point = allPoints.find(p => p.pointId === test.pointId);
+//             return {
+//                 ...test,
+//                 ...point
+//             };
+//         });
+//         // exportToExcelReport1(merged);
+//         console.log(merged)
+//         // setReportData(merged)
 //         setIsLoadingDataAnalysis(false);
-// }
+
+//     } catch (error) {
+//         console.log('Ошибка при объединении данных:', error);
+//         setIsLoadingDataAnalysis(false);
+//         return [];
+//     }
+// };
  
         return (
                 <Layout direction="column" style={{minWidth: '1000px', maxWidth: '1500px', width: '100%'}}>
@@ -260,7 +224,7 @@ day.setDate(day.getDate() - 14);
                                                         />
                                                 </Layout>
                                                 <Layout direction="row">
-                                                        {/* <Button
+                                                        <Button
                                                                 label={"Загрузить отчет"}
                                                                 size="s"
                                                                 iconLeft={AntIcon.asIconComponent(() => (
@@ -275,7 +239,7 @@ day.setDate(day.getDate() - 14);
                                                                 }}
                                                                 disabled={isLoadingDataAnalysis}
                                                                 className={cnMixSpace({ mT: 's', mR: 'm'})}
-                                                        /> */}
+                                                        />
                                                 
                                                         <Button
                                                                 label={'Добавить'}

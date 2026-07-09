@@ -17,7 +17,7 @@ export type Point = {
         admPageLink: string | null;
         connecting: number;
         createdAt: Date | null;
-        updatedAt: Date | null;
+        updatedAt: Date | string | null;
         type: string | null;
 }
 
