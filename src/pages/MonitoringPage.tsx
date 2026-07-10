@@ -117,9 +117,11 @@ const getReportData = async (pointIds?: number[]) => {
         const merged = allTests.map(test => {
             const point = allPoints.find(p => p.pointId === test.pointId);
             if (point) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { updatedAt, ...pointData } = point;
                 return {
                     ...test,
-                    ...point
+                    ...pointData
                 };
             }
             return test;
