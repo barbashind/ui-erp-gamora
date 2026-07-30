@@ -99,7 +99,7 @@ export const fetchDepartmentTree = async (
 
 
 export const getOvisionPeopleData = async (token: string): Promise<OvisionPeopleResponse> => {
-    const response = await fetch(`api/v2/objects/person?search=name:&biometricsStatus=exist&limit=100000`, {
+    const response = await fetch(`api/v2/objects/person?search=name:&biometricsStatus=exist&limit=10000`, {
         method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,

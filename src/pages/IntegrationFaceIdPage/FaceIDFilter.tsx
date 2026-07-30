@@ -113,6 +113,46 @@ const FaceIDFilter = () => {
     return result;
   };
 
+  const aggregateItemsBio = (items: MergedBioItem[]): AggregatedBioItem[] => {
+    const resultBio: AggregatedBioItem[] = Object.entries(
+      items.reduce((acc, person) => {
+        acc[person.organization] = (acc[person.organization] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>)
+    ).map(([organization, count]) => ({ organization, count }));
+
+    resultBio.sort((a, b) => b.count - a.count);
+
+    return resultBio;
+  };
+
+  // Обработка Ovision по регистрации биометрии
+  const processOvisionBioData = async (): Promise<MergedBioItem[]> => {
+    const token: OvisionToken = await authOvision();
+    const deptMap = await fetchDepartmentTree(token.access_token);
+
+    const people = await getOvisionPeopleData(token.access_token);
+    const enrichedPeople: MergedBioItem[] = [];
+    for (const ev of people.data) {
+      const department = ev.profiles[0].department || '';
+      const organization = deptMap.get(department) || 'Неизвестно';
+      enrichedPeople.push({
+        employeeId: ev.id,
+        organization,
+      });
+    }
+    // const resultBio: AggregatedBioItem[] = Object.entries(
+    //   enrichedPeople.reduce((acc, person) => {
+    //     acc[person.organization] = (acc[person.organization] || 0) + 1;
+    //     return acc;
+    //   }, {} as Record<string, number>)
+    // ).map(([organization, count]) => ({ organization, count }));
+
+    // resultBio.sort((a, b) => b.count - a.count);
+
+    return enrichedPeople;
+  }
+
   // Обработка Ovision
   const processOvisionData = async (dateFrom: Date, dateTo: Date): Promise<MergedItem[]> => {
     const token: OvisionToken = await authOvision();
@@ -122,29 +162,6 @@ const FaceIDFilter = () => {
     };
     const events = await getOvisionData(filter, token.access_token);
     const deptMap = await fetchDepartmentTree(token.access_token);
-
-    const people = await getOvisionPeopleData(token.access_token);
-    const enrichedPeople: MergedBioItem[] = [];
-    for (const ev of people.data) {
-      const department = ev.profiles[0].departments_id || '';
-      const organization = deptMap.get(department) || 'Неизвестно';
-      enrichedPeople.push({
-        employeeId: ev.id,
-        organization,
-      });
-    }
-    // Агрегируем с помощью reduce
-    const resultBio: AggregatedBioItem[] = Object.entries(
-      enrichedPeople.reduce((acc, person) => {
-        acc[person.organization] = (acc[person.organization] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>)
-    ).map(([organization, count]) => ({ organization, count }));
-
-    // Сортируем по убыванию количества (опционально)
-    resultBio.sort((a, b) => b.count - a.count);
-
-    setBioData(resultBio);
 
     const enriched: MergedItem[] = [];
     for (const ev of events.data) {
@@ -271,9 +288,10 @@ const FaceIDFilter = () => {
         };
 
         // 4. Параллельная загрузка Ovision и IDGate
-        const [ovisionItems, idgateItems] = await Promise.all([
+        const [ovisionItems, idgateItems, ovisionBioItems] = await Promise.all([
           processOvisionData(dateMin, dateMax),
-          processIdGateData(dateMin, dateMax, sessionId)
+          processIdGateData(dateMin, dateMax, sessionId),
+          processOvisionBioData(),
         ]);
 
         // 5. Объединение
@@ -283,6 +301,7 @@ const FaceIDFilter = () => {
         setData(mergedAll);
         setDataAgr(aggregateItems(mergedAll));
         setDataAgr1(aggregateItems1(mergedAll));
+        setBioData(aggregateItemsBio(ovisionBioItems))
       } catch (err) {
         console.error("Ошибка загрузки данных:", err);
       } finally {
