@@ -11,7 +11,7 @@ import { DownloadOutlined
 import { cnMixFontSize } from "../../utils/MixFontSize";
 import { Loader } from "@consta/uikit/Loader";
 import { Card } from "@consta/uikit/Card";
-import { authOvision, fetchDepartmentTree, getOvisionData, OvisionToken } from "../../services/IntegrationOvision";
+import { authOvision, fetchDepartmentTree, getOvisionData, getOvisionPeopleData, OvisionToken } from "../../services/IntegrationOvision";
 import { OvisionFilter } from "../../types/integration-ovision";
 import { Column } from "@consta/charts/Column";
 import { Bar } from '@consta/charts/Bar';
@@ -31,6 +31,16 @@ export interface AggregatedItem {
   organization: string;
   date: string;
   object: string;
+  count: number;
+}
+
+export interface MergedBioItem {
+  employeeId: number | string;
+  organization: string;
+}
+
+export interface AggregatedBioItem {
+  organization: string;
   count: number;
 }
 
@@ -75,6 +85,7 @@ const FaceIDFilter = () => {
   const [dataAgr, setDataAgr] = useState<AggregatedItem[]>([]);
   const [dataAgr1, setDataAgr1] = useState<AggregatedItem[]>([]);
   const [todayData, setTodayData] = useState<AggregatedItem[]>([]);
+  const [bioData, setBioData] = useState<AggregatedBioItem[]>([]);
   const [isLoadingDataAnalysis, setIsLoadingDataAnalysis] = useState<boolean>(false);
 
   const aggregateItems = (items: MergedItem[]): AggregatedItem[] => {
@@ -111,6 +122,29 @@ const FaceIDFilter = () => {
     };
     const events = await getOvisionData(filter, token.access_token);
     const deptMap = await fetchDepartmentTree(token.access_token);
+
+    const people = await getOvisionPeopleData(token.access_token);
+    const enrichedPeople: MergedBioItem[] = [];
+    for (const ev of people.data) {
+      const department = ev.profiles[0].departments_id || '';
+      const organization = deptMap.get(department) || 'Неизвестно';
+      enrichedPeople.push({
+        employeeId: ev.id,
+        organization,
+      });
+    }
+    // Агрегируем с помощью reduce
+    const resultBio: AggregatedBioItem[] = Object.entries(
+      enrichedPeople.reduce((acc, person) => {
+        acc[person.organization] = (acc[person.organization] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>)
+    ).map(([organization, count]) => ({ organization, count }));
+
+    // Сортируем по убыванию количества (опционально)
+    resultBio.sort((a, b) => b.count - a.count);
+
+    setBioData(resultBio);
 
     const enriched: MergedItem[] = [];
     for (const ev of events.data) {
@@ -326,12 +360,12 @@ const FaceIDFilter = () => {
                 <Text view="brand" size="l" weight="semibold" className={cnMixSpace({ mB: 's', mL: 'xl', mT: 'xl' })}>Данные за последний день</Text>
                 <Layout direction="row" style={{ flexWrap: 'wrap' }}>
                         {objects.map((obj) => (
-                        <Layout direction="row" key={obj.id}>
+                        <Layout direction="row" key={obj.id} className={cnMixSpace({ mB: 'm'})}>
                                 <Card border  className={cnMixSpace({ mL: 'xl',  p: 'm' })}>
                                 <Layout direction="column">
                                 <Text view="brand" size="m" weight="semibold" className={cnMixSpace({ mB: 's' })}>{obj.name + ' - ' + sum(todayData.filter((item) => item.object === obj.name)).toString() + ' чел.'}</Text>
                                 <Bar
-                                        style={{ marginBottom: 'var(--space-m)', minWidth: 450, minHeight: 200, maxWidth: 450, maxHeight: 200 }}
+                                        style={{ marginBottom: 'var(--space-m)', minWidth: 700, minHeight: 350, maxWidth: 700, maxHeight: 350 }}
                                         data={todayData.filter((item) => item.object === obj.name)}
                                         xField="count"
                                         yField="organization"
@@ -358,6 +392,7 @@ const FaceIDFilter = () => {
                         </Layout>
                         ))}
                 </Layout>
+
             {/* <Card border style={{ minWidth: '45vw', maxWidth: '80vw' }} className={cnMixSpace({ mL: 'xl', mT: 'm', p: 'm' })}>
               <Layout direction="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                 <Text view="brand" size="l" weight="semibold">Статистика по регистрации биометрии</Text>
@@ -413,8 +448,36 @@ const FaceIDFilter = () => {
                 color={Object.keys(colorMapLine).map((key) => colorMapLine[key])}
               />
             </Card>
-            
+             <Card border  className={cnMixSpace({ mT: 'l',mL: 'xl',  p: 'm' })}>
+                <Layout direction="column">
+                <Text view="brand" size="m" weight="semibold" className={cnMixSpace({ mB: 's' })}>Зарегистрировано в СКУД</Text>
+                <Bar
+                        style={{ marginBottom: 'var(--space-m)', minWidth: '45vw', maxWidth: '80vw'}}
+                        data={bioData}
+                        xField="count"
+                        yField="organization"
+                        seriesField="organization"
+                        yAxis={{
+                            label: {
+                              formatter: (text) => {
+                                const maxLen = 25;
+                                return text.length > maxLen ? text.slice(0, maxLen) + '...' : text;
+                              },
+                            },
+                          }}
+                        label={{
+                                position: 'middle',
+                                layout: [
+                                { type: 'interval-adjust-position' },
+                                { type: 'interval-hide-overlap' },
+                                { type: 'adjust-color' },
+                                ],
+                        }}
+                />
+                </Layout>
+              </Card>
           </Layout>
+          
         )}
       </Layout>
     </Layout>

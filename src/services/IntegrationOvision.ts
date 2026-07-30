@@ -1,4 +1,4 @@
-import { DepartmentNode, DepartmentsResponse, OvisionFilter, OvisionResponse } from "../types/integration-ovision";
+import { DepartmentNode, DepartmentsResponse, OvisionFilter, OvisionPeopleResponse, OvisionResponse } from "../types/integration-ovision";
 import { ErrorResponse, getErrorResponse } from "./utils";
 
 export type OvisionToken = {
@@ -95,4 +95,22 @@ export const fetchDepartmentTree = async (
     }
   }
   return deptToRoot;
+};
+
+
+export const getOvisionPeopleData = async (token: string): Promise<OvisionPeopleResponse> => {
+    const response = await fetch(`api/v2/objects/person?search=name:&biometricsStatus=exist&limit=100000`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            mode: 'cors',
+        },
+    });
+    if (!response.ok) {
+        const errorResponse = await getErrorResponse(response);
+        throw new ErrorResponse(errorResponse);
+    }
+    const resp: OvisionPeopleResponse = (await response.json()) as OvisionPeopleResponse;
+    return resp;
 };

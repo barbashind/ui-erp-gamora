@@ -92,3 +92,45 @@ export interface DepartmentsResponse {
   status: Status;
   data: DepartmentNode[];
 }
+export interface Value {
+    name: string,
+    value: string
+}
+
+export interface Profile {
+    id: number,
+    department: string | null,
+    departments_id: string | null,
+    is_trackable: boolean | null,
+    trackable_comment: string | null,
+    is_blocked: boolean |null,
+    blocked_comment: string | null,
+    values: Value[],
+    profile_type: string | null,
+    permits: string | null,
+    updated_at: string | null,
+    updated_by: string | null,
+}
+
+export interface Obj {
+    id: number,
+    uid: string,
+    name: string,
+    photo: string,
+    values:Value[],
+    profiles: Profile[],
+    object_type: string,
+    updated_at: string | null,
+    updated_by: string | null,
+    created_at: string | null,
+    created_by: string | null,
+    deleted_at: string | null,
+    deleted_by: string | null,
+    global_updated: number
+}
+
+export interface OvisionPeopleResponse {
+    status: ResponseStatus;
+    data: Obj[];
+    meta: MetaData;
+}
