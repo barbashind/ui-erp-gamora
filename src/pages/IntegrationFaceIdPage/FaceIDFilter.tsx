@@ -5,7 +5,7 @@ import { Text } from "@consta/uikit/Text";
 import { DatePicker } from "@consta/uikit/DatePicker";
 import { Button } from "@consta/uikit/Button";
 import { AntIcon } from "../../utils/AntIcon";
-import { DownloadOutlined
+import { DownloadOutlined, RetweetOutlined
   // , DownOutlined, UpOutlined 
 } from "@ant-design/icons";
 import { cnMixFontSize } from "../../utils/MixFontSize";
@@ -15,7 +15,7 @@ import { authOvision, fetchDepartmentTree, getOvisionData, getOvisionPeopleData,
 import { OvisionFilter } from "../../types/integration-ovision";
 import { Column } from "@consta/charts/Column";
 import { Bar } from '@consta/charts/Bar';
-import { authIDGate, getIDGateData, getIDGateOrgs, getIDGateProfile } from "../../services/IntegrationIDGate";
+import { authIDGate, getIDGateData, getIDGateOrgs, getIDGateProfile, processProfiles } from "../../services/IntegrationIDGate";
 import { IdGateDataResponse, IdGateFilter, IdGateProfile, OrgUnitItem, PassageItem } from "../../types/integration-idgate";
 import { exportToExcelReport } from "./ExportToExcelReport";
 
@@ -333,6 +333,25 @@ const FaceIDFilter = () => {
   
   // const [viewStat, setViewStat] = useState<boolean>(false);
 
+  const [isLoadingData1, setIsLoadingData1] = useState<boolean>(false);
+const onClick = async () => {
+    setIsLoadingData1(true);
+    try {
+      // Авторизация
+      const idGateAuth = await authIDGate({
+          login: "admin",
+          password: 'e227e04df45b25701ca460ffe2626e6d',
+          passwordText: "LRStZidYhEGaiBX"
+      });
+      const sessionId = idGateAuth.sessionId;
+      await processProfiles(sessionId);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error(error);
+    } finally {
+      setIsLoadingData1(false);
+    }
+  };
 
   return (
     <Layout direction="column">
@@ -367,6 +386,17 @@ const FaceIDFilter = () => {
           disabled={isLoadingDataAnalysis}
           className={cnMixSpace({ mL: 'xl', mT: 'xl' })}
         />
+
+        <Button
+          label="Обновить функции"
+          size="s"
+          iconLeft={AntIcon.asIconComponent(() => <RetweetOutlined className={cnMixFontSize('l') + cnMixSpace({ mR: 'xs' })} />)}
+          view="ghost"
+          onClick={() => onClick()}
+          disabled={isLoadingData1}
+          className={cnMixSpace({ mL: 'xl', mT: 'xl' })}
+        />
+
       </Layout>
 
       <Layout direction="column" className={cnMixSpace({ mT: 'xl' })}>

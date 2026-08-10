@@ -162,3 +162,64 @@ export interface OrgUnitListResponse {
   };
   items: OrgUnitItem[];
 }
+
+export interface PhotoProfile {
+  id: string;
+  creatorId: string;
+  dateCreate: string;
+  editorId?: string;
+  dateEdit?: string;
+  isDelete?: boolean;
+  clientId?: string;
+  extId?: string;
+  extIds?: Record<string, string>;
+  isHidden?: boolean;
+  isReadonly?: boolean;
+  photoId?: string;
+  lastName?: string;
+  firstName?: string;
+  middleName?: string;
+  gender?: number;
+  age?: number;
+  phoneNumber?: string;
+  email?: string;
+  listPeopleNames?: string;
+  listPeopleList?: string[];
+  active?: boolean;
+  dateCreateExport?: string;
+  birthDate?: string;
+  qualityIndex?: number;
+  typeCreate?: number;
+  masterProfileId?: string;
+  photoUrl?: string;
+  typeCreateCaption?: string;
+  description?: string;
+  fieldStr1?: string;
+  fieldStr2?: string;
+  fieldStr3?: string;
+  fieldStr4?: string;   // целевое поле
+  fieldStr5?: string;
+  fieldStr6?: string;
+  fieldStr7?: string;
+  fieldStr8?: string;
+  fieldStr9?: string;
+  fieldStr10?: string;
+  // ... все остальные поля согласно документации
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;   // для упрощения
+}
+
+export interface ListResponse {
+  header: {
+    name: string;
+    maxLimit: number;
+    total: number;
+  };
+  params: {
+    filter: string;
+    sort: string;
+    limit: number;
+    offset: number;
+  };
+  items: PhotoProfile[];
+}
