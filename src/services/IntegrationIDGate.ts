@@ -161,7 +161,7 @@ export async function processProfiles(sessionId: string): Promise<void> {
     for (const profile of profiles) {
       try {
         // Получаем полные данные
-        const fullProfile = await getIDGateProfile(profile.id, sessionId);
+        const fullProfile = await getIDGateProfile(sessionId, profile.id);
 
         const fieldStr4 = fullProfile.fieldStr4;
         // Проверка: строка длиной 6 и состоит из цифр (или просто длина 6)
