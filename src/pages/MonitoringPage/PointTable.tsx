@@ -349,9 +349,9 @@ const getData = async () => {
                 ) : (
                     <Layout direction="column" style={{width: 'fit-content', justifyItems: 'center',}}>
                         {(record.connecting === 0 || !record.connecting) && <NoConnectingIcon color={undefined} />}
-                        { (record.connecting > 0) && (record.connecting <= 50) && <GoodConnectingIcon color={"#0DFFBB"} /> }
-                        { (record.connecting > 50) && (record.connecting <= 100) && <MiddleConnectingIcon color={"#0DFFBB"} /> }
-                        { (record.connecting > 100) && <BadConnectingIcon color={"#0DFFBB"} />}
+                        { (Number(record.connecting) > 0) && (Number(record.connecting) <= 50) && <GoodConnectingIcon color={"#0DFFBB"} /> }
+                        { (Number(record.connecting) > 50) && (Number(record.connecting) <= 100) && <MiddleConnectingIcon color={"#0DFFBB"} /> }
+                        { (Number(record.connecting) > 100) && <BadConnectingIcon color={"#0DFFBB"} />}
                     </Layout>
                 );
             },

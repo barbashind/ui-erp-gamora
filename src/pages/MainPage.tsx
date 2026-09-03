@@ -26,20 +26,19 @@ const MainPage = () => {
         const tabs: Tab[] = [
                 {
                         id: 0,
-                        label: 'Мониторинг терминалов',
-                        navTo: routeTarget.pointsManadgment,
-                },
-                {
-                        id: 1,
-                        label: 'Карта ВСМ-1',
+                        label: 'Карта внедрения OVISION',
                         navTo: routeTarget.map,
                 },
                 {
-                        id: 2,
+                        id: 1,
                         label: 'Дашборды по проходам',
                         navTo: routeTarget.faceIDReportPage,
                 },
-
+                {
+                        id: 2,
+                        label: 'Мониторинг терминалов',
+                        navTo: routeTarget.pointsManadgment,
+                },
         ]
 
         const [activeTab, setActiveTab] = useState<Tab>(tabs[0])
@@ -51,18 +50,18 @@ const MainPage = () => {
                 const tabsDef: Tab[] = [
                         {
                                 id: 0,
-                                label: 'Мониторинг терминалов',
-                                navTo: routeTarget.pointsManadgment,
-                        },
-                        {
-                                id: 1,
-                                label: 'Карта ВСМ-1',
+                                label: 'Карта внедрения OVISION',
                                 navTo: routeTarget.map,
                         },
                         {
-                                id: 2,
+                                id: 1,
                                 label: 'Дашборды по проходам',
                                 navTo: routeTarget.faceIDReportPage,
+                        },
+                        {
+                                id: 2,
+                                label: 'Мониторинг терминалов',
+                                navTo: routeTarget.pointsManadgment,
                         },
                 ]
                 tabsDef.findIndex(

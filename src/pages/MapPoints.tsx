@@ -1,15 +1,19 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Layout } from '@consta/uikit/Layout';
-import { Badge, BadgePropStatus } from '@consta/uikit/Badge';
-import { Text } from '@consta/uikit/Text';
 import { cnMixSpace } from '@consta/uikit/MixSpace';
-import { Card } from '@consta/uikit/Card';
-import { Tag } from '@consta/uikit/Tag';
+import { Select } from '@consta/uikit/Select';
+import { IdLabel } from '../utils/types';
+import { getAllPoints } from '../services/MonitoringService';
+import { Point } from '../types/monitoring-types';
+import { Loader } from '@consta/uikit/Loader';
+import { Badge } from '@consta/uikit/Badge';
 import { AntIcon } from '../utils/AntIcon';
 import { cnMixFontSize } from '../utils/MixFontSize';
-import { CheckCircleOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, WarningOutlined } from '@ant-design/icons';
+import { Text } from '@consta/uikit/Text';
+import { Card } from '@consta/uikit/Card';
 
 // Исправление иконок
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,226 +24,433 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+// ----- Типы -----
 interface MapPoint {
-  name: string;
+  name: string | null;
   coordinates: [number, number];
   color: string;
 }
 
-interface Action {
-  text: string;
-  color: string;
+interface TableRow {
+  objectName: string;
+  total: number;
+  online: number;
+  offlineTerminals: string[];
 }
 
- const curvePoints: [number, number][] = [
-    [57.894577, 33.837985],
-    [57.841099, 33.922756],
-    [57.818236, 34.010193],
-    [57.710260, 34.180617],
-    [57.645512, 34.224075],
-    [57.547231, 34.255854],
-    [57.475640, 34.313782],
-    [57.368368, 34.471344],
-    [57.224019, 34.781614],
-    [57.150478, 34.963163],
-    [57.097075, 35.073320],
-  ];
+// ----- Координаты центров объектов -----
+const objectCenters: Record<string, { center: [number, number]; zoom: number }> = {
+  'Объекты Москвы': { center: [55.536311, 37.064551], zoom: 10 },
+  'Аэропорт Курган': { center: [55.475, 65.415], zoom: 12 },
+  'Аэропорт Горноалтайск': { center: [51.967, 85.833], zoom: 12 },
+  'ВСМ-1': { center: [57.5, 34.5], zoom: 9 },
+};
 
-  // Точки на карте
-  const mapPoints: MapPoint[] = [
-    { name: 'в.г. Жилотково, СУ909', coordinates: [57.533894, 34.231995], color: '#22c55e' },
-    { name: 'в.г. Жилотково, СУ967', coordinates: [57.535622, 34.239277], color: '#22c55e' },
-    { name: 'в.г. Афримово, СУ905', coordinates: [57.130024, 35.022080], color: '#22c55e' },
-    { name: 'Полигон №7, СУ905', coordinates: [57.310000, 34.583611], color: '#eab308' },
-    { name: 'в.г. Бухолово, СУ926', coordinates: [57.358974, 34.435738], color: '#22c55e' },
-    { name: 'в.г. Ям-Григино, СУ910', coordinates: [57.786357, 33.975612], color: '#eab308' },
-    { name: 'в.г. Ям-Григино, А-Мост', coordinates: [57.790563, 34.015858], color: '#22c55e' },
-    { name: 'в.г. Ям-Григино, А-Бетон', coordinates: [57.790652, 34.014772], color: '#eab308' },
-    { name: 'в.г. Княщины, СУ920', coordinates: [57.300811, 34.588637], color: '#ef4444' },
-  ];
+// ----- Линия на карте -----
+const curvePoints: [number, number][] = [
+  [57.894577, 33.837985],
+  [57.841099, 33.922756],
+  [57.818236, 34.010193],
+  [57.710260, 34.180617],
+  [57.645512, 34.224075],
+  [57.547231, 34.255854],
+  [57.475640, 34.313782],
+  [57.368368, 34.471344],
+  [57.224019, 34.781614],
+  [57.150478, 34.963163],
+  [57.097075, 35.073320],
+];
 
-
-interface Point {
-  name: string;
-  actions: Action[] | null;
-  color: BadgePropStatus;
-}
-  
 const MapPoints = () => {
+  // ---- Парсинг координат ----
+  const parseCoordinates = (placeStr: string): [number, number] | null => {
+    try {
+      if (placeStr.startsWith('[') && placeStr.endsWith(']')) {
+        const parsed = JSON.parse(placeStr);
+        if (Array.isArray(parsed) && parsed.length === 2 && !parsed.some(isNaN)) {
+          return [parsed[0], parsed[1]];
+        }
+      }
+      const parts = placeStr.split(',').map(s => parseFloat(s.trim()));
+      if (parts.length === 2 && !parts.some(isNaN)) {
+        return [parts[0], parts[1]];
+      }
+      console.warn(`Некорректный формат координат: "${placeStr}"`);
+      return null;
+    } catch {
+      console.warn(`Ошибка парсинга координат: "${placeStr}"`);
+      return null;
+    }
+  };
+
+  // ---- Состояния ----
+  const [mapPoints, setMapPoints] = useState<MapPoint[]>([]);
+  const [tableData, setTableData] = useState<TableRow[]>([]);
+  const [selectedObject, setSelectedObject] = useState<IdLabel>({ id: 0, label: 'ВСМ-1' });
+  const [isLoading, setIsLoading] = useState(false);
+
+  // ---- Загрузка данных ----
+  useEffect(() => {
+    setIsLoading(true);
+    const getGatesInfoData = async () => {
+      await getAllPoints((resp) => {
+        const fetchedGates = resp.filter((elem) => elem.type === 'ST');
+
+        // ---- Группировка для карты (по place) ----
+        const groupsForMap: Record<string, Point[]> = {};
+        fetchedGates.forEach((point) => {
+          if (!point.place) return;
+          const key = point.place;
+          if (!groupsForMap[key]) groupsForMap[key] = [];
+          groupsForMap[key].push(point);
+        });
+
+        const computedMapPoints: MapPoint[] = [];
+
+        Object.values(groupsForMap).forEach((group) => {
+          const first = group[0];
+          const coords = parseCoordinates(first.place ? first.place : '[0, 0]');
+          if (!coords) return;
+
+          const speeds: number[] = [];
+          group.forEach((point) => {
+            if (point.connecting === false) {
+              speeds.push(0);
+            } else if (Array.isArray(point.connecting)) {
+              point.connecting.forEach((conn) => {
+                if (typeof conn === 'number') speeds.push(conn);
+                else if (conn && typeof conn === 'object' && 'speed' in conn) speeds.push(conn.speed);
+              });
+            } else if (point.connecting !== undefined && point.connecting !== null && point.connecting !== true) {
+              const num = Number(point.connecting);
+              if (!isNaN(num)) speeds.push(num);
+            }
+          });
+
+          const hasZero = speeds.some((s) => s === 0);
+          let color: string;
+          if (hasZero) {
+            color = '#ef4444';
+          } else {
+            const avg = speeds.length ? speeds.reduce((a, b) => a + b, 0) / speeds.length : 0;
+            if (avg < 15) color = '#22c55e';
+            else if (avg < 30) color = '#eab308';
+            else if (avg < 80) color = '#f97316';
+            else color = '#ef4444';
+          }
+
+          computedMapPoints.push({
+            name: first.login || 'Без имени',
+            coordinates: coords,
+            color,
+          });
+        });
+
+        setMapPoints(computedMapPoints);
+
+        // ---- Группировка для таблицы (по object) ----
+        const groupsForTable: Record<string, Point[]> = {};
+        fetchedGates.forEach((point) => {
+          if (!point.object) return;
+          const key = point.object;
+          if (!groupsForTable[key]) groupsForTable[key] = [];
+          groupsForTable[key].push(point);
+        });
+
+        const computedTableData: TableRow[] = [];
+
+        Object.values(groupsForTable).forEach((group) => {
+          const total = group.length;
+          let online = 0;
+          const offlineLogins: string[] = [];
+
+          group.forEach((point) => {
+            let isOnline = false;
+
+            if (point.connecting === false) {
+              isOnline = false;
+            } else if (Array.isArray(point.connecting)) {
+              const hasPositive = point.connecting.some((conn) => {
+                if (typeof conn === 'number') return conn > 0;
+                if (conn && typeof conn === 'object' && 'speed' in conn) return conn.speed > 0;
+                return false;
+              });
+              isOnline = hasPositive;
+            } else if (point.connecting !== undefined && point.connecting !== null && point.connecting !== true) {
+              const num = Number(point.connecting);
+              if (!isNaN(num)) {
+                isOnline = num > 0;
+              }
+            } else {
+              isOnline = false;
+            }
+
+            if (isOnline) {
+              online++;
+            } else {
+              offlineLogins.push(point.login || 'Без имени');
+            }
+          });
+
+          computedTableData.push({
+            objectName: group[0].object || 'Без имени',
+            total,
+            online,
+            offlineTerminals: offlineLogins,
+          });
+        });
+
+        setTableData(computedTableData);
+        setIsLoading(false);
+      });
+    };
+
+    void getGatesInfoData();
+  }, []);
+
+  // ---- Рефы для карты ----
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
-
-  // Координаты линии
- 
-
-  // Средняя точка
   const middlePoint = curvePoints[Math.floor(curvePoints.length / 2)];
 
+  // ---- Инициализация карты ----
   useEffect(() => {
-    // Важно: проверяем что элемент существует и карта еще не создана
     if (!mapRef.current || mapInstanceRef.current) return;
 
+    const initialCenter = objectCenters[selectedObject.label]?.center || [57.5, 34.5];
+    const initialZoom = objectCenters[selectedObject.label]?.zoom || 9;
 
-    // Создаем карту
     const map = L.map(mapRef.current, {
-      center: [57.5, 34.5],
-      zoom: 9,
+      center: initialCenter,
+      zoom: initialZoom,
       zoomControl: true,
-      scrollWheelZoom: true
+      scrollWheelZoom: true,
     });
 
-    // Добавляем тайлы
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap'
+      attribution: '&copy; OpenStreetMap',
     }).addTo(map);
 
-    // Рисуем линию
     L.polyline(curvePoints, {
       color: '#ed7931',
       weight: 8,
       opacity: 1,
       lineCap: 'round',
-      lineJoin: 'round'
+      lineJoin: 'round',
     }).addTo(map);
 
-    // Добавляем точки
     mapPoints.forEach((point) => {
       const marker = L.circleMarker(point.coordinates, {
         radius: 10,
         color: 'white',
         weight: 2,
         fillColor: point.color,
-        fillOpacity: 0.9
+        fillOpacity: 0.9,
       }).addTo(map);
 
-      // Добавляем тултип
       marker.bindTooltip(
         `<div style="padding: 1px 1px; min-width: 150px;">
-           <div style="font-weight: bold; margin-bottom: 2px;">${point.name}</div>
-           <div style="font-size: 10px; color: #666;">
-             ${point.coordinates[0].toFixed(6)}, ${point.coordinates[1].toFixed(6)}
-           </div>
-         </div>`,
+          <div style="font-weight: bold; margin-bottom: 2px;">${point.name}</div>
+          <div style="font-size: 10px; color: #666;">
+            ${point.coordinates[0].toFixed(6)}, ${point.coordinates[1].toFixed(6)}
+          </div>
+        </div>`,
         { permanent: true, direction: 'left', offset: [-10, 0] }
       );
     });
 
-    // Добавляем надпись ВСМ
     const vsmMarker = L.circleMarker(middlePoint, {
       radius: 1,
-      color: 'transparent'
+      color: 'transparent',
     }).addTo(map);
 
     vsmMarker.bindTooltip(
       `<div style="
-         padding: 4px 8px;
-         background-color: #004267;
-         color: white;
-         border-radius: 4px;
-         font-size: 14px;
-         font-weight: bold;
-         white-space: nowrap;
-       ">
-         ВСМ-1, 4-й этап
-       </div>`,
+        padding: 4px 8px;
+        background-color: #004267;
+        color: white;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: bold;
+        white-space: nowrap;
+      ">
+        ВСМ-1, 4-й этап
+      </div>`,
       { permanent: true, direction: 'top', offset: [0, -20] }
     );
 
-    // Сохраняем инстанс карты
     mapInstanceRef.current = map;
 
-    console.log('Карта создана');
-
-    // Функция очистки
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
     };
-  }, [middlePoint]); // Пустой массив зависимостей - выполняется только один раз
+  }, [mapPoints, middlePoint, selectedObject]);
 
+  // ---- Обновление центра при смене объекта ----
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    const { center, zoom } = objectCenters[selectedObject.label] || objectCenters['ВСМ-1'];
+    map.setView(center, zoom);
+  }, [selectedObject]);
 
-  const pointsList: Point[] = [
-    { name: 'в.г. Жилотково, СУ909', actions: null, color: 'success' },
-    { name: 'в.г. Жилотково, СУ967', actions: [{text: 'Подключение оптики для СУ967 – реализовано', color: 'var(--color-bg-green)'}], color: 'success' },
-    { name: 'в.г. Афримово, СУ905', actions: null, color: 'success' },
-    { name: 'Полигон №7, СУ905', actions: null, color: 'warning' },
-    { name: 'в.г. Бухолово, СУ926', actions: null, color: 'success' },
-    { name: 'в.г. Ям-Григино, СУ910', actions: [{text: 'Подключение оптики до 30.06', color: 'var(--color-bg-caution)'}], color: 'warning' },
-    { name: 'в.г. Ям-Григино, А-Мост', actions: [{text: 'Подключено с 06.05', color: 'var(--color-bg-green)'}], color: 'success' },
-    { name: 'в.г. Ям-Григино, А-Бетон', actions: [{text: 'Подключение оптики до 30.05', color: 'var(--color-bg-caution)'}], color: 'warning' },
-    { name: 'в.г. Княщины, СУ920', actions: [{text: 'Радиоканал подключен с 28.04', color: 'var(--color-bg-green)'}, {text: 'Оптика Ростелеком до 20.05', color: 'var(--color-bg-caution)'}], color: 'warning' },
-  ];
-
+  // ---- Рендер ----
   return (
-    <Layout direction='row' style={{ height: '80vh', width: '72vw', padding: '20px' }}>
-      <div 
-        ref={mapRef} 
-        style={{ 
-          height: '100%', 
-          width: '100%', 
-          borderRadius: '8px',
-          background: '#f0f0f0' // временный фон пока карта грузится
-        }} 
-      />
-      <Layout direction='column' className={cnMixSpace({pL:'xl'})} style={{ height: '80vh', width: '10vw' }}>
-        <Card border className={cnMixSpace({mB:'l'})} style={{ width: 'fit-content'}}>
-          <Layout direction='column' className={cnMixSpace({p:'s'})}>
-              <Layout direction='row' className={cnMixSpace({pH:'m'})}>
-                <div style={{textWrap:'nowrap', minWidth:'20px', maxWidth:'20px'}} ></div>
-                <Text size='s' style={{textWrap:'nowrap', minWidth:'235px', maxWidth:'235px'}} align='left' weight='semibold' >Наименование участка</Text>
-                <Text size='s' style={{textWrap:'nowrap', minWidth:'335px', maxWidth:'335px'}} align='left' weight='semibold' >План мероприятий</Text>
-              </Layout>
-              {pointsList.map((point) => (
-                <Layout direction='row' style={{border:'1px solid var(--color-bg-border)', borderRadius: '6px', alignItems:'center'}} className={cnMixSpace({p:'xs', mT: 's'})}>
-                  
-                  <Layout style={{justifyContent:'center', minWidth:'20px', maxWidth:'20px'}}>
-                    <Badge size='xs' status={point.color}/>
-                  </Layout>
-                  <Text size='xs' style={{textWrap:'nowrap', minWidth:'235px', maxWidth:'235px'}}>{point.name}</Text>
-                  {point.actions && (
-                    <Layout direction='column' style={{textWrap:'nowrap', minWidth:'335px', maxWidth:'335px'}}>
-                      {point.actions.map((action) => (
-                        <Tag 
-                          icon={AntIcon.asIconComponent(() => (
-                                  <CheckCircleOutlined
-                                          className={cnMixFontSize('l') + cnMixSpace({mR:'xs'})}
-                                  />
-                            ))}
-                          mode='info' 
-                          size='s' 
-                          style={{textWrap:'nowrap', backgroundColor: action.color}} 
-                          label={action.text} 
-                          className={cnMixSpace({mB: '2xs'})}
-                          />
-                      )
-                    )}
-                      
-                    </Layout>
-                  )}
-                  
-                </Layout>
-              ))
-              }
-          </Layout>
-        </Card>
-        
-        <Layout direction='row' style={{alignItems: 'center'}}>
-          <Badge size='xs' status='success' className={cnMixSpace({mR:'s'})}/>
-          <Text size='s' style={{textWrap:'nowrap'}}>- подключена оптика, есть резерв. канал связи</Text>
-        </Layout>
-        <Layout direction='row' className={cnMixSpace({mT:'s'})} style={{alignItems: 'center'}}>
-          <Badge size='xs' status='warning' className={cnMixSpace({mR:'s'})}/>
-          <Text size='s' style={{textWrap:'nowrap'}}>- подключен спутниковый интернет, есть резерв. канал связи LTE</Text>
-        </Layout>
-        <Layout direction='row' className={cnMixSpace({mT:'s'})} style={{alignItems: 'center'}}>
-          <Badge size='xs' status='alert' className={cnMixSpace({mR:'s'})}/>
-          <Text size='s' style={{textWrap:'nowrap'}}>- подключено  LTE, отсутствует резерв. канал связи</Text>
-        </Layout>
-        
-        
+    <Layout direction="column" style={{ height: '80vh', width: '72vw', padding: '20px' }}>
+      <Layout direction="row" style={{ flex: 1 }}>
+        {/* Карта */}
+        <div
+          ref={mapRef}
+          style={{
+            height: '100%',
+            width: '100%',
+            borderRadius: '8px',
+            background: '#f0f0f0',
+          }}
+        />
 
+        {/* Правая колонка */}
+        <Layout
+          direction="column"
+          className={cnMixSpace({ pL: 'xl' })}
+          style={{ height: '100%', width: '26vw' }}
+        >
+          {/* Селект */}
+          <Select
+            value={selectedObject}
+            onChange={(value) => {
+              if (value) setSelectedObject(value);
+            }}
+            items={[
+              { id: 0, label: 'ВСМ-1' },
+              { id: 1, label: 'Объекты Москвы' },
+              { id: 2, label: 'Аэропорт Курган' },
+              { id: 3, label: 'Аэропорт Горноалтайск' },
+            ]}
+            style={{ minWidth: '100%', marginBottom: '16px' }}
+            label="Выберите объект для поиска на карте"
+          />
+
+          {/* Таблица */}
+          {isLoading ? (
+            <Layout
+              direction="column"
+              style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+            >
+              <Loader />
+            </Layout>
+          ) : (
+            <Layout
+              direction="column"
+              style={{ flex: 1, overflow: 'hidden' }}
+            >
+              {/* Заголовки */}
+              <Card
+                shadow={false}
+                border
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr 1.5fr',
+                  padding: '8px 16px',
+                  background: 'var(--color-bg-ghost)',
+                  borderBottom: '1px solid var(--color-border)',
+                  borderRadius: '8px 8px 0 0',
+                }}
+              >
+                <Text size="s" weight="bold" view="primary" style={{minWidth: '150px', maxWidth: '150px'}}>
+                  Объект
+                </Text>
+                <Text size="s" weight="bold" view="primary" style={{minWidth: '150px', maxWidth: '150px'}}>
+                  Терминалы
+                </Text>
+                <Text size="s" weight="bold" view="primary" style={{minWidth: '150px', maxWidth: '150px'}}>
+                  Оффлайн
+                </Text>
+              </Card>
+
+              {/* Список строк с прокруткой */}
+              <Layout
+                direction="column"
+                style={{
+                  flex: 1,
+                  overflowY: 'auto',
+                  paddingTop: '8px',
+                  gap: '8px',
+                }}
+              >
+                {tableData.length === 0 ? (
+                  <Layout style={{ padding: '20px', textAlign: 'center' }}>
+                    <Text view="ghost">Нет данных</Text>
+                  </Layout>
+                ) : (
+                  tableData.map((row, idx) => (
+                    <Card
+                      key={idx}
+                      shadow
+                      border
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr 1.5fr',
+                        padding: '12px 16px',
+                        alignItems: 'center',
+                        gap: '8px',
+                      }}
+                    >
+                      {/* Объект */}
+                      <Text size="s" weight="semibold" style={{minWidth: '150px', maxWidth: '150px'}}>
+                        {row.objectName}
+                      </Text>
+
+                      {/* Терминалы СКУД */}
+                      <Layout direction="column" style={{minWidth: '150px', maxWidth: '150px'}}>
+                        <Text size="s" view="secondary">
+                          Всего: <Text as="span" weight="bold">{row.total}</Text>
+                        </Text>
+                        <Text size="s" view="secondary">
+                          В сети: <Text as="span" weight="bold" color={row.online > 0 ? 'success' : 'ghost'}>
+                            {row.online}
+                          </Text>
+                        </Text>
+                      </Layout>
+
+                      {/* Оффлайн терминалы */}
+                      <Layout direction="column"  style={{minWidth: '300px', maxWidth: '300px'}}>
+                        {row.offlineTerminals.length === 0 ? (
+                          <Badge
+                            status="success"
+                            label="Все в сети"
+                            iconLeft={AntIcon.asIconComponent(() => (
+                                <CheckCircleOutlined className={cnMixFontSize('s')} />
+                              ))}
+                            size="s"
+                            style={{width: 'fit-content'}}
+                          />
+                        ) : (
+                          row.offlineTerminals.map((terminal, i) => (
+                            <Badge
+                              key={i}
+                              status="alert"
+                              size="s"
+                              iconLeft={AntIcon.asIconComponent(() => (
+                                <WarningOutlined className={cnMixFontSize('s')} />
+                              ))}
+                              label={terminal}
+                              className={cnMixSpace({mB:'xs'})}
+                              style={{width: 'fit-content'}}
+                            />
+                          ))
+                        )}
+                      </Layout>
+                    </Card>
+                  ))
+                )}
+              </Layout>
+            </Layout>
+          )}
+        </Layout>
       </Layout>
     </Layout>
   );

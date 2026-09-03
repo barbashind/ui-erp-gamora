@@ -15,7 +15,7 @@ export type Point = {
         faceRegGUID: string | null;
         server: string | null;
         admPageLink: string | null;
-        connecting: number;
+        connecting: number | boolean;
         createdAt: Date | null;
         updatedAt: Date | string | null;
         type: string | null;
