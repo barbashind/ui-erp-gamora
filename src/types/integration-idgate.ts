@@ -22,6 +22,11 @@ export interface PassageItem {
     locationCamName: string;
     timeVisit: string; // формат "HH:MM:SS"
     count: number;
+    fieldInt1?: number; 
+    fieldStr1?: string; 
+    fieldStr2?: string; 
+    fieldStr3?: string; 
+    fieldStr4?: string; 
 }
 
 // Тип для параметров запроса

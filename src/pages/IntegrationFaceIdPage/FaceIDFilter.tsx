@@ -25,6 +25,11 @@ export interface MergedItem {
   employeeId: number | string;
   fullName: string;
   organization: string;
+  snils?: string;
+  kig?: string;
+  country?: string;
+  okpdtr?: string;
+  inn?: string;
 }
 
 export interface AggregatedItem {
@@ -43,6 +48,121 @@ export interface AggregatedBioItem {
   organization: string;
   count: number;
 }
+
+
+const isValidSnils = (snils: string): boolean => {
+  // Удаляем пробелы по краям
+  const trimmed = snils.trim();
+
+  // Допустимые форматы:
+  // 1) 11 цифр подряд (без разделителей)
+  // 2) 3 цифры, дефис, 3 цифры, дефис, 3 цифры, пробел, 2 цифры
+  const formatRegex = /^\d{11}$|^\d{3}-\d{3}-\d{3} \d{2}$/;
+  if (!formatRegex.test(trimmed)) {
+    return false;
+  }
+
+  // Извлекаем все цифры
+  const digits = trimmed.replace(/\D/g, '');
+  if (digits.length !== 11) {
+    return false; // избыточно, но оставим для надёжности
+  }
+
+  // Не допускаем все одинаковые цифры (необязательно, но часто используется)
+  if (/^(\d)\1{10}$/.test(digits)) {
+    return false;
+  }
+
+  // Контрольная сумма (стандартный алгоритм)
+  const numberPart = digits.slice(0, 9);
+  const controlDigits = digits.slice(9, 11);
+
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(numberPart[i], 10) * (9 - i);
+  }
+
+  let expectedControl: number;
+  if (sum < 100) {
+    expectedControl = sum;
+  } else if (sum === 100 || sum === 101) {
+    expectedControl = 0;
+  } else {
+    const remainder = sum % 101;
+    expectedControl = remainder < 100 ? remainder : 0;
+  }
+
+  const actualControl = parseInt(controlDigits, 10);
+  return actualControl === expectedControl;
+};
+
+const isValidInnPhysical = (inn: string): boolean => {
+  // Удаляем все нецифровые символы
+  const digits = inn.replace(/\D/g, '');
+
+  // ИНН физического лица должен содержать ровно 12 цифр
+  if (digits.length !== 12) {
+    return false;
+  }
+
+  // Не допускаем все одинаковые цифры (например, 111111111111)
+  if (/^(\d)\1{11}$/.test(digits)) {
+    return false;
+  }
+
+  // Контрольная сумма для 11-й цифры (первые 10 цифр)
+  const coefficients11 = [7, 2, 4, 10, 3, 5, 9, 4, 6, 8];
+  let sum11 = 0;
+  for (let i = 0; i < 10; i++) {
+    sum11 += parseInt(digits[i], 10) * coefficients11[i];
+  }
+  let control11 = sum11 % 11;
+  if (control11 >= 10) {
+    control11 = 0;
+  }
+
+  // Контрольная сумма для 12-й цифры (первые 11 цифр)
+  const coefficients12 = [3, 7, 2, 4, 10, 3, 5, 9, 4, 6, 8];
+  let sum12 = 0;
+  for (let i = 0; i < 11; i++) {
+    sum12 += parseInt(digits[i], 10) * coefficients12[i];
+  }
+  let control12 = sum12 % 11;
+  if (control12 >= 10) {
+    control12 = 0;
+  }
+
+  // Сравниваем вычисленные контрольные цифры с 11-й и 12-й цифрами
+  const actual11 = parseInt(digits[10], 10);
+  const actual12 = parseInt(digits[11], 10);
+
+  return actual11 === control11 && actual12 === control12;
+};
+
+const isValidOkpdtr = (
+  code: string,
+): boolean => {
+  // Удаляем все нецифровые символы
+  const digits = code.replace(/\D/g, '');
+
+  // Код должен содержать ровно 6 цифр
+  if (digits.length !== 6) {
+    return false;
+  }
+
+  // Первая цифра должна быть 1 (рабочий) или 2 (служащий)
+  const firstDigit = digits[0];
+  if (firstDigit !== '1' && firstDigit !== '2') {
+    return false;
+  }
+
+  // Не допускаем все одинаковые цифры (например, 111111)
+  if (/^(\d)\1{5}$/.test(digits)) {
+    return false;
+  }
+
+  return true;
+};
 
 const formatDateForIdGate = (date: Date, withTime: boolean = true): string => {
   const year = date.getFullYear();
@@ -271,6 +391,11 @@ const FaceIDFilter = () => {
               employeeId: p.photoProfileId,
               fullName: [p.lastName, p.firstName, p.middleName].filter(Boolean).join(' ') || "",
               organization,
+              snils: !p.fieldStr1 ? 'Не заполнен СНИЛС' : !isValidSnils(p.fieldStr1) ? 'Некорректный снилс' : undefined,
+              country: !p.fieldInt1 ? 'Не заполнено гражданство' : undefined,
+              kig: p.fieldInt1 !== 643 && p.fieldInt1 !== 112 && !p.fieldStr3 ? 'Не заполнен КИГ ID' : undefined,
+              inn: !p.fieldStr2 ? 'Не заполнен ИНН' : !isValidInnPhysical(p.fieldStr2) ? 'Некорректный ИНН' : undefined,
+              okpdtr: !p.fieldStr4 ? 'Не заполнена должность' : !isValidOkpdtr(p.fieldStr4) ? 'Некорректная должность' : undefined,
             };
           });
 

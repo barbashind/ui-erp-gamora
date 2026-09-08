@@ -19,6 +19,7 @@ export const exportToExcelReport = (data: MergedItem[], filename: string = 'data
             'UID': item.employeeId,
             'ФИО': item.fullName,
             'Организация': item.organization,
+            'Ошибки': item.snils + '/' + item.inn + '/' + item.okpdtr + '/' + item.country + '/' + item.kig,
         }));
         
         const ws = XLSX.utils.json_to_sheet(wsData);
@@ -47,6 +48,7 @@ export const exportToExcelReport = (data: MergedItem[], filename: string = 'data
             { wch: 30 },
             { wch: 25 },
             { wch: 12 },
+            { wch: 25 },
         ];
         
         XLSX.utils.book_append_sheet(wb, ws, 'Отчет по СКУД');
