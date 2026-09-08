@@ -5,7 +5,7 @@ import { routeTarget } from "../routers/routes";
 import { ChoiceGroup } from "@consta/uikit/ChoiceGroup";
 import { useState } from "react";
 import { cnMixSpace } from "@consta/uikit/MixSpace";
-import MStroyFilter from "./IntegrationFaceIdPage/MStroyFilter";
+import FaceIdKBSFilter from "./IntegrationFaceIdPage/FaceIdKBSFilter";
 
 
 const FaceIDReportPage = () => { 
@@ -22,7 +22,7 @@ const FaceIDReportPage = () => {
                         },
                         {
                                 id: 1,
-                                label: 'ВСМ-1',
+                                label: 'Обеъекты ГК АВТОБАН (КБС)',
                         },      
                 ]
         
@@ -49,7 +49,7 @@ const FaceIDReportPage = () => {
                                 <FaceIDFilter />
                         )}
                         {activeTab.id === 1 && (
-                                <MStroyFilter />
+                                <FaceIdKBSFilter />
                         )}
                 </Layout>
         );

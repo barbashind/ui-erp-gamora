@@ -11,7 +11,7 @@ export type OvisionToken = {
 
 // Авторизация
 export const authOvision = async (): Promise<OvisionToken> => {
-    const response = await fetch('/oauth2/token?username=ab_admin&password=Buxzyk-gusnyj-0xofso', {
+    const response = await fetch('https://ovision-kbs.avtoban.ru/oauth2/token?username=avtoban-admin&password=SPVHi7pMfAR!@4qE012aycxx', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -26,7 +26,7 @@ export const authOvision = async (): Promise<OvisionToken> => {
 };
 
 export const getOvisionData = async (data: OvisionFilter, token: string): Promise<OvisionResponse> => {
-    const response = await fetch(`/api/v2/events?type[]=pass&timeRange[]=${data.dateFrom}&timeRange[]=${data.dateTo}&limit=10000`, {
+    const response = await fetch(`https://ovision-kbs.avtoban.ru/api/v2/events?type[]=pass&timeRange[]=${data.dateFrom}&timeRange[]=${data.dateTo}&limit=10000`, {
         method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,
@@ -45,7 +45,7 @@ export const getOvisionData = async (data: OvisionFilter, token: string): Promis
 export const fetchDepartmentTree = async (
   token: string,
 ): Promise<Map<string, string>> => {
-  const url = `/api/v2/departments/tree`;
+  const url = `https://ovision-kbs.avtoban.ru/api/v2/departments/tree`;
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -99,7 +99,7 @@ export const fetchDepartmentTree = async (
 
 
 export const getOvisionPeopleData = async (token: string): Promise<OvisionPeopleResponse> => {
-    const response = await fetch(`/api/v2/objects/person?search=name:&biometricsStatus=exist&limit=10000`, {
+    const response = await fetch(`https://ovision-kbs.avtoban.ru/api/v2/objects/person?search=name:&biometricsStatus=exist&limit=10000`, {
         method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,

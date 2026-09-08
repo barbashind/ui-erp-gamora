@@ -5,18 +5,16 @@ import { Text } from "@consta/uikit/Text";
 import { DatePicker } from "@consta/uikit/DatePicker";
 import { Button } from "@consta/uikit/Button";
 import { AntIcon } from "../../utils/AntIcon";
-import { DownloadOutlined, RetweetOutlined
+import { DownloadOutlined, 
   // , DownOutlined, UpOutlined 
 } from "@ant-design/icons";
 import { cnMixFontSize } from "../../utils/MixFontSize";
 import { Loader } from "@consta/uikit/Loader";
 import { Card } from "@consta/uikit/Card";
-import { authOvision, fetchDepartmentTree, getOvisionData, getOvisionPeopleData, OvisionToken } from "../../services/IntegrationOvisionRS";
+import { authOvision, fetchDepartmentTree, getOvisionData, getOvisionPeopleData, OvisionToken } from "../../services/IntegrationOvisionKBS";
 import { OvisionFilter } from "../../types/integration-ovision";
 import { Column } from "@consta/charts/Column";
 import { Bar } from '@consta/charts/Bar';
-import { authIDGate, getIDGateData, getIDGateOrgs, getIDGateProfile, processProfiles } from "../../services/IntegrationIDGate";
-import { IdGateDataResponse, IdGateFilter, IdGateProfile, OrgUnitItem, PassageItem } from "../../types/integration-idgate";
 import { exportToExcelReport } from "./ExportToExcelReport";
 
 export interface MergedItem {
@@ -44,26 +42,18 @@ export interface AggregatedBioItem {
   count: number;
 }
 
-const formatDateForIdGate = (date: Date, withTime: boolean = true): string => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  if (!withTime) return `${year}-${month}-${day}`;
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day} ${hours}:${minutes}`;
-};
-
-const FaceIDFilter = () => {
+const FaceIdKBSFilter = () => {
   const today = new Date();
   const day = new Date();
   day.setDate(day.getDate() - 14);
 
   const objects = [
-    { id: 0, name: 'СБВ' },
-    { id: 1, name: 'Родниковая 1' },
-    { id: 2, name: 'Кап. ремонт Киевское ш.53-65 км.' },
-    { id: 3, name: 'Ремонт моста над Пахрой' },
+    { id: 0, name: 'ВСМ-1' },
+    { id: 1, name: 'Аэропорт Горноалтайск' },
+    { id: 2, name: 'Аэропорт Курган' },
+    { id: 3, name: 'Аэропорт Светлогорск' },
+    { id: 4, name: 'Северный обход г.Омска' },
+    { id: 5, name: 'Аэропорт Семязино' },
   ];
 
   const setStartOfDay = (date: Date): Date => {
@@ -167,15 +157,21 @@ const FaceIDFilter = () => {
     for (const ev of events.data) {
       const zone = ev.event.zone;
       let objectName = '';
-      if (zone === 'Outer area→Родниковая 22' || zone === 'Родниковая 22→Outer area') {
-        objectName = 'СБВ';
-      } else if (zone === 'Outer area→Родниковая 5А' || zone === 'Родниковая 5А→Outer area') {
-        objectName = 'Родниковая 1';
-      } else if (zone === 'Outer area→Киевское 65' || zone === 'Киевское 65→Outer area') {
-        objectName = 'Ремонт моста над Пахрой';
+      if (zone === 'Выход→ВСМ-1' || zone === 'ВСМ-1→Выход') {
+        objectName = 'ВСМ-1';
+      } else if (zone === 'Выход→Аэропорт Горноалтайск' || zone === 'Аэропорт Горноалтайск→Выход') {
+        objectName = 'Аэропорт Горноалтайск';
+      } else if (zone === 'Выход→Аэропорт Курган' || zone === 'Аэропорт Курган→Выход') {
+        objectName = 'Аэропорт Курган';
+      } else if (zone === 'Выход→Аэропорт Светлогорск' || zone === 'Аэропорт Светлогорск→Выход') {
+        objectName = 'Аэропорт Светлогорск';
+      } else if (zone === 'Выход→Северный обход г.Омска' || zone === 'Северный обход г.Омска→Выход') {
+        objectName = 'Северный обход г.Омска';
+      } else if (zone === 'Выход→Аэропорт Семязино' || zone === 'Аэропорт Семязино→Выход') {
+        objectName = 'Аэропорт Семязино';
       }
       else {
-        objectName = 'Другая зона';
+        objectName = 'ВСМ-1';
       }
       const department = ev.department || '';
       const organization = (department.toLowerCase().includes('автоколонна')) ? 'АТФ' : (deptMap.get(department) || 'Неизвестно');
@@ -207,95 +203,19 @@ const FaceIDFilter = () => {
       if (!dateMin || !dateMax) return;
       setIsLoadingDataAnalysis(true);
       try {
-        // 1. Авторизация IDGate
-        const idGateAuth = await authIDGate({
-          login: "admin",
-          password: 'e227e04df45b25701ca460ffe2626e6d',
-          passwordText: "LRStZidYhEGaiBX"
-        });
-        const sessionId = idGateAuth.sessionId;
 
-        // 2. Загружаем справочник организаций IDGate (локальная переменная)
-        const orgUnitsMap = new Map<string, string>();
-        const orgsResponse = await getIDGateOrgs(sessionId);
-        orgsResponse.items.forEach((org: OrgUnitItem) => orgUnitsMap.set(org.id, org.name));
+        
 
-        // 3. Кэш профилей (локальная переменная)
-        const profileOrgCache = new Map<string, string>();
 
-        // Функция обработки IDGate
-        const processIdGateData = async (dateFrom: Date, dateTo: Date, sessionId: string): Promise<MergedItem[]> => {
-          const filter: IdGateFilter = {
-            dateFrom: formatDateForIdGate(dateFrom, true),
-            dateTo: formatDateForIdGate(dateTo, true),
-          };
-          const passagesResponse: IdGateDataResponse = await getIDGateData(sessionId, filter);
-          const passages = passagesResponse.items as PassageItem[];
-          if (!passages.length) return [];
-
-          const uniqueProfileIds = [...new Set(passages.map(p => p.photoProfileId))];
-
-          // Загружаем недостающие профили
-          const missingIds = uniqueProfileIds.filter(id => !profileOrgCache.has(id));
-          const chunkSize = 5;
-          for (let i = 0; i < missingIds.length; i += chunkSize) {
-            const chunk = missingIds.slice(i, i + chunkSize);
-            await Promise.all(chunk.map(async (profileId) => {
-              try {
-                const profile: IdGateProfile = await getIDGateProfile(sessionId, profileId);
-                const orgId = profile.orgUnitId || "";
-                profileOrgCache.set(profileId, orgId);
-              } catch (err) {
-                console.warn(`Не удалось загрузить профиль ${profileId}`, err);
-                profileOrgCache.set(profileId, "");
-              }
-            }));
-          }
-
-          // Формируем MergedItem
-          const enriched: MergedItem[] = passages.map(p => {
-            const orgId = profileOrgCache.get(p.photoProfileId) || "";
-            const organization = orgUnitsMap.get(orgId) || "Неизвестно";
-            const dateOnly = p.passageDateIn.split('T')[0];
-            let objectName = '';
-            if (p.locationCamName === "Капитальный ремонт Киевского ш. на участке 53-65 км. (Строительство и реконструкция Киевского шоссе на участке 53-65 км.)") {
-              objectName = 'Кап. ремонт Киевское ш.53-65 км.';
-            } else if (p.locationCamName === "Строительство проектируемых пр-дов от ул. Родниковая до ул. Волынская") {
-              objectName = 'Родниковая 1';
-            } else {
-              objectName = 'Другая зона';
-            }
-            return {
-              date: dateOnly,
-              object: objectName,
-              employeeId: p.photoProfileId,
-              fullName: [p.lastName, p.firstName, p.middleName].filter(Boolean).join(' ') || "",
-              organization,
-            };
-          });
-
-          // Уникальные сотрудники по дням
-          const groupedByDate = new Map<string, Map<string | number, MergedItem>>();
-          for (const item of enriched) {
-            if (!groupedByDate.has(item.date)) groupedByDate.set(item.date, new Map());
-            const dateMap = groupedByDate.get(item.date)!;
-            if (!dateMap.has(item.employeeId)) dateMap.set(item.employeeId, item);
-          }
-          const result: MergedItem[] = [];
-          for (const dateMap of groupedByDate.values()) result.push(...Array.from(dateMap.values()));
-          result.sort((a, b) => a.date.localeCompare(b.date));
-          return result;
-        };
 
         // 4. Параллельная загрузка Ovision и IDGate
-        const [ovisionItems, idgateItems, ovisionBioItems] = await Promise.all([
+        const [ovisionItems, ovisionBioItems] = await Promise.all([
           processOvisionData(dateMin, dateMax),
-          processIdGateData(dateMin, dateMax, sessionId),
           processOvisionBioData(),
         ]);
 
         // 5. Объединение
-        const mergedAll = [...ovisionItems, ...idgateItems];
+        const mergedAll = [...ovisionItems];
         mergedAll.sort((a, b) => a.date.localeCompare(b.date));
 
         setData(mergedAll);
@@ -333,26 +253,6 @@ const FaceIDFilter = () => {
   
   // const [viewStat, setViewStat] = useState<boolean>(false);
 
-  const [isLoadingData1, setIsLoadingData1] = useState<boolean>(false);
-const onClick = async () => {
-    setIsLoadingData1(true);
-    try {
-      // Авторизация
-      const idGateAuth = await authIDGate({
-          login: "admin",
-          password: 'e227e04df45b25701ca460ffe2626e6d',
-          passwordText: "LRStZidYhEGaiBX"
-      });
-      const sessionId = idGateAuth.sessionId;
-      await processProfiles(sessionId);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error(error);
-    } finally {
-      setIsLoadingData1(false);
-    }
-  };
-
   return (
     <Layout direction="column">
       <Layout direction="row" className={cnMixSpace({ mT: '2xl' })} style={{ flexWrap: 'wrap' }}>
@@ -384,16 +284,6 @@ const onClick = async () => {
           view="secondary"
           onClick={() => exportToExcelReport(data)}
           disabled={isLoadingDataAnalysis}
-          className={cnMixSpace({ mL: 'xl', mT: 'xl' })}
-        />
-
-        <Button
-          label="Обновить функции"
-          size="s"
-          iconLeft={AntIcon.asIconComponent(() => <RetweetOutlined className={cnMixFontSize('l') + cnMixSpace({ mR: 'xs' })} />)}
-          view="ghost"
-          onClick={() => onClick()}
-          disabled={isLoadingData1}
           className={cnMixSpace({ mL: 'xl', mT: 'xl' })}
         />
 
@@ -533,4 +423,4 @@ const onClick = async () => {
   );
 };
 
-export default FaceIDFilter;
+export default FaceIdKBSFilter;
