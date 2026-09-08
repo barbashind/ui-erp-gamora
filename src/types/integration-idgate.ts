@@ -96,6 +96,7 @@ export interface IdGateProfile {
   photoProfileTypeId: string;
   fieldStr1: string;
   fieldStr2: string;
+  fieldStr3: string;
   fieldStr4: string;
   fieldInt1: number;
   fieldDate1: string;

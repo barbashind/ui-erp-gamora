@@ -341,7 +341,16 @@ const FaceIDFilter = () => {
         orgsResponse.items.forEach((org: OrgUnitItem) => orgUnitsMap.set(org.id, org.name));
 
         // 3. Кэш профилей (локальная переменная)
-        const profileOrgCache = new Map<string, string>();
+        type ProfileCacheData = {
+          orgId: string;
+          snils: string;
+          inn: string;
+          citizenship: number;
+          kigId: string;
+          jobTitle: string;
+        };
+
+        const profileCache = new Map<string, ProfileCacheData>();
 
         // Функция обработки IDGate
         const processIdGateData = async (dateFrom: Date, dateTo: Date, sessionId: string): Promise<MergedItem[]> => {
@@ -355,28 +364,45 @@ const FaceIDFilter = () => {
 
           const uniqueProfileIds = [...new Set(passages.map(p => p.photoProfileId))];
 
-          // Загружаем недостающие профили
-          const missingIds = uniqueProfileIds.filter(id => !profileOrgCache.has(id));
+          // Загружаем недостающие профили (сохраняем все нужные поля)
+          const missingIds = uniqueProfileIds.filter(id => !profileCache.has(id));
           const chunkSize = 5;
           for (let i = 0; i < missingIds.length; i += chunkSize) {
             const chunk = missingIds.slice(i, i + chunkSize);
             await Promise.all(chunk.map(async (profileId) => {
               try {
                 const profile: IdGateProfile = await getIDGateProfile(sessionId, profileId);
-                const orgId = profile.orgUnitId || "";
-                profileOrgCache.set(profileId, orgId);
+                // Сохраняем все необходимые поля из профиля
+                profileCache.set(profileId, {
+                  orgId: profile.orgUnitId || "",
+                  snils: profile.fieldStr1 || "",        // СНИЛС
+                  inn: profile.fieldStr2 || "",          // ИНН
+                  citizenship: profile.fieldInt1 || 0,   // гражданство (код)
+                  kigId: profile.fieldStr3 || "",        // КИГ ID
+                  jobTitle: profile.fieldStr4 || "",     // должность (для ОКПДТР)
+                });
               } catch (err) {
                 console.warn(`Не удалось загрузить профиль ${profileId}`, err);
-                profileOrgCache.set(profileId, "");
+                // В случае ошибки сохраняем пустые значения
+                profileCache.set(profileId, {
+                  orgId: "",
+                  snils: "",
+                  inn: "",
+                  citizenship: 0,
+                  kigId: "",
+                  jobTitle: "",
+                });
               }
             }));
           }
 
           // Формируем MergedItem
           const enriched: MergedItem[] = passages.map(p => {
-            const orgId = profileOrgCache.get(p.photoProfileId) || "";
-            const organization = orgUnitsMap.get(orgId) || "Неизвестно";
+            const profileData = profileCache.get(p.photoProfileId)!;
+            const organization = orgUnitsMap.get(profileData.orgId) || "Неизвестно";
             const dateOnly = p.passageDateIn.split('T')[0];
+            
+            // Определение объекта (как было)
             let objectName = '';
             if (p.locationCamName === "Капитальный ремонт Киевского ш. на участке 53-65 км. (Строительство и реконструкция Киевского шоссе на участке 53-65 км.)") {
               objectName = 'Кап. ремонт Киевское ш.53-65 км.';
@@ -385,17 +411,25 @@ const FaceIDFilter = () => {
             } else {
               objectName = 'Другая зона';
             }
+
+            // Проверки полей из профиля
+            const snils = profileData.snils;
+            const inn = profileData.inn;
+            const citizenship = profileData.citizenship;
+            const kigId = profileData.kigId;
+            const jobTitle = profileData.jobTitle;
+
             return {
               date: dateOnly,
               object: objectName,
               employeeId: p.photoProfileId,
               fullName: [p.lastName, p.firstName, p.middleName].filter(Boolean).join(' ') || "",
               organization,
-              snils: !p.fieldStr1 ? 'Не заполнен СНИЛС' : !isValidSnils(p.fieldStr1) ? 'Некорректный снилс' : undefined,
-              country: !p.fieldInt1 ? 'Не заполнено гражданство' : undefined,
-              kig: p.fieldInt1 !== 643 && p.fieldInt1 !== 112 && !p.fieldStr3 ? 'Не заполнен КИГ ID' : undefined,
-              inn: !p.fieldStr2 ? 'Не заполнен ИНН' : !isValidInnPhysical(p.fieldStr2) ? 'Некорректный ИНН' : undefined,
-              okpdtr: !p.fieldStr4 ? 'Не заполнена должность' : !isValidOkpdtr(p.fieldStr4) ? 'Некорректная должность' : undefined,
+              snils: !snils ? 'Не заполнен СНИЛС' : !isValidSnils(snils) ? 'Некорректный СНИЛС' : undefined,
+              inn: !inn ? 'Не заполнен ИНН' : !isValidInnPhysical(inn) ? 'Некорректный ИНН' : undefined,
+              country: !citizenship ? 'Не заполнено гражданство' : undefined,
+              kig: (citizenship !== 643 && citizenship !== 112 && !kigId) ? 'Не заполнен КИГ ID' : undefined,
+              okpdtr: !jobTitle ? 'Не заполнена должность' : !isValidOkpdtr(jobTitle) ? 'Некорректная должность' : undefined,
             };
           });
 
