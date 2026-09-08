@@ -31,15 +31,17 @@ export default defineConfig({
                 changeOrigin: true,
                 secure: false,
             },
-            '/oauth2/token': {
+            '/ovision-rs-ebs.avtoban.ru': {
                 target: 'https://ovision-rs-ebs.avtoban.ru',
                 changeOrigin: true,
                 secure: false,
+                rewrite: (path) => path.replace(/^\/ovision-rs-ebs\.avtoban\.ru/, ''),
             },
-            '/api/v2': {
-                target: 'https://ovision-rs-ebs.avtoban.ru',
+            '/ovision-kbs.avtoban.ru': {
+                target: 'https://ovision-kbs.avtoban.ru',
                 changeOrigin: true,
                 secure: false,
+                rewrite: (path) => path.replace(/^\/ovision-kbs\.avtoban\.ru/, ''),
             },
              '/api/v1': {
                 target: 'https://10.229.0.3',
