@@ -134,3 +134,9 @@ export interface OvisionPeopleResponse {
     data: Obj[];
     meta: MetaData;
 }
+
+export interface OvisionPersonResponse {
+    status: ResponseStatus;
+    data: Obj;
+    meta: MetaData;
+}

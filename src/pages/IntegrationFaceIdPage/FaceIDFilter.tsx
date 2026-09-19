@@ -11,7 +11,7 @@ import { DownloadOutlined, RetweetOutlined
 import { cnMixFontSize } from "../../utils/MixFontSize";
 import { Loader } from "@consta/uikit/Loader";
 import { Card } from "@consta/uikit/Card";
-import { authOvision, fetchDepartmentTree, getOvisionData, getOvisionPeopleData, OvisionToken } from "../../services/IntegrationOvisionRS";
+import { authOvision, fetchDepartmentTree, getOvisionData, getOvisionPeopleData, getOvisionPersonData, OvisionToken } from "../../services/IntegrationOvisionRS";
 import { OvisionFilter } from "../../types/integration-ovision";
 import { Column } from "@consta/charts/Column";
 import { Bar } from '@consta/charts/Bar';
@@ -220,6 +220,7 @@ const FaceIDFilter = () => {
     result.sort((a, b) => a.date.localeCompare(b.date));
     return result;
   };
+
   const aggregateItems1 = (items: MergedItem[]): AggregatedItem[] => {
     const map = new Map<string, AggregatedItem>();
     for (const item of items) {
@@ -285,18 +286,30 @@ const FaceIDFilter = () => {
 
     const enriched: MergedItem[] = [];
     for (const ev of events.data) {
+      
+      await getOvisionPersonData(token.access_token, ev.objects_id).then((resp)=>{
+
       const zone = ev.event.zone;
-      let objectName = '';
-      if (zone === 'Outer area→Родниковая 22' || zone === 'Родниковая 22→Outer area') {
-        objectName = 'СБВ';
-      } else if (zone === 'Outer area→Родниковая 5А' || zone === 'Родниковая 5А→Outer area') {
-        objectName = 'Родниковая 1';
-      } else if (zone === 'Outer area→Киевское 65' || zone === 'Киевское 65→Outer area') {
-        objectName = 'Ремонт моста над Пахрой';
-      }
-      else {
-        objectName = 'Другая зона';
-      }
+        let objectName = '';
+        if (zone === 'Outer area→Родниковая 22' || zone === 'Родниковая 22→Outer area') {
+          objectName = 'СБВ';
+        } else if (zone === 'Outer area→Родниковая 5А' || zone === 'Родниковая 5А→Outer area') {
+          objectName = 'Родниковая 1';
+        } else if (zone === 'Outer area→Киевское 65' || zone === 'Киевское 65→Outer area') {
+          objectName = 'Ремонт моста над Пахрой';
+        }
+        else {
+          objectName = 'Другая зона';
+        }
+      
+      const snils = resp.data.values.find(el => el.name='snils')?.value;
+      const inn = resp.data.values.find(el => el.name='staffinn')?.value;
+      const citizenship = Number(resp.data.values.find(el => el.name='citizen')?.value);
+      const kigId = resp.data.values.find(el => el.name='kigid')?.value;
+      const jobTitle = resp.data.profiles[0].values.find(el => el.name='funres')?.value;
+
+
+      
       const department = ev.department || '';
       const organization = (department.toLowerCase().includes('автоколонна')) ? 'АТФ' : (deptMap.get(department) || 'Неизвестно');
       const dateOnly = ev.created_at.split('T')[0];
@@ -306,7 +319,15 @@ const FaceIDFilter = () => {
         employeeId: ev.objects_id,
         fullName: ev.title,
         organization,
+        snils: !snils ? 'Не заполнен СНИЛС' : !isValidSnils(snils) ? 'Некорректный СНИЛС' : undefined,
+        inn: !inn ? 'Не заполнен ИНН' : !isValidInnPhysical(inn) ? 'Некорректный ИНН' : undefined,
+        country: !citizenship ? 'Не заполнено гражданство' : undefined,
+        kig: (citizenship !== 643 && citizenship !== 112 && !kigId) ? 'Не заполнен КИГ ID' : undefined,
+        okpdtr: !jobTitle ? 'Не заполнена должность' : !isValidOkpdtr(jobTitle) ? 'Некорректная должность' : undefined,
       });
+      });
+      
+      
     }
     // Уникальные сотрудники по дням
     const groupedByDate = new Map<string, Map<string | number, MergedItem>>();
