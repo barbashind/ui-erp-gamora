@@ -59,17 +59,20 @@ const isValidSnils = (snils: string): boolean => {
   // 2) 3 цифры, дефис, 3 цифры, дефис, 3 цифры, пробел, 2 цифры
   const formatRegex = /^\d{11}$|^\d{3}-\d{3}-\d{3} \d{2}$/;
   if (!formatRegex.test(trimmed)) {
+    console.log('формат снилс норм')
     return false;
   }
 
   // Извлекаем все цифры
   const digits = trimmed.replace(/\D/g, '');
   if (digits.length !== 11) {
+    console.log('кол-во цифр снилс норм')
     return false; // избыточно, но оставим для надёжности
   }
 
   // Не допускаем все одинаковые цифры (необязательно, но часто используется)
   if (/^(\d)\1{10}$/.test(digits)) {
+    console.log('цифры снилс разные')
     return false;
   }
 
@@ -102,11 +105,13 @@ const isValidInnPhysical = (inn: string): boolean => {
 
   // ИНН физического лица должен содержать ровно 12 цифр
   if (digits.length !== 12) {
+    console.log('инн из 12')
     return false;
   }
 
   // Не допускаем все одинаковые цифры (например, 111111111111)
   if (/^(\d)\1{11}$/.test(digits)) {
+    console.log('инн из разных')
     return false;
   }
 
@@ -139,9 +144,7 @@ const isValidInnPhysical = (inn: string): boolean => {
   return actual11 === control11 && actual12 === control12;
 };
 
-const isValidOkpdtr = (
-  code: string,
-): boolean => {
+const isValidOkpdtr = (code: string): boolean => {
   // Удаляем все нецифровые символы
   const digits = code.replace(/\D/g, '');
 
@@ -302,13 +305,11 @@ const FaceIDFilter = () => {
           objectName = 'Другая зона';
         }
       
-      const snils = resp.data.values.find(el => el.name='snils')?.value;
-      const inn = resp.data.values.find(el => el.name='staffinn')?.value;
-      const citizenship = Number(resp.data.values.find(el => el.name='citizen')?.value);
-      const kigId = resp.data.values.find(el => el.name='kigid')?.value;
-      const jobTitle = resp.data.profiles[0].values.find(el => el.name='funres')?.value;
-
-
+      const snils = resp.data.values.find(el => el.name==='snils')?.value || null;
+      const inn = resp.data.values.find(el => el.name==='staffinn')?.value || null;
+      const citizenship = Number(resp.data.values.find(el => el.name==='citizen')?.value) || null;
+      const kigId = resp.data.values.find(el => el.name==='kigid')?.value || null;
+      const jobTitle = resp.data.profiles[0].values.find(el => el.name==='funres')?.value || null;
       
       const department = ev.department || '';
       const organization = (department.toLowerCase().includes('автоколонна')) ? 'АТФ' : (deptMap.get(department) || 'Неизвестно');
