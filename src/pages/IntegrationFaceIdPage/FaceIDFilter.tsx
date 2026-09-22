@@ -300,6 +300,12 @@ const FaceIDFilter = () => {
           objectName = 'Родниковая 1';
         } else if (zone === 'Outer area→Киевское 65' || zone === 'Киевское 65→Outer area') {
           objectName = 'Ремонт моста над Пахрой';
+        } else if (zone === 'Outer area→Солнцево-Бутово-Видное' || zone === 'Солнцево-Бутово-Видное→Outer area') {
+          objectName = 'СБВ';
+        } else if (zone === 'Outer area→Родниковая-Волынская' || zone === 'Родниковая-Волынская→Outer area') {
+          objectName = 'Родниковая 1';
+        } else if (zone === 'Outer area→Ремонт моста над р.Пахрой' || zone === 'Ремонт моста над р.Пахрой→Outer area') {
+          objectName = 'Ремонт моста над Пахрой';
         }
         else {
           objectName = 'Другая зона';
