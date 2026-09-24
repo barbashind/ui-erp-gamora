@@ -276,92 +276,111 @@ const FaceIDFilter = () => {
     return enrichedPeople;
   }
 
-  // Обработка Ovision
-  const processOvisionData = async (dateFrom: Date, dateTo: Date): Promise<MergedItem[]> => {
+
+
+  const processZonesData = async (): Promise<OvisionZone[]> => {
     const token: OvisionToken = await authOvision();
-    const filter: OvisionFilter = {
-      dateFrom: dateFrom.toISOString(),
-      dateTo: dateTo.toISOString(),
-    };
-    const events = await getOvisionData(filter, token.access_token);
-    const deptMap = await fetchDepartmentTree(token.access_token);
-    const enriched: MergedItem[] = [];
-
-    for (const ev of events.data) {
-      if (isCheckData) {
-        await getOvisionPersonData(token.access_token, ev.objects_id).then((resp)=>{
-          const zone = objects.find((item) => (  (item.id === Number(ev.event.zone_id)) || (item.id === Number(ev.event.zone_source_id)))) ;
-          const snils = resp.data.values.find(el => el.name==='snils')?.value || null;
-          const inn = resp.data.values.find(el => el.name==='staffinn')?.value || null;
-          const citizenship = Number(resp.data.values.find(el => el.name==='citizen')?.value) || null;
-          const kigId = resp.data.values.find(el => el.name==='kigid')?.value || null;
-          const jobTitle = resp.data.profiles[0].values.find(el => el.name==='funres')?.value || null;
-          
-          const department = ev.department || '';
-          const organization = (department.toLowerCase().includes('автоколонна')) ? 'АТФ' : (deptMap.get(department) || 'Неизвестно');
-          const dateOnly = ev.created_at.split('T')[0];
-          enriched.push({
-            date: dateOnly,
-            object: zone?.name || 'Не найдено',
-            employeeId: ev.objects_id,
-            fullName: ev.title,
-            organization,
-            snils: !snils ? 'Не заполнен СНИЛС' : !isValidSnils(snils) ? 'Некорректный СНИЛС' : undefined,
-            inn: !inn ? 'Не заполнен ИНН' : !isValidInnPhysical(inn) ? 'Некорректный ИНН' : undefined,
-            country: !citizenship ? 'Не заполнено гражданство' : undefined,
-            kig: (citizenship !== 643 && citizenship !== 112 && !kigId) ? 'Не заполнен КИГ ID' : undefined,
-            okpdtr: !jobTitle ? 'Не заполнена должность' : !isValidOkpdtr(jobTitle) ? 'Некорректная должность' : undefined,
-          });
-          })
-          .catch((error) => {
-            // Ошибка — запись не добавляется, цикл/поток продолжается
-            console.warn(
-              `[SKUD] Пропущена запись employeeId=${ev.objects_id}:`,
-              error?.message || error
-            );
-          });
-      } else {
-          const zone = objects.find((item) => (  (item.id === Number(ev.event.zone_id)) || (item.id === Number(ev.event.zone_source_id)))) ;
-          const department = ev.department || '';
-          const organization = (department.toLowerCase().includes('автоколонна')) ? 'АТФ' : (deptMap.get(department) || 'Неизвестно');
-          const dateOnly = ev.created_at.split('T')[0];
-
-          enriched.push({
-            date: dateOnly,
-            object: zone?.name || 'Не найдено',
-            employeeId: ev.objects_id,
-            fullName: ev.title,
-            organization,
-          });
-          
-      }
-    }
-
-    // Уникальные сотрудники по дням
-    const groupedByDate = new Map<string, Map<string | number, MergedItem>>();
-    for (const item of enriched) {
-      if (!groupedByDate.has(item.date)) groupedByDate.set(item.date, new Map());
-      const dateMap = groupedByDate.get(item.date)!;
-      if (!dateMap.has(item.employeeId)) dateMap.set(item.employeeId, item);
-    }
-    const result: MergedItem[] = [];
-    for (const dateMap of groupedByDate.values()) result.push(...Array.from(dateMap.values()));
-    result.sort((a, b) => a.date.localeCompare(b.date));
-    return result;
+    const resp = await getOvisionZones(token.access_token);
+    const zones = resp.data.filter((item) => Number(item.id) !== 0);
+    setObjects(zones);
+    return zones;
   };
-
-  const processZonesData = async () => {
-          const token: OvisionToken = await authOvision();
-            await getOvisionZones(token.access_token).then((resp)=> {setObjects(resp.data.filter(item=> (Number(item.id) !== 0)))});
-        }
 
   // Основной useEffect без кэширования в состоянии
   useEffect(() => {
-      void processZonesData();
+        // Обработка Ovision
+          const processOvisionData = async (
+          dateFrom: Date,
+          dateTo: Date,
+          zones: OvisionZone[],
+        ): Promise<MergedItem[]> => {
+          const token: OvisionToken = await authOvision();
+          const filter: OvisionFilter = {
+            dateFrom: dateFrom.toISOString(),
+            dateTo: dateTo.toISOString(),
+          };
+          const events = await getOvisionData(filter, token.access_token);
+          const deptMap = await fetchDepartmentTree(token.access_token);
+          const enriched: MergedItem[] = [];
+
+          for (const ev of events.data) {
+            if (isCheckData) {
+              await getOvisionPersonData(token.access_token, ev.objects_id).then((resp) => {
+                const zone = zones.find(
+                  (item) =>
+                    item.id === Number(ev.event.zone_id) ||
+                    item.id === Number(ev.event.zone_source_id),
+                );
+                const snils = resp.data.values.find((el) => el.name === 'snils')?.value || null;
+                const inn = resp.data.values.find((el) => el.name === 'staffinn')?.value || null;
+                const citizenship =
+                  Number(resp.data.values.find((el) => el.name === 'citizen')?.value) || null;
+                const kigId = resp.data.values.find((el) => el.name === 'kigid')?.value || null;
+                const jobTitle =
+                  resp.data.profiles[0].values.find((el) => el.name === 'funres')?.value || null;
+
+                const department = ev.department || '';
+                const organization = department.toLowerCase().includes('автоколонна')
+                  ? 'АТФ'
+                  : deptMap.get(department) || 'Неизвестно';
+                const dateOnly = ev.created_at.split('T')[0];
+                enriched.push({
+                  date: dateOnly,
+                  object: zone?.name || 'Не найдено',
+                  employeeId: ev.objects_id,
+                  fullName: ev.title,
+                  organization,
+                  snils: !snils ? 'Не заполнен СНИЛС' : !isValidSnils(snils) ? 'Некорректный СНИЛС' : undefined,
+                  inn: !inn ? 'Не заполнен ИНН' : !isValidInnPhysical(inn) ? 'Некорректный ИНН' : undefined,
+                  country: !citizenship ? 'Не заполнено гражданство' : undefined,
+                  kig: citizenship !== 643 && citizenship !== 112 && !kigId ? 'Не заполнен КИГ ID' : undefined,
+                  okpdtr: !jobTitle ? 'Не заполнена должность' : !isValidOkpdtr(jobTitle) ? 'Некорректная должность' : undefined,
+                });
+              }).catch((error) => {
+                console.warn(
+                  `[SKUD] Пропущена запись employeeId=${ev.objects_id}:`,
+                  error?.message || error,
+                );
+              });
+            } else {
+              const zone = zones.find(
+                (item) =>
+                  item.id === Number(ev.event.zone_id) ||
+                  item.id === Number(ev.event.zone_source_id),
+              );
+              const department = ev.department || '';
+              const organization = department.toLowerCase().includes('автоколонна')
+                ? 'АТФ'
+                : deptMap.get(department) || 'Неизвестно';
+              const dateOnly = ev.created_at.split('T')[0];
+
+              enriched.push({
+                date: dateOnly,
+                object: zone?.name || 'Не найдено',
+                employeeId: ev.objects_id,
+                fullName: ev.title,
+                organization,
+              });
+            }
+          }
+
+          const groupedByDate = new Map<string, Map<string | number, MergedItem>>();
+          for (const item of enriched) {
+            if (!groupedByDate.has(item.date)) groupedByDate.set(item.date, new Map());
+            const dateMap = groupedByDate.get(item.date)!;
+            if (!dateMap.has(item.employeeId)) dateMap.set(item.employeeId, item);
+          }
+          const result: MergedItem[] = [];
+          for (const dateMap of groupedByDate.values()) result.push(...Array.from(dateMap.values()));
+          result.sort((a, b) => a.date.localeCompare(b.date));
+          return result;
+        };
       const loadAllData = async () => {
       if (!dateMin || !dateMax) return;
       setIsLoadingDataAnalysis(true);
       try {
+
+        const zones = await processZonesData();
         // 1. Авторизация IDGate
         const idGateAuth = await authIDGate({
           login: "admin",
@@ -483,7 +502,7 @@ const FaceIDFilter = () => {
 
         // 4. Параллельная загрузка Ovision и IDGate
         const [ovisionItems, idgateItems, ovisionBioItems] = await Promise.all([
-          processOvisionData(dateMin, dateMax),
+          processOvisionData(dateMin, dateMax, zones),
           processIdGateData(dateMin, dateMax, sessionId),
           processOvisionBioData(),
         ]);
@@ -504,7 +523,6 @@ const FaceIDFilter = () => {
     };
 
     loadAllData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateMin, dateMax, isCheckData]);
 
   useEffect(() => {
