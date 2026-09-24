@@ -114,20 +114,3 @@ export const getOvisionPeopleData = async (token: string): Promise<OvisionPeople
     const resp: OvisionPeopleResponse = (await response.json()) as OvisionPeopleResponse;
     return resp;
 };
-
-export const getOvisionPersonData = async (token: string, tabNum: string): Promise<OvisionPeopleResponse> => {
-    const response = await fetch(`/ovision-kbs.avtoban.ru/api/v2/objects?profiles[]=emloyee&search=prof.tab_num:${tabNum}`, {
-        method: 'GET',
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            // mode: 'cors',
-        },
-    });
-    if (!response.ok) {
-        const errorResponse = await getErrorResponse(response);
-        throw new ErrorResponse(errorResponse);
-    }
-    const resp: OvisionPeopleResponse = (await response.json()) as OvisionPeopleResponse;
-    return resp;
-};
