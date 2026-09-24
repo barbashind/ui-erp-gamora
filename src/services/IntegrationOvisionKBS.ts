@@ -121,7 +121,7 @@ export const getOvisionPersonData = async (token: string, tabNum: string): Promi
         headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
-            mode: 'cors',
+            // mode: 'cors',
         },
     });
     if (!response.ok) {
