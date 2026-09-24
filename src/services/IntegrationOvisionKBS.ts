@@ -116,7 +116,7 @@ export const getOvisionPeopleData = async (token: string): Promise<OvisionPeople
 };
 
 export const getOvisionPersonData = async (token: string, name: string, tabNum: string): Promise<OvisionPeopleResponse> => {
-    const response = await fetch(`/ovision-kbs.avtoban.ru/api/v2/objects?profiles[]=emloyee&search=name:${name}&prof.tab_num[]=${tabNum}`, {
+    const response = await fetch(`/ovision-kbs.avtoban.ru/api/v2/objects?profiles[]=emloyee&search=prof.tab_num:${tabNum}`, {
         method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,
