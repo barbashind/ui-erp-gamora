@@ -140,3 +140,20 @@ export interface OvisionPersonResponse {
     data: Obj;
     meta: MetaData;
 }
+
+export interface OvisionZoneData {
+    is_outer_zone: boolean;
+}
+export interface OvisionZone {
+    data: OvisionZoneData;
+    id: number;
+    name: string;
+    updated_at: string;
+    created_at: string;
+}
+
+export interface OvisionZonesResponse {
+    status: ResponseStatus;
+    data: OvisionZone[];
+    meta: MetaData;
+}

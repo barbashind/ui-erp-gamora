@@ -1,4 +1,4 @@
-import { DepartmentNode, DepartmentsResponse, OvisionFilter, OvisionPeopleResponse, OvisionPersonResponse, OvisionResponse } from "../types/integration-ovision";
+import { DepartmentNode, DepartmentsResponse, OvisionFilter, OvisionPeopleResponse, OvisionPersonResponse, OvisionResponse, OvisionZonesResponse } from "../types/integration-ovision";
 import { ErrorResponse, getErrorResponse } from "./utils";
 
 export type OvisionToken = {
@@ -130,5 +130,22 @@ export const getOvisionPersonData = async (token: string, id: number): Promise<O
         throw new ErrorResponse(errorResponse);
     }
     const resp: OvisionPersonResponse = (await response.json()) as OvisionPersonResponse;
+    return resp;
+};
+
+export const getOvisionZones = async (token: string): Promise<OvisionZonesResponse> => {
+    const response = await fetch(`/ovision-rs-ebs.avtoban.ru/api/v2/zones`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            mode: 'cors',
+        },
+    });
+    if (!response.ok) {
+        const errorResponse = await getErrorResponse(response);
+        throw new ErrorResponse(errorResponse);
+    }
+    const resp: OvisionZonesResponse = (await response.json()) as OvisionZonesResponse;
     return resp;
 };

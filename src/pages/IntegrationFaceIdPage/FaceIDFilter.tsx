@@ -11,13 +11,14 @@ import { DownloadOutlined, RetweetOutlined
 import { cnMixFontSize } from "../../utils/MixFontSize";
 import { Loader } from "@consta/uikit/Loader";
 import { Card } from "@consta/uikit/Card";
-import { authOvision, fetchDepartmentTree, getOvisionData, getOvisionPeopleData, getOvisionPersonData, OvisionToken } from "../../services/IntegrationOvisionRS";
-import { OvisionFilter } from "../../types/integration-ovision";
+import { authOvision, fetchDepartmentTree, getOvisionData, getOvisionPeopleData, getOvisionPersonData, getOvisionZones, OvisionToken } from "../../services/IntegrationOvisionRS";
+import { OvisionFilter, OvisionZone } from "../../types/integration-ovision";
 import { Column } from "@consta/charts/Column";
 import { Bar } from '@consta/charts/Bar';
 import { authIDGate, getIDGateData, getIDGateOrgs, getIDGateProfile, processProfiles } from "../../services/IntegrationIDGate";
 import { IdGateDataResponse, IdGateFilter, IdGateProfile, OrgUnitItem, PassageItem } from "../../types/integration-idgate";
 import { exportToExcelReport } from "./ExportToExcelReport";
+import { Switch } from '@consta/uikit/Switch';
 
 export interface MergedItem {
   date: string;
@@ -167,6 +168,8 @@ const isValidOkpdtr = (code: string): boolean => {
   return true;
 };
 
+
+
 const formatDateForIdGate = (date: Date, withTime: boolean = true): string => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -180,14 +183,7 @@ const formatDateForIdGate = (date: Date, withTime: boolean = true): string => {
 const FaceIDFilter = () => {
   const today = new Date();
   const day = new Date();
-  day.setDate(day.getDate() - 14);
-
-  const objects = [
-    { id: 0, name: 'СБВ' },
-    { id: 1, name: 'Родниковая 1' },
-    { id: 2, name: 'Кап. ремонт Киевское ш.53-65 км.' },
-    { id: 3, name: 'Ремонт моста над Пахрой' },
-  ];
+  day.setDate(day.getDate() - 2);
 
   const setStartOfDay = (date: Date): Date => {
     const newDate = new Date(date);
@@ -200,6 +196,9 @@ const FaceIDFilter = () => {
     newDate.setHours(23, 59, 59, 999);
     return newDate;
   };
+
+  const [objects, setObjects] = useState<OvisionZone[]>([]);
+  const [isCheckData, setIsCheckData] = useState<boolean>(false);
 
   const [dateMin, setDateMin] = useState<Date | null>(setStartOfDay(day));
   const [dateMax, setDateMax] = useState<Date | null>(setEndOfDay(today));
@@ -286,66 +285,58 @@ const FaceIDFilter = () => {
     };
     const events = await getOvisionData(filter, token.access_token);
     const deptMap = await fetchDepartmentTree(token.access_token);
-
     const enriched: MergedItem[] = [];
-    for (const ev of events.data) {
-      
-      await getOvisionPersonData(token.access_token, ev.objects_id).then((resp)=>{
 
-      const zone = ev.event.zone;
-        let objectName = '';
-        if (zone === 'Outer area→Родниковая 22' || zone === 'Родниковая 22→Outer area') {
-          objectName = 'СБВ';
-        } else if (zone === 'Outer area→Родниковая 5А' || zone === 'Родниковая 5А→Outer area') {
-          objectName = 'Родниковая 1';
-        } else if (zone === 'Outer area→Киевское 65' || zone === 'Киевское 65→Outer area') {
-          objectName = 'Ремонт моста над Пахрой';
-        } else if (zone === 'Outer area→Солнцево-Бутово-Видное' || zone === 'Солнцево-Бутово-Видное→Outer area') {
-          objectName = 'СБВ';
-        } else if (zone === 'Outer area→Родниковая-Волынская' || zone === 'Родниковая-Волынская→Outer area') {
-          objectName = 'Родниковая 1';
-        } else if (zone === 'Outer area→Ремонт моста над р.Пахрой' || zone === 'Ремонт моста над р.Пахрой→Outer area') {
-          objectName = 'Ремонт моста над Пахрой';
-        } else if (zone === 'Внешняя зона→Родниковая 5А' || zone === 'Родниковая 5А→Внешняя зона') {
-          objectName = 'Родниковая 1';
-        } else if (zone === 'Внешняя зона→Киевское 65' || zone === 'Киевское 65→Внешняя зона') {
-          objectName = 'Ремонт моста над Пахрой';
-        } else if (zone === 'Внешняя зона→Солнцево-Бутово-Видное' || zone === 'Солнцево-Бутово-Видное→Внешняя зона') {
-          objectName = 'СБВ';
-        } else if (zone === 'Внешняя зона→Родниковая-Волынская' || zone === 'Родниковая-Волынская→Внешняя зона') {
-          objectName = 'Родниковая 1';
-        } else if (zone === 'Внешняя зона→Ремонт моста над р.Пахрой' || zone === 'Ремонт моста над р.Пахрой→Внешняя зона') {
-          objectName = 'Ремонт моста над Пахрой';
-        }
-        else {
-          objectName = 'Другая зона';
-        }
-      
-      const snils = resp.data.values.find(el => el.name==='snils')?.value || null;
-      const inn = resp.data.values.find(el => el.name==='staffinn')?.value || null;
-      const citizenship = Number(resp.data.values.find(el => el.name==='citizen')?.value) || null;
-      const kigId = resp.data.values.find(el => el.name==='kigid')?.value || null;
-      const jobTitle = resp.data.profiles[0].values.find(el => el.name==='funres')?.value || null;
-      
-      const department = ev.department || '';
-      const organization = (department.toLowerCase().includes('автоколонна')) ? 'АТФ' : (deptMap.get(department) || 'Неизвестно');
-      const dateOnly = ev.created_at.split('T')[0];
-      enriched.push({
-        date: dateOnly,
-        object: objectName,
-        employeeId: ev.objects_id,
-        fullName: ev.title,
-        organization,
-        snils: !snils ? 'Не заполнен СНИЛС' : !isValidSnils(snils) ? 'Некорректный СНИЛС' : undefined,
-        inn: !inn ? 'Не заполнен ИНН' : !isValidInnPhysical(inn) ? 'Некорректный ИНН' : undefined,
-        country: !citizenship ? 'Не заполнено гражданство' : undefined,
-        kig: (citizenship !== 643 && citizenship !== 112 && !kigId) ? 'Не заполнен КИГ ID' : undefined,
-        okpdtr: !jobTitle ? 'Не заполнена должность' : !isValidOkpdtr(jobTitle) ? 'Некорректная должность' : undefined,
-      });
-      });
-      
-      
+    for (const ev of events.data) {
+      if (isCheckData) {
+        await getOvisionPersonData(token.access_token, ev.objects_id).then((resp)=>{
+          const zone = objects.find((item) => (  (item.id === Number(ev.event.zone_id)) || (item.id === Number(ev.event.zone_source_id)))) ;
+          const snils = resp.data.values.find(el => el.name==='snils')?.value || null;
+          const inn = resp.data.values.find(el => el.name==='staffinn')?.value || null;
+          const citizenship = Number(resp.data.values.find(el => el.name==='citizen')?.value) || null;
+          const kigId = resp.data.values.find(el => el.name==='kigid')?.value || null;
+          const jobTitle = resp.data.profiles[0].values.find(el => el.name==='funres')?.value || null;
+          
+          const department = ev.department || '';
+          const organization = (department.toLowerCase().includes('автоколонна')) ? 'АТФ' : (deptMap.get(department) || 'Неизвестно');
+          const dateOnly = ev.created_at.split('T')[0];
+          enriched.push({
+            date: dateOnly,
+            object: zone?.name || 'Не найдено',
+            employeeId: ev.objects_id,
+            fullName: ev.title,
+            organization,
+            snils: !snils ? 'Не заполнен СНИЛС' : !isValidSnils(snils) ? 'Некорректный СНИЛС' : undefined,
+            inn: !inn ? 'Не заполнен ИНН' : !isValidInnPhysical(inn) ? 'Некорректный ИНН' : undefined,
+            country: !citizenship ? 'Не заполнено гражданство' : undefined,
+            kig: (citizenship !== 643 && citizenship !== 112 && !kigId) ? 'Не заполнен КИГ ID' : undefined,
+            okpdtr: !jobTitle ? 'Не заполнена должность' : !isValidOkpdtr(jobTitle) ? 'Некорректная должность' : undefined,
+          });
+          })
+          .catch((error) => {
+            // Ошибка — запись не добавляется, цикл/поток продолжается
+            console.warn(
+              `[SKUD] Пропущена запись employeeId=${ev.objects_id}:`,
+              error?.message || error
+            );
+          });
+      } else {
+          const zone = objects.find((item) => (  (item.id === Number(ev.event.zone_id)) || (item.id === Number(ev.event.zone_source_id)))) ;
+          const department = ev.department || '';
+          const organization = (department.toLowerCase().includes('автоколонна')) ? 'АТФ' : (deptMap.get(department) || 'Неизвестно');
+          const dateOnly = ev.created_at.split('T')[0];
+
+          enriched.push({
+            date: dateOnly,
+            object: zone?.name || 'Не найдено',
+            employeeId: ev.objects_id,
+            fullName: ev.title,
+            organization,
+          });
+          
+      }
     }
+
     // Уникальные сотрудники по дням
     const groupedByDate = new Map<string, Map<string | number, MergedItem>>();
     for (const item of enriched) {
@@ -359,9 +350,15 @@ const FaceIDFilter = () => {
     return result;
   };
 
+  const processZonesData = async () => {
+          const token: OvisionToken = await authOvision();
+            await getOvisionZones(token.access_token).then((resp)=> {setObjects(resp.data.filter(item=> (Number(item.id) !== 0)))});
+        }
+
   // Основной useEffect без кэширования в состоянии
   useEffect(() => {
-    const loadAllData = async () => {
+      void processZonesData();
+      const loadAllData = async () => {
       if (!dateMin || !dateMax) return;
       setIsLoadingDataAnalysis(true);
       try {
@@ -443,9 +440,9 @@ const FaceIDFilter = () => {
             // Определение объекта (как было)
             let objectName = '';
             if (p.locationCamName === "Капитальный ремонт Киевского ш. на участке 53-65 км. (Строительство и реконструкция Киевского шоссе на участке 53-65 км.)") {
-              objectName = 'Кап. ремонт Киевское ш.53-65 км.';
+              objectName = 'Кап. ремонт Киевское ш.53-65 км. (Pridex)';
             } else if (p.locationCamName === "Строительство проектируемых пр-дов от ул. Родниковая до ул. Волынская") {
-              objectName = 'Родниковая 1';
+              objectName = 'Родниковая 1 (Pridex)';
             } else {
               objectName = 'Другая зона';
             }
@@ -507,7 +504,8 @@ const FaceIDFilter = () => {
     };
 
     loadAllData();
-  }, [dateMin, dateMax]); // Зависимости только dateMin, dateMax
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateMin, dateMax, isCheckData]);
 
   useEffect(() => {
     const todayStr = dateMax ? dateMax.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
@@ -594,6 +592,16 @@ const onClick = async () => {
           className={cnMixSpace({ mL: 'xl', mT: 'xl' })}
         />
 
+        <Switch
+          label="Запустить с проверкой данных"
+          size="m"
+          checked={isCheckData}
+          onClick={() => setIsCheckData(!isCheckData)}
+          disabled={isLoadingData1}
+          className={cnMixSpace({ mL: 'xl', mT: 'xl' })}
+        />
+
+
       </Layout>
 
       <Layout direction="column" className={cnMixSpace({ mT: 'xl' })}>
@@ -639,50 +647,6 @@ const onClick = async () => {
                         ))}
                 </Layout>
 
-            {/* <Card border style={{ minWidth: '45vw', maxWidth: '80vw' }} className={cnMixSpace({ mL: 'xl', mT: 'm', p: 'm' })}>
-              <Layout direction="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text view="brand" size="l" weight="semibold">Статистика по регистрации биометрии</Text>
-                <Button
-                    view="clear"
-                    iconLeft={!viewStat ? 
-                        AntIcon.asIconComponent(() => <DownOutlined className={cnMixFontSize('l')} />) 
-                        : 
-                        AntIcon.asIconComponent(() => <UpOutlined className={cnMixFontSize('l')} />)
-                      }
-                    onClick={() => {setViewStat(!viewStat)}}
-                  />
-                  
-              </Layout>
-              {viewStat && (
-                    <Layout direction="column">
-                      <Layout direction="row" style={{ alignItems: 'center' }} className={cnMixSpace({p:'xs'})}>
-                        <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s" weight="bold" align="center">Объект</Text>
-                        <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s" weight="bold" align="center">Организация</Text>
-                        <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s" weight="bold" align="center">Загружено в СКУД</Text>
-                        <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s" weight="bold" align="center">С биометрией</Text>
-                        <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s" weight="bold" align="center">Проходят СКУД</Text>
-                      </Layout>
-
-                      <Layout direction="row" className={cnMixSpace({p:'xs'})} style={{border: '1px solid ', borderRadius:'9px', alignItems: 'center'}} >
-                        <Text style={{ minWidth: '150px', maxWidth: '150px' }} align="center">СБВ</Text>
-                        <Layout direction="column">
-                          <Layout direction="row" style={{alignItems: 'center'}}>
-                            <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s" align="center">ООО "Ромашка"</Text>
-                            <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s" align="center">145</Text>
-                            <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s" align="center">45 (32%)</Text>
-                            <Layout direction="column">
-                              <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s" >В среднем за день: 23</Text>
-                              <Text style={{ minWidth: '150px', maxWidth: '150px' }} size="s">Всего: 23</Text>
-                            </Layout>
-                            
-                          </Layout>
-                        </Layout>
-                      </Layout>
-
-                    </Layout>
-                  )}
-              
-            </Card> */}
             <Card border style={{ minWidth: '45vw', maxWidth: '80vw' }} className={cnMixSpace({ mL: 'xl', mT: 'm', p: 'm' })}>
               <Text view="brand" size="l" weight="semibold" className={cnMixSpace({ mB: 's' })}>Численность по СКУД</Text>
               <Column
