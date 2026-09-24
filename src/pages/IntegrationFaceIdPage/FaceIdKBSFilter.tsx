@@ -254,12 +254,11 @@ const FaceIdKBSFilter = () => {
   
   // const [viewStat, setViewStat] = useState<boolean>(false);
 
-  const [name, setName] = useState<string | null>(null);
   const [tabNum, setTabNum] = useState<string | null>(null);
 
-  const searchPerson = async (name : string, tabNum: string) => {
+  const searchPerson = async (tabNum: string) => {
     const token: OvisionToken = await authOvision();
-    const person = await getOvisionPersonData(token.access_token, name, tabNum);
+    const person = await getOvisionPersonData(token.access_token, tabNum);
     console.log(person)
   }
 
@@ -300,12 +299,6 @@ const FaceIdKBSFilter = () => {
 
       <Layout direction="row" className={cnMixSpace({ mT: '2xl' })} style={{ flexWrap: 'wrap' }}>
         <TextField 
-          label="Имя"
-          value={name}
-          onChange={(value)=> setName(value)}
-          className={cnMixSpace({ mL: 'xl', mT: 'xl' })}
-        />
-        <TextField 
           label="Таб. номер"
           value={tabNum}
           onChange={(value)=> setTabNum(value)}
@@ -316,7 +309,7 @@ const FaceIdKBSFilter = () => {
           size="s"
           iconLeft={AntIcon.asIconComponent(() => <SearchOutlined className={cnMixFontSize('l') + cnMixSpace({ mR: 'xs' })} />)}
           view="secondary"
-          onClick={() => void searchPerson(name ? name : '', tabNum ? tabNum : '')}
+          onClick={() => void searchPerson(tabNum ? tabNum : '')}
           disabled={isLoadingDataAnalysis}
           className={cnMixSpace({ mL: 'xl', mT: 'xl' })}
         />
