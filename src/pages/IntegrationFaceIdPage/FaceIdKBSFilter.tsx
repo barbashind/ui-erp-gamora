@@ -5,17 +5,18 @@ import { Text } from "@consta/uikit/Text";
 import { DatePicker } from "@consta/uikit/DatePicker";
 import { Button } from "@consta/uikit/Button";
 import { AntIcon } from "../../utils/AntIcon";
-import { DownloadOutlined, 
+import { DownloadOutlined, SearchOutlined, 
   // , DownOutlined, UpOutlined 
 } from "@ant-design/icons";
 import { cnMixFontSize } from "../../utils/MixFontSize";
 import { Loader } from "@consta/uikit/Loader";
 import { Card } from "@consta/uikit/Card";
-import { authOvision, fetchDepartmentTree, getOvisionData, getOvisionPeopleData, OvisionToken } from "../../services/IntegrationOvisionKBS";
+import { authOvision, fetchDepartmentTree, getOvisionData, getOvisionPeopleData, getOvisionPersonData, OvisionToken } from "../../services/IntegrationOvisionKBS";
 import { OvisionFilter } from "../../types/integration-ovision";
 import { Column } from "@consta/charts/Column";
 import { Bar } from '@consta/charts/Bar';
 import { exportToExcelReport } from "./ExportToExcelReport";
+import { TextField } from "@consta/uikit/TextField";
 
 export interface MergedItem {
   date: string;
@@ -253,6 +254,15 @@ const FaceIdKBSFilter = () => {
   
   // const [viewStat, setViewStat] = useState<boolean>(false);
 
+  const [name, setName] = useState<string | null>(null);
+  const [tabNum, setTabNum] = useState<string | null>(null);
+
+  const searchPerson = async (name : string, tabNum: string) => {
+    const token: OvisionToken = await authOvision();
+    const person = await getOvisionPersonData(token.access_token, name, tabNum);
+    console.log(person)
+  }
+
   return (
     <Layout direction="column">
       <Layout direction="row" className={cnMixSpace({ mT: '2xl' })} style={{ flexWrap: 'wrap' }}>
@@ -286,7 +296,30 @@ const FaceIdKBSFilter = () => {
           disabled={isLoadingDataAnalysis}
           className={cnMixSpace({ mL: 'xl', mT: 'xl' })}
         />
+      </Layout>
 
+      <Layout direction="row" className={cnMixSpace({ mT: '2xl' })} style={{ flexWrap: 'wrap' }}>
+        <TextField 
+          label="Имя"
+          value={name}
+          onChange={(value)=> setName(value)}
+          className={cnMixSpace({ mL: 'xl', mT: 'xl' })}
+        />
+        <TextField 
+          label="Таб. номер"
+          value={tabNum}
+          onChange={(value)=> setTabNum(value)}
+          className={cnMixSpace({ mL: 'xl', mT: 'xl' })}
+        />
+        <Button
+          label="Найти"
+          size="s"
+          iconLeft={AntIcon.asIconComponent(() => <SearchOutlined className={cnMixFontSize('l') + cnMixSpace({ mR: 'xs' })} />)}
+          view="secondary"
+          onClick={() => void searchPerson(name ? name : '', tabNum ? tabNum : '')}
+          disabled={isLoadingDataAnalysis}
+          className={cnMixSpace({ mL: 'xl', mT: 'xl' })}
+        />
       </Layout>
 
       <Layout direction="column" className={cnMixSpace({ mT: 'xl' })}>
