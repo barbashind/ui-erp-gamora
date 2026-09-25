@@ -1,4 +1,4 @@
-import { DepartmentNode, DepartmentsResponse, OvisionFilter, OvisionPeopleResponse, OvisionPersonResponse, OvisionResponse, OvisionZonesResponse } from "../types/integration-ovision";
+import { DepartmentNode, DepartmentsResponse, DepartmentTree, OvisionFilter, OvisionPeopleResponse, OvisionPersonResponse, OvisionResponse, OvisionZonesResponse } from "../types/integration-ovision";
 import { ErrorResponse, getErrorResponse } from "./utils";
 
 export type OvisionToken = {
@@ -42,9 +42,16 @@ export const getOvisionData = async (data: OvisionFilter, token: string): Promis
     return resp;
 };
 
+export const normalizeDeptName = (value: string | null | undefined): string =>
+  (value ?? '')
+    .replace(/ё/gi, 'е')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+
 export const fetchDepartmentTree = async (
   token: string,
-): Promise<Map<string, string>> => {
+): Promise<DepartmentTree> => {
   const url = `/ovision-rs-ebs.avtoban.ru/api/v2/departments/tree`;
   const response = await fetch(url, {
     headers: {
@@ -59,44 +66,68 @@ export const fetchDepartmentTree = async (
   }
 
   const json: DepartmentsResponse = await response.json();
-//   if (json.status.code !== 0) {
-//     throw new ErrorResponse(json.status.message);
-//   }
 
-  // Преобразуем дерево в карту "название отдела → корневая организация"
-  const nodeMap = new Map<number, DepartmentNode>();
+  // Плоский список узлов
+  const nodeById = new Map<number, DepartmentNode>();
   const flatten = (nodes: DepartmentNode[]) => {
     for (const node of nodes) {
-      nodeMap.set(node.id, node);
-      if (node.children) flatten(node.children);
+      nodeById.set(node.id, node);
+      if (node.children?.length) flatten(node.children);
     }
   };
-  flatten(json.data);
+  flatten(json.data ?? []);
 
+  // Для каждого узла находим корень (устойчиво к висячим родителям и циклам)
   const rootForId = new Map<number, string>();
-  for (const [id] of nodeMap.entries()) {
+  for (const id of nodeById.keys()) {
     let currId = id;
+    const visited = new Set<number>();
+
     while (true) {
-      const currNode = nodeMap.get(currId);
+      if (visited.has(currId)) break; // защита от циклов
+      visited.add(currId);
+
+      const currNode = nodeById.get(currId);
       if (!currNode) break;
+
+      // Корень
       if (currNode.parent_id === 0) {
         rootForId.set(id, currNode.name);
         break;
       }
+
+      const parent = nodeById.get(currNode.parent_id);
+      if (!parent) {
+        // Родитель не найден в дереве — считаем текущий узел корнем,
+        // чтобы не терять запись
+        rootForId.set(id, currNode.name);
+        break;
+      }
+
       currId = currNode.parent_id;
     }
   }
 
-  const deptToRoot = new Map<string, string>();
-  for (const [id, node] of nodeMap.entries()) {
+  // Строим обе карты
+  const byId = new Map<number, string>();
+  const byName = new Map<string, string>();
+
+  for (const [id, node] of nodeById) {
     const rootName = rootForId.get(id);
-    if (rootName) {
-      deptToRoot.set(node.name, rootName);
+    if (!rootName) continue;
+
+    byId.set(id, rootName);
+
+    const key = normalizeDeptName(node.name);
+    // Если одно и то же имя встречается у разных веток — оставляем первое,
+    // чтобы результат был детерминированным
+    if (!byName.has(key)) {
+      byName.set(key, rootName);
     }
   }
-  return deptToRoot;
-};
 
+  return { byName, byId, nodeById };
+};
 
 export const getOvisionPeopleData = async (token: string): Promise<OvisionPeopleResponse> => {
     const response = await fetch(`/ovision-rs-ebs.avtoban.ru/api/v2/objects/person?search=name:&biometricsStatus=exist&limit=10000`, {

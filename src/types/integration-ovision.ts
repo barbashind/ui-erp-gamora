@@ -92,6 +92,16 @@ export interface DepartmentsResponse {
   status: Status;
   data: DepartmentNode[];
 }
+
+export interface DepartmentTree {
+  /** нормализованное имя отдела → имя корневой организации */
+  byName: Map<string, string>;
+  /** id отдела → имя корневой организации */
+  byId: Map<number, string>;
+  /** id → узел (на случай, если понадобится что-то ещё) */
+  nodeById: Map<number, DepartmentNode>;
+}
+
 export interface Value {
     name: string,
     value: string

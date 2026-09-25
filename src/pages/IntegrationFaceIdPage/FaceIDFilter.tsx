@@ -11,8 +11,8 @@ import { DownloadOutlined, RetweetOutlined
 import { cnMixFontSize } from "../../utils/MixFontSize";
 import { Loader } from "@consta/uikit/Loader";
 import { Card } from "@consta/uikit/Card";
-import { authOvision, fetchDepartmentTree, getOvisionData, getOvisionPeopleData, getOvisionPersonData, getOvisionZones, OvisionToken } from "../../services/IntegrationOvisionRS";
-import { OvisionFilter, OvisionZone } from "../../types/integration-ovision";
+import { authOvision, fetchDepartmentTree, getOvisionData, getOvisionPeopleData, getOvisionPersonData, getOvisionZones, normalizeDeptName, OvisionToken } from "../../services/IntegrationOvisionRS";
+import { DepartmentTree, OvisionFilter, OvisionZone } from "../../types/integration-ovision";
 import { Column } from "@consta/charts/Column";
 import { Bar } from '@consta/charts/Bar';
 import { authIDGate, getIDGateData, getIDGateOrgs, getIDGateProfile, processProfiles } from "../../services/IntegrationIDGate";
@@ -180,6 +180,24 @@ const formatDateForIdGate = (date: Date, withTime: boolean = true): string => {
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 };
 
+const UNKNOWN = 'Неизвестно';
+
+/** Поиск организации по имени отдела */
+const resolveOrgByName = (
+  tree: DepartmentTree,
+  name: string | null | undefined,
+): string => tree.byName.get(normalizeDeptName(name)) ?? UNKNOWN;
+
+/** Поиск организации по id отдела */
+const resolveOrgById = (
+  tree: DepartmentTree,
+  id: number | string | null | undefined,
+): string => {
+  const numId = Number(id);
+  if (!Number.isFinite(numId)) return UNKNOWN;
+  return tree.byId.get(numId) ?? UNKNOWN;
+};
+
 const FaceIDFilter = () => {
   const today = new Date();
   const day = new Date();
@@ -252,13 +270,16 @@ const FaceIDFilter = () => {
   // Обработка Ovision по регистрации биометрии
   const processOvisionBioData = async (): Promise<MergedBioItem[]> => {
     const token: OvisionToken = await authOvision();
-    const deptMap = await fetchDepartmentTree(token.access_token);
+    const deptTree = await fetchDepartmentTree(token.access_token);
 
     const people = await getOvisionPeopleData(token.access_token);
     const enrichedPeople: MergedBioItem[] = [];
     for (const ev of people.data) {
-      const department = ev.profiles[0].department || '';
-      const organization = deptMap.get(department) || 'Неизвестно';
+      const department = ev.profiles[0].departments_id || '';
+                const isAtf = department.toLowerCase().includes('автоколонна');
+                const organization = isAtf
+                  ? 'АТФ'
+                  : resolveOrgById(deptTree, department);
       enrichedPeople.push({
         employeeId: ev.id,
         organization,
@@ -300,7 +321,7 @@ const FaceIDFilter = () => {
             dateTo: dateTo.toISOString(),
           };
           const events = await getOvisionData(filter, token.access_token);
-          const deptMap = await fetchDepartmentTree(token.access_token);
+          const deptTree = await fetchDepartmentTree(token.access_token);
           const enriched: MergedItem[] = [];
 
           for (const ev of events.data) {
@@ -319,10 +340,12 @@ const FaceIDFilter = () => {
                 const jobTitle =
                   resp.data.profiles[0].values.find((el) => el.name === 'funres')?.value || null;
 
-                const department = ev.department || '';
-                const organization = department.toLowerCase().includes('автоколонна')
+                const department = resp.data.profiles[0].departments_id || '';
+                const isAtf = department.toLowerCase().includes('автоколонна');
+                const organization = isAtf
                   ? 'АТФ'
-                  : deptMap.get(department) || 'Неизвестно';
+                  : resolveOrgById(deptTree, department);
+
                 const dateOnly = ev.created_at.split('T')[0];
                 enriched.push({
                   date: dateOnly,
@@ -349,9 +372,10 @@ const FaceIDFilter = () => {
                   item.id === Number(ev.event.zone_source_id),
               );
               const department = ev.department || '';
-              const organization = department.toLowerCase().includes('автоколонна')
+              const isAtf = department.toLowerCase().includes('автоколонна');
+              const organization = isAtf
                 ? 'АТФ'
-                : deptMap.get(department) || 'Неизвестно';
+                : resolveOrgByName(deptTree, department);
               const dateOnly = ev.created_at.split('T')[0];
 
               enriched.push({
