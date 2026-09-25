@@ -275,8 +275,9 @@ const FaceIDFilter = () => {
     const people = await getOvisionPeopleData(token.access_token);
     const enrichedPeople: MergedBioItem[] = [];
     for (const ev of people.data) {
+      const departmentName = ev.profiles[0].department || ''
       const department = ev.profiles[0].departments_id || '';
-                const isAtf = department.toLowerCase().includes('автоколонна');
+                const isAtf = departmentName.toLowerCase().includes('автоколонна');
                 const organization = isAtf
                   ? 'АТФ'
                   : resolveOrgById(deptTree, department);
@@ -341,7 +342,8 @@ const FaceIDFilter = () => {
                   resp.data.profiles[0].values.find((el) => el.name === 'funres')?.value || null;
 
                 const department = resp.data.profiles[0].departments_id || '';
-                const isAtf = department.toLowerCase().includes('автоколонна');
+                const departmentName = resp.data.profiles[0].department || '';
+                const isAtf = departmentName.toLowerCase().includes('автоколонна');
                 const organization = isAtf
                   ? 'АТФ'
                   : resolveOrgById(deptTree, department);
