@@ -90,6 +90,12 @@ const Auth = () => {
                                 
                               }
                             }}
+                            onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              void handleLogin()
+                            }
+                          }}
                             placeholder='Логин'
                             className={cnMixSpace({mT: 'xs'})}
                             size='m'
@@ -99,6 +105,12 @@ const Auth = () => {
                         <TextField 
                           value={NHPassword}
                           type={'password'}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              void handleLogin()
+                            }
+                          }}
                           onChange={(value) =>{
                               if (value) {
                                 setNHPassword(value)
@@ -113,7 +125,13 @@ const Auth = () => {
                     </Layout>
                     <Layout direction='row' style={{justifyContent: 'center'}} className={cnMixSpace({mT: 'm'})}>
                       <Button 
-                        label={'ВОЙТИ'} 
+                        label={'ВОЙТИ'}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            void handleLogin()
+                          }
+                        }}
                         onClick={()=>{void handleLogin()}} 
                         style={{width: '150px', alignSelf: 'center'}} 
                         size='s'

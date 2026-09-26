@@ -9,7 +9,7 @@ export interface TRouteTarget {
 export const routeTarget: TRouteTarget = {
         main: '/ufch',
         pointsManadgment: 'pointsManadgment',
-        faceIDReportPage: 'FaceID-report',
+        faceIDReportPage: 'dashboards',
         settings: 'settings',
         map: 'map',
     };

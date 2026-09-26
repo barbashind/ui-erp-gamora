@@ -7,10 +7,11 @@ import { concatUrl } from "../utils/urlUtils";
 // страницы
 // import MenuPage from "../pages/MenuPage";
 import MainPage from "../pages/MainPage";
-import FaceIDReportPage from "../pages/FaceIDReportPage";
+// import FaceIDReportPage from "../pages/FaceIDReportPage";
 import Settings from "../pages/Settings";
 import MonitoringPage from "../pages/MonitoringPage";
 import MapPoints from "../pages/MapPoints";
+import DashboardsPage from "../pages/DashboardsPage";
 // вкладки
 
 
@@ -19,8 +20,9 @@ const AppRouter = () => {
         return (
                 <Routes>
                         <Route element={<MainPage />} path={routeTarget.main} >
+                                <Route element={<DashboardsPage />} path={concatUrl([routeTarget.main, routeTarget.faceIDReportPage])} />
                                 <Route element={<MonitoringPage />} path={concatUrl([routeTarget.main, routeTarget.pointsManadgment])} />
-                                <Route element={<FaceIDReportPage />} path={concatUrl([routeTarget.main, routeTarget.faceIDReportPage])} />
+                                {/* <Route element={<FaceIDReportPage />} path={concatUrl([routeTarget.main, routeTarget.faceIDReportPage])} /> */}
                                 <Route element={<MapPoints />} path={concatUrl([routeTarget.main, routeTarget.map])} />
                                 <Route element={<Settings />} path={concatUrl([routeTarget.main, routeTarget.settings])} />
                         </Route>

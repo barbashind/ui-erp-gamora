@@ -1,12 +1,10 @@
 // компоненты React
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 
 // компоненты Consta
 import { Card } from "@consta/uikit/Card";
 import { Layout } from "@consta/uikit/Layout";
 import { cnMixSpace } from "@consta/uikit/MixSpace";
-import { ChoiceGroup } from "@consta/uikit/ChoiceGroup";
 
 // собственные компоненты 
 import { DashBoard } from "../global/DashBoard";
@@ -17,68 +15,16 @@ import { BarChartOutlined, FundProjectionScreenOutlined, NodeIndexOutlined } fro
 
 const MainPage = () => {
 
-        interface Tab {
-                id: number;
-                label: string;
-                navTo: string;
-        }
-
-        const tabs: Tab[] = [
-                {
-                        id: 0,
-                        label: 'Карта внедрения OVISION',
-                        navTo: routeTarget.map,
-                },
-                {
-                        id: 1,
-                        label: 'Дашборды по проходам',
-                        navTo: routeTarget.faceIDReportPage,
-                },
-                {
-                        id: 2,
-                        label: 'Мониторинг терминалов',
-                        navTo: routeTarget.pointsManadgment,
-                },
-        ]
-
-        const [activeTab, setActiveTab] = useState<Tab>(tabs[0])
+       
         const location = useLocation();
         const navigate = useNavigate();
-
-
-        useEffect(() => {
-                const tabsDef: Tab[] = [
-                        {
-                                id: 0,
-                                label: 'Карта внедрения OVISION',
-                                navTo: routeTarget.map,
-                        },
-                        {
-                                id: 1,
-                                label: 'Дашборды по проходам',
-                                navTo: routeTarget.faceIDReportPage,
-                        },
-                        {
-                                id: 2,
-                                label: 'Мониторинг терминалов',
-                                navTo: routeTarget.pointsManadgment,
-                        },
-                ]
-                tabsDef.findIndex(
-                        elem => concatUrl([routeTarget.main, elem.navTo]) == location.pathname
-                )
-                setActiveTab(tabsDef?.find((elem) => (concatUrl([routeTarget.main, elem.navTo]) == location.pathname)) ?? tabsDef[0])
-        }, [location]);
-
-        
-
 
         return (
                 <Layout direction="column" >
                         <DashBoard/>
                         <Card className={cnMixSpace({m:'m', p:'m' })} style={{ backgroundColor: 'var(--color-bg-default)' }}>
                                 <Layout direction="column">
-                                        {location.pathname != routeTarget.main && (
+                                        {/* {location.pathname != routeTarget.main && (
                                                 <Layout direction="row" style={{justifyContent: 'space-between'}}>
                                                         <ChoiceGroup
                                                                 value={activeTab}
@@ -93,7 +39,7 @@ const MainPage = () => {
                                                                         }}
                                                         />   
                                                 </Layout>    
-                                        )}
+                                        )} */}
                                         {location.pathname == routeTarget.main && (
                                                 <Layout direction='row' style={{justifyContent:'center'}}>
                                                         <Card 
@@ -102,7 +48,6 @@ const MainPage = () => {
                                                                 style={{cursor:'pointer', minWidth: '230px'}}
                                                                 onClick={()=> {
                                                                                 navigate(concatUrl([routeTarget.main, routeTarget.pointsManadgment]));
-                                                                                setActiveTab(tabs[0]);
                                                                         }}
                                                         >
                                                                 <Layout direction="column" style={{alignItems: 'center'}}>
@@ -119,7 +64,6 @@ const MainPage = () => {
                                                                 style={{cursor:'pointer', minWidth: '230px'}}
                                                                 onClick={()=> {
                                                                                 navigate(concatUrl([routeTarget.main, routeTarget.map]));
-                                                                                setActiveTab(tabs[1]);
                                                                         }}
                                                         >
                                                                 <Layout direction="column" style={{alignItems: 'center'}}>
@@ -136,13 +80,12 @@ const MainPage = () => {
                                                                 style={{cursor:'pointer', minWidth: '230px'}}
                                                                 onClick={()=> {
                                                                                 navigate(concatUrl([routeTarget.main, routeTarget.faceIDReportPage]));
-                                                                                setActiveTab(tabs[2]);
                                                                         }}
                                                         >
                                                                 <Layout direction="column" style={{alignItems: 'center'}}>
                                                                         <BarChartOutlined style={{ fontSize: '48px', color: 'var(--color-blue-ui)' }}/>
                                                                         <Text  style={{ color: 'var(--color-blue-ui)' }} className={cnMixSpace({mT: 'm'})}>
-                                                                                Дашборд по проходам  
+                                                                                Дашборды
                                                                         </Text>
                                                                 </Layout>
                                                                 

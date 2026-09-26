@@ -8,7 +8,7 @@ import { cnMixSpace } from "@consta/uikit/MixSpace";
 import { ContextMenu } from '@consta/uikit/ContextMenu';
 
 // Иконки
-import {  LogoutOutlined, MenuOutlined } from "@ant-design/icons";
+import {  HomeFilled, LogoutOutlined, MenuOutlined } from "@ant-design/icons";
 
 // Доп. хуки
 import { AntIcon } from "../utils/AntIcon";
@@ -55,32 +55,26 @@ const menuItems = [
 const navigate = useNavigate();
 
         return (
-                <Layout direction="row" className={cnMixSpace({pH: 'm', pV:'s', })} style={{justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--color-bg-default)'}}>
+                <Layout direction="row" className={cnMixSpace({pH: 'm', pV:'s', })} style={{justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--color-bg-default)', borderBottom: '2px solid var(--color-bg-brand)'}}>
+                                
+                                
                                 <Button 
-                                                iconLeft={AntIcon.asIconComponent(() => (
-                                                        <MenuOutlined 
-                                                                className={cnMixFontSize('l')}
-                                                        />
-                                                ))}
-                                                onClick={()=>{ setIsMenuOpen(true); }}
-                                                size="m"
-                                                view="clear"
-                                                ref={menuRef}
-                                        />
-                                <ContextMenu
-                                        isOpen={isMenuOpen}
-                                        items={menuItems}
-                                        getItemLabel={(item) => item.label}
-                                        anchorRef={menuRef}
-                                        getItemLeftIcon={(item) => AntIcon.asIconComponent(item.icon)}
-                                        onItemClick={(item) => {item.function();}}
-                                        size="s"
-                                        onClickOutside={()=>{ setIsMenuOpen(false); }}
-                                        className={cnMixSpace({p:'s', mT:'s'})}
+                                        iconLeft={AntIcon.asIconComponent(() => (
+                                                <HomeFilled 
+                                                        className={cnMixFontSize('l')}
+                                                />
+                                        ))}
+                                        title="Вернуться на гланвную"
+                                        onClick={()=> {
+                                                navigate(concatUrl([routeTarget.main]));
+                                        }}
+                                        size="l"
+                                        view="clear"
+                                        ref={menuRef}
                                 />
 
                                 <Text 
-                                        style={{color: 'var(--color-blue-ui)'}} 
+                                        style={{color: 'var(--color-blue-ui)', cursor: 'pointer'}} 
                                         weight="medium" 
                                         size="2xl" 
                                         spacing="l"
@@ -116,8 +110,29 @@ const navigate = useNavigate();
                                                         
                                                 </>
                                         )}
-                                       
-                                        
+                                       <Button 
+                                                iconLeft={AntIcon.asIconComponent(() => (
+                                                        <MenuOutlined 
+                                                                className={cnMixFontSize('l')}
+                                                        />
+                                                ))}
+                                                onClick={()=>{ setIsMenuOpen(true); }}
+                                                size="m"
+                                                view="clear"
+                                                ref={menuRef}
+                                                className={cnMixSpace({mL: 'xl'})}
+                                        />
+                                        <ContextMenu
+                                        isOpen={isMenuOpen}
+                                        items={menuItems}
+                                        getItemLabel={(item) => item.label}
+                                        anchorRef={menuRef}
+                                        getItemLeftIcon={(item) => AntIcon.asIconComponent(item.icon)}
+                                        onItemClick={(item) => {item.function();}}
+                                        size="s"
+                                        onClickOutside={()=>{ setIsMenuOpen(false); }}
+                                        className={cnMixSpace({p:'s', mT:'s'})}
+                                />
                                 </Layout>
                 </Layout>
                 

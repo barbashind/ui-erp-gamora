@@ -25,7 +25,7 @@ export interface MergedItem {
   object: string;
   employeeId: number | string;
   fullName: string;
-  organization: string;
+  organization?: string;
   snils?: string;
   kig?: string;
   country?: string;
@@ -234,7 +234,7 @@ const FaceIDFilter = () => {
       const key = `${item.organization}|${item.date}|${item.object}`;
       const existing = map.get(key);
       if (existing) existing.count += 1;
-      else map.set(key, { organization: item.organization, date: item.date, object: item.object, count: 1 });
+      else map.set(key, { organization: item.organization || '', date: item.date, object: item.object, count: 1 });
     }
     const result = Array.from(map.values());
     result.sort((a, b) => a.date.localeCompare(b.date));
@@ -247,7 +247,7 @@ const FaceIDFilter = () => {
       const key = `${item.date}|${item.object}`;
       const existing = map.get(key);
       if (existing) existing.count += 1;
-      else map.set(key, { organization: item.organization, date: item.date, object: item.object, count: 1 });
+      else map.set(key, { organization: item.organization || '', date: item.date, object: item.object, count: 1 });
     }
     const result = Array.from(map.values());
     result.sort((a, b) => a.date.localeCompare(b.date));
@@ -310,6 +310,7 @@ const FaceIDFilter = () => {
 
   // Основной useEffect без кэширования в состоянии
   useEffect(() => {
+
         // Обработка Ovision
           const processOvisionData = async (
           dateFrom: Date,
@@ -401,9 +402,12 @@ const FaceIDFilter = () => {
           result.sort((a, b) => a.date.localeCompare(b.date));
           return result;
         };
+      
       const loadAllData = async () => {
       if (!dateMin || !dateMax) return;
+
       setIsLoadingDataAnalysis(true);
+
       try {
 
         const zones = await processZonesData();

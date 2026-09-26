@@ -129,8 +129,25 @@ export const fetchDepartmentTree = async (
   return { byName, byId, nodeById };
 };
 
+export const getOvisionPeopleBioData = async (token: string): Promise<OvisionPeopleResponse> => {
+    const response = await fetch(`/ovision-rs-ebs.avtoban.ru/api/v2/objects/person?search=name:&biometricsStatus=exist&limit=20000`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            mode: 'cors',
+        },
+    });
+    if (!response.ok) {
+        const errorResponse = await getErrorResponse(response);
+        throw new ErrorResponse(errorResponse);
+    }
+    const resp: OvisionPeopleResponse = (await response.json()) as OvisionPeopleResponse;
+    return resp;
+};
+
 export const getOvisionPeopleData = async (token: string): Promise<OvisionPeopleResponse> => {
-    const response = await fetch(`/ovision-rs-ebs.avtoban.ru/api/v2/objects/person?search=name:&biometricsStatus=exist&limit=10000`, {
+    const response = await fetch(`/ovision-rs-ebs.avtoban.ru/api/v2/objects/person?search=name:&limit=20000`, {
         method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,
