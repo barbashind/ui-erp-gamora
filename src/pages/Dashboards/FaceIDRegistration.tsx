@@ -7,8 +7,8 @@ import { Loader } from '@consta/uikit/Loader';
 import { Bar } from '@consta/charts/Bar';
 import { useEffect, useState } from "react";
 import { DepartmentTree } from "../../types/integration-ovision";
-import { authOvision, fetchDepartmentTree, getOvisionPeopleBioData, OvisionToken } from "../../services/IntegrationOvisionRS";
-import { authOvisionKBS, fetchDepartmentTreeKBS, getOvisionPeopleBioDataKBS, OvisionTokenKBS } from "../../services/IntegrationOvisionKBS";
+import { authOvision, fetchDepartmentTree, getOvisionPeopleBioData, getOvisionPeopleData, OvisionToken } from "../../services/IntegrationOvisionRS";
+import { authOvisionKBS, fetchDepartmentTreeKBS, getOvisionPeopleBioDataKBS, getOvisionPeopleDataKBS, OvisionTokenKBS } from "../../services/IntegrationOvisionKBS";
 
 
 const UNKNOWN = 'Неизвестно';
@@ -23,6 +23,15 @@ const resolveOrgById = (
   return tree.byId.get(numId) ?? UNKNOWN;
 };
 
+export interface MergedPersonItem {
+  employeeId: number | string;
+  name: string;
+  organization: string;
+  statusRS: boolean;
+  statusKBS: boolean;
+}
+
+
 export interface MergedBioItem {
   employeeId: number | string;
   organization: string;
@@ -36,6 +45,12 @@ export interface AggregatedBioItem {
 const FaceIDReport = () => {
         
 const [isLoadPeople, setIsLoadPeople] = useState<boolean>(true);
+
+const [persons, setPersons] = useState<MergedPersonItem[]>([]);
+const [personsNot, setPersonsNot] = useState<MergedPersonItem[]>([]);
+const [personsKBS, setPersonsKBS] = useState<MergedPersonItem[]>([]);
+const [personsKBSNot, setPersonsKBSNot] = useState<MergedPersonItem[]>([]);
+const [personsAll, setPersonsAll] = useState<MergedPersonItem[]>([]);
 
 const [bioData, setBioData] = useState<AggregatedBioItem[]>([]);
 const [bioDataKBS, setBioDataKBS] = useState<AggregatedBioItem[]>([]);
@@ -55,12 +70,65 @@ const [bioDataKBS, setBioDataKBS] = useState<AggregatedBioItem[]>([]);
 
 // Основной useEffect
 useEffect(() => {
+
+        const processOvisionData = async (): Promise<MergedBioItem[]> => {
+        const token: OvisionToken = await authOvision();
+        const deptTree = await fetchDepartmentTree(token.access_token);
+
+        const people = await getOvisionPeopleData(token.access_token);
+        const enrichedPeople: MergedPersonItem[] = [];
+        for (const ev of people.data) {
+        const departmentName = ev.profiles[0].department || ''
+        const department = ev.profiles[0].departments_id || '';
+                        const isAtf = departmentName.toLowerCase().includes('автоколонна');
+                        const organization = isAtf
+                        ? 'АТФ'
+                        : resolveOrgById(deptTree, department);
+        enrichedPeople.push({
+                employeeId: ev.id,
+                organization,
+                name: ev.name,
+                statusKBS: false,
+                statusRS: false
+        });
+        }
+        setPersonsNot(enrichedPeople)
+        return enrichedPeople;
+        }
+
+        const processOvisionDataKBS = async (): Promise<MergedBioItem[]> => {
+        const token: OvisionTokenKBS= await authOvisionKBS();
+        const deptTree = await fetchDepartmentTreeKBS(token.access_token);
+
+        const people = await getOvisionPeopleDataKBS(token.access_token);
+        const enrichedPeople: MergedPersonItem[] = [];
+        for (const ev of people.data) {
+        const departmentName = ev.profiles[0].department || ''
+        const department = ev.profiles[0].departments_id || '';
+                        const isAtf = departmentName.toLowerCase().includes('автоколонна');
+                        const organization = isAtf
+                        ? 'АТФ'
+                        : resolveOrgById(deptTree, department);
+        enrichedPeople.push({
+                employeeId: ev.id,
+                organization,
+                name: ev.name,
+                statusKBS: false,
+                statusRS: false,
+        });
+        }
+        setPersonsKBSNot(enrichedPeople)
+        return enrichedPeople;
+        }
+
         const processOvisionBioData = async (): Promise<MergedBioItem[]> => {
         const token: OvisionToken = await authOvision();
         const deptTree = await fetchDepartmentTree(token.access_token);
 
         const people = await getOvisionPeopleBioData(token.access_token);
         const enrichedPeople: MergedBioItem[] = [];
+        const enrichedPeople1: MergedPersonItem[] = [];
+
         for (const ev of people.data) {
         const departmentName = ev.profiles[0].department || ''
         const department = ev.profiles[0].departments_id || '';
@@ -72,8 +140,16 @@ useEffect(() => {
                 employeeId: ev.id,
                 organization,
         });
+        enrichedPeople1.push({
+                employeeId: ev.id,
+                organization,
+                name: ev.name,
+                statusKBS: false,
+                statusRS: true,
+        });
         }
-        setBioData(aggregateItemsBio(enrichedPeople))
+        setPersons(enrichedPeople1);
+        setBioData(aggregateItemsBio(enrichedPeople));
         return enrichedPeople;
         }
 
@@ -83,6 +159,7 @@ useEffect(() => {
 
         const people = await getOvisionPeopleBioDataKBS(token.access_token);
         const enrichedPeople: MergedBioItem[] = [];
+        const enrichedPeople1: MergedPersonItem[] = [];
         for (const ev of people.data) {
         const departmentName = ev.profiles[0].department || ''
         const department = ev.profiles[0].departments_id || '';
@@ -94,7 +171,15 @@ useEffect(() => {
                 employeeId: ev.id,
                 organization,
         });
+        enrichedPeople1.push({
+                employeeId: ev.id,
+                organization,
+                name: ev.name,
+                statusKBS: true,
+                statusRS: false,
+        });
         }
+        setPersonsKBS(enrichedPeople1);
         setBioDataKBS(aggregateItemsBio(enrichedPeople))
         return enrichedPeople;
         }
@@ -105,6 +190,8 @@ useEffect(() => {
         try {
                 void processOvisionBioData();
                 void processOvisionBioDataKBS();
+                void processOvisionData();
+                void processOvisionDataKBS();
 
         } catch (err) {
                 console.error("Ошибка загрузки данных:", err);
@@ -115,6 +202,32 @@ useEffect(() => {
         loadAllData();
   
 }, []);
+
+useEffect(() => {
+  const map = new Map<string, MergedPersonItem>();
+
+  const merge = (list: MergedPersonItem[]) => {
+    for (const item of list) {
+      // Ключ: name + organization. Разделитель обязателен, иначе "ab"+"c" == "a"+"bc"
+      const key = `${item.name}||${item.organization}`;
+      const existing = map.get(key);
+
+      if (existing) {
+        existing.statusRS = existing.statusRS || item.statusRS;
+        existing.statusKBS = existing.statusKBS || item.statusKBS;
+      } else {
+        map.set(key, { ...item });
+      }
+    }
+  };
+
+  merge(persons);
+  merge(personsNot);
+  merge(personsKBS);
+  merge(personsKBSNot);
+
+  setPersonsAll(Array.from(map.values()));
+}, [persons, personsNot, personsKBS, personsKBSNot]);
 
 const colorMapLine: { [key: string]: string } = {
                 a: '#063955',
@@ -131,27 +244,81 @@ return (
         style={{ flexWrap: 'wrap', gap: 'var(--space-m)' }}
         className={cnMixSpace({ mT: 'l', mL: 'xl' })}
       >
-        {/* Всего объектов */}
-        <Card border className={cnMixSpace({ p: 'm' })} style={{ minWidth: 55, flex: '1 1 50px' }}>
-                        <Text size="2xl" view="secondary">
-                                Зарегистрировано в Мой ID
-                        </Text>
-                        {isLoadPeople ? (<Loader/>) :
-                                (<Text size="4xl" weight="bold" view="brand" >
-                                        {bioData.length}
-                                </Text>)
-                        }
-        </Card>
-        <Card border className={cnMixSpace({ p: 'm' })} style={{ minWidth: 55, flex: '1 1 50px' }}>
-                        <Text size="2xl" view="secondary">
-                                Зарегистрировано в КБС
-                        </Text>
-                        {isLoadPeople ? (<Loader/>) :
-                                (<Text size="4xl" weight="bold" view="brand" >
-                                        {bioDataKBS.length}
-                                </Text>)
-                        }
-        </Card>
+        {/* Всего  */}
+        <Card border className={cnMixSpace({ p: 'm' })} style={{ minWidth: 260, flex: '1 1 240px' }}>
+                  <Text size="2xl" view="secondary" className={cnMixSpace({ mB: 'xs' })}>
+                    Всего в OVISION
+                  </Text>
+                  <Layout direction="row" style={{ gap: 'var(--space-l)', alignItems: 'baseline' }}>
+                    
+                    <Layout direction="column" style={{ minWidth: 80, flex: '1 1 80px' }}>
+                      <Text size="m" view="secondary">Зарегистрировано</Text>
+                      {isLoadPeople ? (<Loader/>) :
+                      ((<Text size="4xl" weight="bold" view="brand" >
+                                        {personsAll.filter(item=> (item.statusKBS || item.statusRS)).length}
+                                </Text>))
+                      }
+                    </Layout>
+                    <Layout direction="column" style={{ minWidth: 80, flex: '1 1 80px' }}>
+                      <Text size="m" view="secondary">Осталось</Text>
+                      {isLoadPeople ? (<Loader/>) :
+                      ((<Text size="4xl" weight="bold" view="brand" >
+                                        {personsAll.filter(item=> (!item.statusKBS && !item.statusRS)).length}
+                                </Text>))
+                      }
+                    </Layout>
+                  </Layout>
+          </Card>
+
+          <Card border className={cnMixSpace({ p: 'm' })} style={{ minWidth: 260, flex: '1 1 240px' }}>
+                  <Text size="2xl" view="secondary" className={cnMixSpace({ mB: 'xs' })}>
+                    Мой ID
+                  </Text>
+                  <Layout direction="row" style={{ gap: 'var(--space-l)', alignItems: 'baseline' }}>
+                    
+                    <Layout direction="column" style={{ minWidth: 80, flex: '1 1 80px' }}>
+                      <Text size="m" view="secondary">Зарегистрировано</Text>
+                      {isLoadPeople ? (<Loader/>) :
+                      ((<Text size="4xl" weight="bold" view="brand" >
+                                        {personsAll.filter(item=> (item.statusRS)).length}
+                                </Text>))
+                      }
+                    </Layout>
+                    <Layout direction="column" style={{ minWidth: 80, flex: '1 1 80px' }}>
+                      <Text size="m" view="secondary">Осталось</Text>
+                      {isLoadPeople ? (<Loader/>) :
+                      ((<Text size="4xl" weight="bold" view="brand" >
+                                        {personsAll.filter(item=> (!item.statusRS)).length}
+                                </Text>))
+                      }
+                    </Layout>
+                  </Layout>
+          </Card>
+
+          <Card border className={cnMixSpace({ p: 'm' })} style={{ minWidth: 260, flex: '1 1 240px' }}>
+                  <Text size="2xl" view="secondary" className={cnMixSpace({ mB: 'xs' })}>
+                    Госуслуги биометрия
+                  </Text>
+                  <Layout direction="row" style={{ gap: 'var(--space-l)', alignItems: 'baseline' }}>
+                    
+                    <Layout direction="column" style={{ minWidth: 80, flex: '1 1 80px' }}>
+                      <Text size="m" view="secondary">Зарегистрировано</Text>
+                      {isLoadPeople ? (<Loader/>) :
+                      ((<Text size="4xl" weight="bold" view="brand" >
+                                        {personsAll.filter(item=> (item.statusKBS)).length}
+                                </Text>))
+                      }
+                    </Layout>
+                    <Layout direction="column" style={{ minWidth: 80, flex: '1 1 80px' }}>
+                      <Text size="m" view="secondary">Осталось</Text>
+                      {isLoadPeople ? (<Loader/>) :
+                      ((<Text size="4xl" weight="bold" view="brand" >
+                                        {personsAll.filter(item=> (!item.statusKBS)).length}
+                                </Text>))
+                      }
+                    </Layout>
+                  </Layout>
+          </Card>
 
       </Layout>
 
@@ -196,7 +363,7 @@ return (
                 <Layout direction="column">
                 <Bar
                         style={{ marginBottom: 'var(--space-m)', minWidth: '45vw', maxWidth: '80vw'}}
-                        data={bioData}
+                        data={bioDataKBS}
                         xField="count"
                         yField="organization"
                         seriesField="organization"

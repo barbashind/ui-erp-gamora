@@ -12,7 +12,7 @@ import { Badge } from '@consta/uikit/Badge';
 import { Loader } from '@consta/uikit/Loader';
 import { Column } from '@consta/charts/Column';
 import { Bar } from '@consta/charts/Bar';
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, WarningOutlined } from '@ant-design/icons';
 import { useEffect, useState } from "react";
 import { ComboboxMultiple } from "../../global/ComboboxMultiple";
 import { DepartmentTree, OvisionFilter, OvisionZone } from "../../types/integration-ovision";
@@ -159,7 +159,7 @@ const [isLoadUncorrects, setIsLoadUncorrects] = useState<boolean>(true);
 
 const today = new Date();
 const day = new Date();
-day.setDate(day.getDate() - 2);
+day.setDate(day.getDate() - 7);
 
 const setStartOfDay = (date: Date): Date => {
 const newDate = new Date(date);
@@ -189,14 +189,14 @@ const processZonesData = async (): Promise<OvisionZone[]> => {
     return zones;
   };
 
-const [dateMax, setDateMax] = useState<Date | null>(null);
-const [dateMin, setDateMin] = useState<Date | null>(null);
+const [dateMax, setDateMax] = useState<Date | null>(today);
+const [dateMin, setDateMin] = useState<Date | null>(day);
 
 const [selectedObjects, setSelectedObjects] = useState<OvisionZone[]>([]);
 
 // ---------- Состояния нижней части ----------
 const [selectedObject, setSelectedObject] = useState<OvisionZone | null>(null);
-const [objectDate, setObjectDate] = useState<Date | null>(null);
+const [objectDate, setObjectDate] = useState<Date | null>(today);
 // const [objectDateMax, setObjectDateMax] = useState<Date | null>(null);
 
 // const [dataAgr, setDataAgr] = useState<AggregatedItem[]>([]);
@@ -242,9 +242,7 @@ useEffect(() => {
         } catch (err) {
                 console.error("Ошибка загрузки данных:", err);
         } finally {
-                        setIsLoadEntries(false);
                         setIsLoadObjects(false);
-                        setIsLoadUncorrects(false);
         }}
 
         loadAllData();
@@ -253,6 +251,9 @@ useEffect(() => {
 
 // Основной useEffect
 useEffect(() => {
+
+        setIsLoadEntries(true);
+        setIsLoadUncorrects(true);
         // Выгрузка проходов
         const processEntriesData = async (
 
@@ -308,7 +309,6 @@ useEffect(() => {
         console.error("Ошибка загрузки данных:", err);
       } finally {
                 setIsLoadEntries(false);
-                setIsLoadUncorrects(false);
       }};
       
       loadData();
@@ -317,6 +317,9 @@ useEffect(() => {
 
 // Основной useEffect
 useEffect(() => {
+
+        setIsLoadUncorrects(true);
+
         // Детализация проходов
         const processEntriesUncorrectData = async (): Promise<MergedItem[]> => {
                 
@@ -493,12 +496,7 @@ return (
             Численность на объектах
           </Text>
           <Layout direction="row" style={{ gap: 'var(--space-l)', alignItems: 'baseline' }}>
-            <Layout direction="column" style={{ minWidth: 80, flex: '1 1 80px' }}>
-              <Text size="m" view="secondary">Всего</Text>
-              {isLoadEntries ? (<Loader/>) :
-                (<Text size="xl" weight="semibold">{entries.length}</Text>)
-              }
-            </Layout>
+            
             <Layout direction="column" style={{ minWidth: 80, flex: '1 1 80px' }}>
               <Text size="m" view="secondary">В среднем</Text>
               {isLoadEntries ? (<Loader/>) :
@@ -511,7 +509,7 @@ return (
               <Text size="m" view="secondary">Сегодня</Text>
               {isLoadEntries ? (<Loader/>) :
                 (
-                        <Text size="xl" weight="semibold">{entries.filter(item => (item.date === today.toDateString().split('T')[0])).length}</Text>
+                        <Text size="xl" weight="semibold">{entries.filter(item => (item.date === today.toISOString().split('T')[0])).length}</Text>
                 )
               }
             </Layout>
@@ -534,7 +532,7 @@ return (
             <Layout direction="column" style={{ minWidth: 80, flex: '1 1 80px' }}>
               <Text size="m" view="secondary">% от всех</Text>
               {isLoadUncorrects ? (<Loader/>) :
-                (<Text size="xl" weight="semibold">{entriesUncorrect.length ? (entriesUncorrect.filter(item => (item.kig || item.inn || item.snils || item.okpdtr || item.country)).length)/entriesUncorrect.length : 0}%</Text>)
+                (<Text size="xl" weight="semibold">{entriesUncorrect.length ? Math.round(((entriesUncorrect.filter(item => (item.kig || item.inn || item.snils || item.okpdtr || item.country)).length)/entriesUncorrect.length) * 100) : 0}%</Text>)
               }
             </Layout>
           </Layout>
@@ -608,7 +606,7 @@ return (
                 <Card border className={cnMixSpace({ p: 'm', mT: 'm' })}>
                 <Layout direction="row" style={{alignItems: 'center'}}>
                         <Text size="m" view="secondary">Всего на объекте</Text>
-                        <Text size="2xl" weight="bold" view="brand" className={cnMixSpace({ mL: 'm' })}>{entries.length}</Text>     
+                        <Text size="2xl" weight="bold" view="brand" className={cnMixSpace({ mL: 'm' })}>{entries.filter(item => (item.object === selectedObject?.name && item.date === objectDate?.toISOString().split('T')[0])).length}</Text>     
                 </Layout>
                   <Bar
                     style={{ minHeight: 350, width: '100%' }}
@@ -667,7 +665,10 @@ return (
                             <Layout direction="row" style={{ gap: 'var(--space-2xs)', flexWrap: 'wrap' }}>
                               {pass.inn && (
                                 <Badge
-                                  label={pass.okpdtr}
+                                  iconLeft={AntIcon.asIconComponent(() => (
+                                    <WarningOutlined className={cnMixFontSize('l') + cnMixSpace({ mR: 'xs' })} />
+                                  ))}
+                                  label={pass.inn}
                                   size="s"
                                   view="stroked"
                                   status="error"
@@ -675,7 +676,7 @@ return (
                               )}
                               {pass.snils && (
                                 <Badge
-                                  label={pass.okpdtr}
+                                  label={pass.snils}
                                   size="s"
                                   view="stroked"
                                   status="error"
@@ -683,7 +684,7 @@ return (
                               )}
                               {pass.country && (
                                 <Badge
-                                  label={pass.okpdtr}
+                                  label={pass.country}
                                   size="s"
                                   view="stroked"
                                   status="error"
@@ -691,7 +692,7 @@ return (
                               )}
                               {pass.kig && (
                                 <Badge
-                                  label={pass.okpdtr}
+                                  label={pass.kig}
                                   size="s"
                                   view="stroked"
                                   status="error"

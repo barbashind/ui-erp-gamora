@@ -40,7 +40,7 @@ const [isLoadUncorrects, setIsLoadUncorrects] = useState<boolean>(true);
 
 const today = new Date();
 const day = new Date();
-day.setDate(day.getDate() - 2);
+day.setDate(day.getDate() - 7);
 
 const setStartOfDay = (date: Date): Date => {
 const newDate = new Date(date);
@@ -70,14 +70,14 @@ const processZonesData = async (): Promise<OvisionZone[]> => {
     return zones;
   };
 
-const [dateMax, setDateMax] = useState<Date | null>(null);
-const [dateMin, setDateMin] = useState<Date | null>(null);
+const [dateMax, setDateMax] = useState<Date | null>(today);
+const [dateMin, setDateMin] = useState<Date | null>(day);
 
 const [selectedObjects, setSelectedObjects] = useState<OvisionZone[]>([]);
 
 // ---------- Состояния нижней части ----------
 const [selectedObject, setSelectedObject] = useState<OvisionZone | null>(null);
-const [objectDate, setObjectDate] = useState<Date | null>(null);
+const [objectDate, setObjectDate] = useState<Date | null>(today);
 // const [objectDateMax, setObjectDateMax] = useState<Date | null>(null);
 
 // const [dataAgr, setDataAgr] = useState<AggregatedItem[]>([]);
@@ -123,9 +123,7 @@ useEffect(() => {
         } catch (err) {
                 console.error("Ошибка загрузки данных:", err);
         } finally {
-                        setIsLoadEntries(false);
                         setIsLoadObjects(false);
-                        setIsLoadUncorrects(false);
         }}
 
         loadAllData();
@@ -134,6 +132,9 @@ useEffect(() => {
 
 // Основной useEffect
 useEffect(() => {
+
+        setIsLoadEntries(true);
+        setIsLoadUncorrects(true);
         // Выгрузка проходов
         const processEntriesData = async (
 
@@ -198,6 +199,9 @@ useEffect(() => {
 
 // Основной useEffect
 useEffect(() => {
+
+        setIsLoadUncorrects(true);
+
         // Детализация проходов
         const processEntriesUncorrectData = async (): Promise<MergedItem[]> => {
                 
@@ -361,12 +365,7 @@ return (
             Численность на объектах
           </Text>
           <Layout direction="row" style={{ gap: 'var(--space-l)', alignItems: 'baseline' }}>
-            <Layout direction="column" style={{ minWidth: 80, flex: '1 1 80px' }}>
-              <Text size="m" view="secondary">Всего</Text>
-              {isLoadEntries ? (<Loader/>) :
-                (<Text size="xl" weight="semibold">{entries.length}</Text>)
-              }
-            </Layout>
+            
             <Layout direction="column" style={{ minWidth: 80, flex: '1 1 80px' }}>
               <Text size="m" view="secondary">В среднем</Text>
               {isLoadEntries ? (<Loader/>) :
@@ -379,7 +378,7 @@ return (
               <Text size="m" view="secondary">Сегодня</Text>
               {isLoadEntries ? (<Loader/>) :
                 (
-                        <Text size="xl" weight="semibold">{entries.filter(item => (item.date === today.toDateString().split('T')[0])).length}</Text>
+                        <Text size="xl" weight="semibold">{entries.filter(item => (item.date === today.toISOString().split('T')[0])).length}</Text>
                 )
               }
             </Layout>
@@ -387,7 +386,7 @@ return (
         </Card>
 
         {/* Некорректные проходы */}
-        <Card border className={cnMixSpace({ p: 'm' })} style={{ minWidth: 260, flex: '1 1 240px' }}>
+        {/* <Card border className={cnMixSpace({ p: 'm' })} style={{ minWidth: 260, flex: '1 1 240px' }}>
           <Text size="2xl" view="secondary" className={cnMixSpace({ mB: 'xs' })}>
             Некорректные проходы
           </Text>
@@ -406,7 +405,7 @@ return (
               }
             </Layout>
           </Layout>
-        </Card>
+        </Card> */}
       </Layout>
 
       {/* ======================= ОСНОВНОЙ КОНТЕНТ ======================= */}
@@ -476,7 +475,7 @@ return (
                 <Card border className={cnMixSpace({ p: 'm', mT: 'm' })}>
                 <Layout direction="row" style={{alignItems: 'center'}}>
                         <Text size="m" view="secondary">Всего на объекте</Text>
-                        <Text size="2xl" weight="bold" view="brand" className={cnMixSpace({ mL: 'm' })}>{entries.length}</Text>     
+                        <Text size="2xl" weight="bold" view="brand" className={cnMixSpace({ mL: 'm' })}>{entries.filter(item => (item.object === selectedObject?.name && item.date === objectDate?.toISOString().split('T')[0])).length}</Text>     
                 </Layout>
                   <Bar
                     style={{ minHeight: 350, width: '100%' }}

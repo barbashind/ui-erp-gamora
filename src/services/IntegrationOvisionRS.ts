@@ -147,7 +147,7 @@ export const getOvisionPeopleBioData = async (token: string): Promise<OvisionPeo
 };
 
 export const getOvisionPeopleData = async (token: string): Promise<OvisionPeopleResponse> => {
-    const response = await fetch(`/ovision-rs-ebs.avtoban.ru/api/v2/objects/person?search=name:&limit=20000`, {
+    const response = await fetch(`/ovision-rs-ebs.avtoban.ru/api/v2/objects/person?search=name:&biometricsStatus=notExist&limit=20000`, {
         method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,
