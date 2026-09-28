@@ -34,30 +34,43 @@ import {
 } from "../IntegrationFaceIdPage/FaceIDFilter";
 
 /* ============================================================
- *  Палитра «Автобан»
+ *  Палитра — «Автобан» v2
+ *  Брендовые цвета — константы (одинаковые в обеих темах).
+ *  Фоны/текст/границы — через CSS-переменные Consta,
+ *  чтобы работали и в светлой, и в тёмной теме.
  * ============================================================ */
 const ROAD = {
-  orange: "#f97316",
-  orangeLight: "#fb923c",
-  orangeDark: "#ea580c",
-  asphalt: "#111827",
-  asphaltSoft: "#374151",
-  line: "#e5e7eb",
-  lineSoft: "#f3f4f6",
-  text: "#111827",
-  textMuted: "#6b7280",
-  warnBg: "#fef3c7",
-  warnBorder: "#f59e0b",
+  /* Бренд */
+  accent: "#ed7931",
+  accentDark: "#e25e33",
+  accentLight: "#f1aa48",
+  accentGradient:
+    "linear-gradient(4.34deg, #df5430 -1.37%, #f1aa48 137.96%)",
+
+  blue: "#063955",
+  blue2: "#004267",
+  dark: "#011735",
+
+  /* Тема-зависимые токены Consta */
+  bg: "var(--color-bg-default)",
+  bgSecondary: "var(--color-bg-secondary)",
+  bgSoft: "var(--color-bg-stripe)",   // шапки карточек, плашки
+  border: "var(--color-bg-border)",
+  text: "var(--color-typo-primary)",
+  textMuted: "var(--color-typo-secondary)",
+
+  /* Яркий бренд-синий: #063955 на светлой, #00b4ff на тёмной */
+  brand: "var(--color-typo-brand)",
 } as const;
 
 const chartPalette = [
-  ROAD.orange,
-  ROAD.orangeDark,
-  ROAD.asphalt,
-  ROAD.asphaltSoft,
-  ROAD.orangeLight,
+  ROAD.accent,
+  ROAD.accentDark,
+  ROAD.blue,
+  ROAD.blue2,
+  ROAD.accentLight,
   "#9ca3af",
-  "#78350f",
+  "#d6d6d6",
 ];
 
 /* ============================================================
@@ -132,7 +145,7 @@ interface SummaryCardProps {
 
 const SummaryCard = ({
   title,
-  accent = ROAD.orange,
+  accent = ROAD.accent,
   children,
   style,
 }: SummaryCardProps) => (
@@ -144,6 +157,7 @@ const SummaryCard = ({
       minWidth: 260,
       flex: "1 1 240px",
       borderTop: `3px solid ${accent}`,
+      background: ROAD.bg,
       ...style,
     }}
   >
@@ -180,6 +194,7 @@ const ChartCard = ({
     style={{
       padding: 0,
       overflow: "hidden",
+      background: ROAD.bg,
       ...style,
     }}
   >
@@ -190,8 +205,8 @@ const ChartCard = ({
         justifyContent: "space-between",
         gap: 12,
         padding: "14px 20px",
-        background: ROAD.lineSoft,
-        borderBottom: `1px solid ${ROAD.line}`,
+        background: ROAD.bgSoft,
+        borderBottom: `1px solid ${ROAD.border}`,
       }}
     >
       <Layout direction="row" style={{ alignItems: "center", gap: 10 }}>
@@ -200,10 +215,10 @@ const ChartCard = ({
             width: 6,
             height: 18,
             borderRadius: 3,
-            background: ROAD.orange,
+            background: ROAD.accent,
           }}
         />
-        <Text size="m" weight="semibold" style={{ color: ROAD.asphalt }}>
+        <Text size="m" weight="semibold" style={{ color: ROAD.text }}>
           {title}
         </Text>
       </Layout>
@@ -534,7 +549,11 @@ const MoscowObjects = () => {
    *  РЕНДЕР
    * ============================================================ */
   return (
-    <Layout direction="column" className={cnMixSpace({ p: "xl" })}>
+    <Layout
+      direction="column"
+      className={cnMixSpace({ p: "xl" })}
+      style={{ background: ROAD.bg, color: ROAD.text }}
+    >
       {/* ======================= ЗАГОЛОВОК ======================= */}
       <Layout
         direction="row"
@@ -543,7 +562,7 @@ const MoscowObjects = () => {
           gap: 12,
           paddingBottom: 16,
           marginBottom: 20,
-          borderBottom: `2px solid ${ROAD.orange}`,
+          borderBottom: `2px solid ${ROAD.accent}`,
         }}
       >
         <div
@@ -551,10 +570,10 @@ const MoscowObjects = () => {
             width: 10,
             height: 28,
             borderRadius: 4,
-            background: `linear-gradient(180deg, ${ROAD.orangeLight} 0%, ${ROAD.orangeDark} 100%)`,
+            background: ROAD.accentGradient,
           }}
         />
-        <Text size="2xl" weight="bold" style={{ color: ROAD.asphalt }}>
+        <Text size="2xl" weight="bold" style={{ color: ROAD.text }}>
           Face ID · Объекты Москвы
         </Text>
       </Layout>
@@ -626,21 +645,21 @@ const MoscowObjects = () => {
           marginBottom: 24,
         }}
       >
-        <SummaryCard title="Всего объектов" accent={ROAD.asphalt}>
+        <SummaryCard title="Всего объектов" accent={ROAD.brand}>
           {isLoadObjects ? (
             <Loader />
           ) : (
             <Text
               size="4xl"
               weight="bold"
-              style={{ color: ROAD.asphalt, lineHeight: 1 }}
+              style={{ color: ROAD.brand, lineHeight: 1 }}
             >
               {objects.length}
             </Text>
           )}
         </SummaryCard>
 
-        <SummaryCard title="Численность на объектах" accent={ROAD.orange}>
+        <SummaryCard title="Численность на объектах" accent={ROAD.accent}>
           {isLoadEntries ? (
             <Loader />
           ) : (
@@ -659,7 +678,7 @@ const MoscowObjects = () => {
                 <Text
                   size="2xl"
                   weight="bold"
-                  style={{ color: ROAD.orange, lineHeight: 1.1 }}
+                  style={{ color: ROAD.accent, lineHeight: 1.1 }}
                 >
                   {averagePerDay}
                 </Text>
@@ -675,7 +694,7 @@ const MoscowObjects = () => {
                 <Text
                   size="2xl"
                   weight="bold"
-                  style={{ color: ROAD.asphalt, lineHeight: 1.1 }}
+                  style={{ color: ROAD.text, lineHeight: 1.1 }}
                 >
                   {entriesToday}
                 </Text>
@@ -684,7 +703,7 @@ const MoscowObjects = () => {
           )}
         </SummaryCard>
 
-        <SummaryCard title="Некорректные проходы" accent={ROAD.warnBorder}>
+        <SummaryCard title="Некорректные проходы" accent={ROAD.accentDark}>
           {isLoadUncorrects ? (
             <Loader />
           ) : (
@@ -703,7 +722,7 @@ const MoscowObjects = () => {
                 <Text
                   size="2xl"
                   weight="bold"
-                  style={{ color: ROAD.orangeDark, lineHeight: 1.1 }}
+                  style={{ color: ROAD.accentDark, lineHeight: 1.1 }}
                 >
                   {incorrectTotal}
                 </Text>
@@ -719,7 +738,7 @@ const MoscowObjects = () => {
                 <Text
                   size="2xl"
                   weight="bold"
-                  style={{ color: ROAD.warnBorder, lineHeight: 1.1 }}
+                  style={{ color: ROAD.accentDark, lineHeight: 1.1 }}
                 >
                   {incorrectPercent}%
                 </Text>
@@ -781,7 +800,10 @@ const MoscowObjects = () => {
               direction="column"
               style={{ flex: "1 1 45%", minWidth: 400, gap: 16 }}
             >
-              <Card border style={{ padding: 16 }}>
+              <Card
+                border
+                style={{ padding: 16, background: ROAD.bg }}
+              >
                 <Layout
                   direction="row"
                   style={{ gap: 12, alignItems: "flex-end" }}
@@ -820,7 +842,7 @@ const MoscowObjects = () => {
                     <Text
                       size="l"
                       weight="bold"
-                      style={{ color: ROAD.orange }}
+                      style={{ color: ROAD.accent }}
                     >
                       {
                         entries.filter(
@@ -900,11 +922,11 @@ const MoscowObjects = () => {
                       <div
                         key={pass.employeeId + pass.date}
                         style={{
-                          border: `1px solid ${ROAD.line}`,
-                          borderLeft: `3px solid ${ROAD.warnBorder}`,
+                          border: `1px solid ${ROAD.border}`,
+                          borderLeft: `3px solid ${ROAD.accentDark}`,
                           borderRadius: 8,
                           padding: "12px 14px",
-                          background: ROAD.lineSoft,
+                          background: ROAD.bgSoft,
                         }}
                       >
                         <Layout

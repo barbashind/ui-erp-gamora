@@ -1,11 +1,10 @@
-
 import { Layout } from "@consta/uikit/Layout";
 import { Card } from "@consta/uikit/Card";
 import { cnMixSpace } from "@consta/uikit/MixSpace";
 import { Text } from "@consta/uikit/Text";
 import { Loader } from "@consta/uikit/Loader";
 import { Bar } from "@consta/charts/Bar";
-import { useEffect, useState } from "react";
+import { useEffect, useState, ReactNode, CSSProperties } from "react";
 import { DepartmentTree } from "../../types/integration-ovision";
 import {
   authOvision,
@@ -24,20 +23,37 @@ import {
 import { HighwayBar } from "../../global/HighwayBar";
 
 /* ============================================================
- *  Палитра «Автобан»
+ *  Палитра «Автобан» v2
  * ============================================================ */
 const ROAD = {
-  orange: "#f97316",
-  orangeLight: "#fb923c",
-  orangeDark: "#ea580c",
-  asphalt: "#111827",
-  asphaltSoft: "#374151",
-  line: "#e5e7eb",
-  lineSoft: "#f3f4f6",
-  text: "#111827",
-  textMuted: "#6b7280",
-  bg: "#f9fafb",
+  accent: "#ed7931",
+  accentDark: "#e25e33",
+  accentLight: "#f1aa48",
+  accentGradient:
+    "linear-gradient(4.34deg, #df5430 -1.37%, #f1aa48 137.96%)",
+
+  blue: "#063955",
+  blue2: "#004267",
+  dark: "#011735",
+
+  bg: "var(--color-bg-default)",
+  bgSecondary: "var(--color-bg-secondary)",
+  bgSoft: "var(--color-bg-stripe)",
+  border: "var(--color-bg-border)",
+  text: "var(--color-typo-primary)",
+  textMuted: "var(--color-typo-secondary)",
+  brand: "var(--color-typo-brand)",
 } as const;
+
+const chartPalette = [
+  ROAD.accent,
+  ROAD.accentDark,
+  ROAD.blue,
+  ROAD.blue2,
+  ROAD.accentLight,
+  "#9ca3af",
+  "#d6d6d6",
+];
 
 const UNKNOWN = "Неизвестно";
 
@@ -52,6 +68,10 @@ const resolveOrgById = (
   if (!Number.isFinite(numId)) return UNKNOWN;
   return tree.byId.get(numId) ?? UNKNOWN;
 };
+
+/** Нормализуем имя для ключа мёржа */
+const normalizeName = (s: string): string =>
+  (s || "").trim().replace(/\s+/g, " ").toLowerCase();
 
 /* ============================================================
  *  Типы
@@ -83,7 +103,7 @@ export interface AggregatedAllItem {
 }
 
 /* ============================================================
- *  Вспомогательный компонент: карточка-сводка
+ *  Общие UI-обёртки
  * ============================================================ */
 interface StatCardProps {
   title: string;
@@ -95,7 +115,7 @@ interface StatCardProps {
 
 const StatCard = ({
   title,
-  accent = ROAD.orange,
+  accent = ROAD.accent,
   registered,
   remaining,
   loading,
@@ -109,6 +129,7 @@ const StatCard = ({
       flex: "1 1 240px",
       overflow: "hidden",
       borderTop: `3px solid ${accent}`,
+      background: ROAD.bg,
     }}
   >
     <Text
@@ -119,6 +140,7 @@ const StatCard = ({
         letterSpacing: 0.6,
         color: ROAD.textMuted,
         marginBottom: 14,
+        display: "block",
       }}
     >
       {title}
@@ -132,7 +154,11 @@ const StatCard = ({
         {loading ? (
           <Loader />
         ) : (
-          <Text size="4xl" weight="bold" style={{ color: accent, lineHeight: 1 }}>
+          <Text
+            size="4xl"
+            weight="bold"
+            style={{ color: accent, lineHeight: 1 }}
+          >
             {registered}
           </Text>
         )}
@@ -155,6 +181,55 @@ const StatCard = ({
         )}
       </Layout>
     </Layout>
+  </Card>
+);
+
+const ChartCard = ({
+  title,
+  children,
+  flex,
+  style,
+}: {
+  title: string;
+  children: ReactNode;
+  flex?: string;
+  style?: CSSProperties;
+}) => (
+  <Card
+    border
+    style={{
+      flex: flex ?? "1 1 45%",
+      minWidth: 400,
+      padding: 0,
+      overflow: "hidden",
+      background: ROAD.bg,
+      ...style,
+    }}
+  >
+    <Layout
+      direction="row"
+      style={{
+        alignItems: "center",
+        gap: 10,
+        padding: "14px 20px",
+        background: ROAD.bgSoft,
+        borderBottom: `1px solid ${ROAD.border}`,
+      }}
+    >
+      <div
+        style={{
+          width: 6,
+          height: 18,
+          borderRadius: 3,
+          background: ROAD.accent,
+        }}
+      />
+      <Text size="m" weight="semibold" style={{ color: ROAD.text }}>
+        {title}
+      </Text>
+    </Layout>
+
+    <div style={{ padding: 20 }}>{children}</div>
   </Card>
 );
 
@@ -214,7 +289,7 @@ const FaceIDReport = () => {
     return result;
   };
 
-  /* ---------- загрузка ---------- */
+  /* ---------- загрузка (Promise.allSettled) ---------- */
   useEffect(() => {
     const processOvisionData = async (): Promise<void> => {
       const token: OvisionToken = await authOvision();
@@ -341,14 +416,29 @@ const FaceIDReport = () => {
     const loadAllData = async () => {
       setIsLoadPeople(true);
       try {
-        await Promise.all([
+        const results = await Promise.allSettled([
           processOvisionBioData(),
           processOvisionBioDataKBS(),
           processOvisionData(),
           processOvisionDataKBS(),
         ]);
-      } catch (err) {
-        console.error("Ошибка загрузки данных:", err);
+
+        const labels = ["bio RS", "bio KBS", "regular RS", "regular KBS"];
+        const failed = results
+          .map((r, i) =>
+            r.status === "rejected"
+              ? { source: labels[i], reason: r.reason }
+              : null,
+          )
+          .filter((x): x is { source: string; reason: unknown } => x !== null);
+
+        if (failed.length > 0) {
+          console.error(
+            "Не все источники данных загрузились:",
+            failed.map((f) => f.source).join(", "),
+            failed,
+          );
+        }
       } finally {
         setIsLoadPeople(false);
       }
@@ -357,13 +447,13 @@ const FaceIDReport = () => {
     void loadAllData();
   }, []);
 
-  /* ---------- мёрдж ---------- */
+  /* ---------- мёрж ---------- */
   useEffect(() => {
     const map = new Map<string, MergedPersonItem>();
 
     const merge = (list: MergedPersonItem[]) => {
       for (const item of list) {
-        const key = `${item.name}||${item.organization}`;
+        const key = `${normalizeName(item.name)}||${item.organization}`;
         const existing = map.get(key);
         if (existing) {
           existing.statusRS = existing.statusRS || item.statusRS || false;
@@ -398,20 +488,15 @@ const FaceIDReport = () => {
   const kbsRegistered = personsAll.filter((i) => i.statusKBS).length;
   const kbsRemaining = personsAll.length - kbsRegistered;
 
-  /* ---------- цвета для Bar ---------- */
-  const barPalette = [
-    ROAD.orange,
-    ROAD.orangeDark,
-    ROAD.asphalt,
-    ROAD.asphaltSoft,
-    ROAD.orangeLight,
-  ];
-
   /* ============================================================
    *  Рендер
    * ============================================================ */
   return (
-    <Layout direction="column" className={cnMixSpace({ p: "xl" })}>
+    <Layout
+      direction="column"
+      className={cnMixSpace({ p: "xl" })}
+      style={{ background: ROAD.bg, color: ROAD.text }}
+    >
       {/* ======================= ЗАГОЛОВОК ======================= */}
       <Layout
         direction="row"
@@ -420,7 +505,7 @@ const FaceIDReport = () => {
           gap: 12,
           paddingBottom: 16,
           marginBottom: 20,
-          borderBottom: `2px solid ${ROAD.orange}`,
+          borderBottom: `2px solid ${ROAD.accent}`,
         }}
       >
         <div
@@ -428,10 +513,10 @@ const FaceIDReport = () => {
             width: 10,
             height: 28,
             borderRadius: 4,
-            background: `linear-gradient(180deg, ${ROAD.orangeLight} 0%, ${ROAD.orangeDark} 100%)`,
+            background: ROAD.accentGradient,
           }}
         />
-        <Text size="2xl" weight="bold" style={{ color: ROAD.asphalt }}>
+        <Text size="2xl" weight="bold" style={{ color: ROAD.text }}>
           Face ID · Отчёт по регистрации
         </Text>
       </Layout>
@@ -443,21 +528,21 @@ const FaceIDReport = () => {
       >
         <StatCard
           title="Всего в OVISION"
-          accent={ROAD.orange}
+          accent={ROAD.accent}
           registered={totalRegistered}
           remaining={totalRemaining}
           loading={isLoadPeople}
         />
         <StatCard
           title="Мой ID"
-          accent={ROAD.orangeDark}
+          accent={ROAD.accentDark}
           registered={myIdRegistered}
           remaining={myIdRemaining}
           loading={isLoadPeople}
         />
         <StatCard
           title="Госуслуги · Биометрия"
-          accent={ROAD.asphalt}
+          accent={ROAD.brand}
           registered={kbsRegistered}
           remaining={kbsRemaining}
           loading={isLoadPeople}
@@ -471,6 +556,7 @@ const FaceIDReport = () => {
           padding: 0,
           marginBottom: 28,
           overflow: "hidden",
+          background: ROAD.bg,
         }}
       >
         {/* Шапка */}
@@ -478,8 +564,8 @@ const FaceIDReport = () => {
           direction="row"
           style={{
             padding: "14px 20px",
-            background: ROAD.lineSoft,
-            borderBottom: `1px solid ${ROAD.line}`,
+            background: ROAD.bgSoft,
+            borderBottom: `1px solid ${ROAD.border}`,
             gap: 16,
             alignItems: "center",
           }}
@@ -536,20 +622,21 @@ const FaceIDReport = () => {
           </Text>
         </Layout>
 
-        {/* Строки */}
+        {/* Пусто */}
         {bioDataAll.length === 0 && !isLoadPeople && (
           <div style={{ padding: 24, textAlign: "center" }}>
             <Text view="secondary">Нет данных</Text>
           </div>
         )}
 
+        {/* Строки */}
         {bioDataAll.map((row) => (
           <Layout
             key={row.organization}
             direction="row"
             style={{
               padding: "14px 20px",
-              borderBottom: `1px solid ${ROAD.lineSoft}`,
+              borderBottom: `1px solid ${ROAD.border}`,
               gap: 16,
               alignItems: "center",
             }}
@@ -566,7 +653,7 @@ const FaceIDReport = () => {
             <Text
               size="m"
               weight="bold"
-              style={{ width: 140, textAlign: "right", color: ROAD.orange }}
+              style={{ width: 140, textAlign: "right", color: ROAD.accent }}
             >
               {row.count}
             </Text>
@@ -616,11 +703,14 @@ const FaceIDReport = () => {
                 { type: "adjust-color" },
               ],
             }}
-            color={barPalette}
+            color={chartPalette}
           />
         </ChartCard>
 
-        <ChartCard title="Госуслуги · Биометрия · по организациям" flex="1 1 45%">
+        <ChartCard
+          title="Госуслуги · Биометрия · по организациям"
+          flex="1 1 45%"
+        >
           <Bar
             style={{ width: "100%" }}
             data={bioDataKBS}
@@ -646,60 +736,12 @@ const FaceIDReport = () => {
                 { type: "adjust-color" },
               ],
             }}
-            color={barPalette}
+            color={chartPalette}
           />
         </ChartCard>
       </Layout>
     </Layout>
   );
 };
-
-/* ============================================================
- *  Обёртка для графика — карточка с заголовком
- * ============================================================ */
-const ChartCard = ({
-  title,
-  children,
-  flex,
-}: {
-  title: string;
-  children: React.ReactNode;
-  flex?: string;
-}) => (
-  <Card
-    border
-    style={{
-      flex: flex ?? "1 1 45%",
-      minWidth: 400,
-      padding: 0,
-      overflow: "hidden",
-    }}
-  >
-    <Layout
-      direction="row"
-      style={{
-        alignItems: "center",
-        gap: 10,
-        padding: "14px 20px",
-        background: ROAD.lineSoft,
-        borderBottom: `1px solid ${ROAD.line}`,
-      }}
-    >
-      <div
-        style={{
-          width: 6,
-          height: 18,
-          borderRadius: 3,
-          background: ROAD.orange,
-        }}
-      />
-      <Text size="m" weight="semibold" style={{ color: ROAD.asphalt }}>
-        {title}
-      </Text>
-    </Layout>
-
-    <div style={{ padding: 20 }}>{children}</div>
-  </Card>
-);
 
 export default FaceIDReport;
