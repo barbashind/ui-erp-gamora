@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { DepartmentTree } from "../../types/integration-ovision";
 import { authOvision, fetchDepartmentTree, getOvisionPeopleBioData, getOvisionPeopleData, OvisionToken } from "../../services/IntegrationOvisionRS";
 import { authOvisionKBS, fetchDepartmentTreeKBS, getOvisionPeopleBioDataKBS, getOvisionPeopleDataKBS, OvisionTokenKBS } from "../../services/IntegrationOvisionKBS";
+import { HighwayBar } from "../../global/HighwayBar";
 
 
 const UNKNOWN = 'Неизвестно';
@@ -42,6 +43,14 @@ export interface AggregatedBioItem {
   count: number;
 }
 
+export interface AggregatedAllItem {
+  organization: string;
+  countAll: number;
+  count: number;
+  countMyId: number;
+  countKBS: number;
+}
+
 const FaceIDReport = () => {
         
 const [isLoadPeople, setIsLoadPeople] = useState<boolean>(true);
@@ -54,6 +63,7 @@ const [personsAll, setPersonsAll] = useState<MergedPersonItem[]>([]);
 
 const [bioData, setBioData] = useState<AggregatedBioItem[]>([]);
 const [bioDataKBS, setBioDataKBS] = useState<AggregatedBioItem[]>([]);
+const [bioDataAll, setBioDataAll] = useState<AggregatedAllItem[]>([]);
 
  const aggregateItemsBio = (items: MergedBioItem[]): AggregatedBioItem[] => {
     const resultBio: AggregatedBioItem[] = Object.entries(
@@ -68,6 +78,36 @@ const [bioDataKBS, setBioDataKBS] = useState<AggregatedBioItem[]>([]);
     return resultBio;
   };
 
+const aggregateAllItems = (items: MergedPersonItem[]): AggregatedAllItem[] => {
+  const map = new Map<string, AggregatedAllItem>();
+
+  for (const item of items) {
+    let acc = map.get(item.organization);
+    if (!acc) {
+      acc = {
+        organization: item.organization,
+        countAll: 0,
+        count: 0,
+        countMyId: 0,
+        countKBS: 0,
+      };
+      map.set(item.organization, acc);
+    }
+
+    acc.countAll += 1;
+
+    if (item.statusRS || item.statusKBS) acc.count += 1;
+    if (item.statusRS) acc.countMyId += 1;
+    if (item.statusKBS) acc.countKBS += 1;
+  }
+
+  const resultBio: AggregatedAllItem[] = Array.from(map.values());
+
+  resultBio.sort((a, b) => b.count - a.count);
+
+  return resultBio;
+};
+
 // Основной useEffect
 useEffect(() => {
 
@@ -80,8 +120,9 @@ useEffect(() => {
         for (const ev of people.data) {
         const departmentName = ev.profiles[0].department || ''
         const department = ev.profiles[0].departments_id || '';
+                        const isSub = departmentName === resolveOrgById(deptTree, department);
                         const isAtf = departmentName.toLowerCase().includes('автоколонна');
-                        const organization = isAtf
+                        const organization = isSub ? 'Субподряд' : isAtf
                         ? 'АТФ'
                         : resolveOrgById(deptTree, department);
         enrichedPeople.push({
@@ -105,8 +146,9 @@ useEffect(() => {
         for (const ev of people.data) {
         const departmentName = ev.profiles[0].department || ''
         const department = ev.profiles[0].departments_id || '';
+                        const isSub = departmentName === resolveOrgById(deptTree, department);
                         const isAtf = departmentName.toLowerCase().includes('автоколонна');
-                        const organization = isAtf
+                        const organization = isSub ? 'Субподряд' : isAtf
                         ? 'АТФ'
                         : resolveOrgById(deptTree, department);
         enrichedPeople.push({
@@ -132,8 +174,9 @@ useEffect(() => {
         for (const ev of people.data) {
         const departmentName = ev.profiles[0].department || ''
         const department = ev.profiles[0].departments_id || '';
+                        const isSub = departmentName === resolveOrgById(deptTree, department);
                         const isAtf = departmentName.toLowerCase().includes('автоколонна');
-                        const organization = isAtf
+                        const organization = isSub ? 'Субподряд' : isAtf
                         ? 'АТФ'
                         : resolveOrgById(deptTree, department);
         enrichedPeople.push({
@@ -163,8 +206,9 @@ useEffect(() => {
         for (const ev of people.data) {
         const departmentName = ev.profiles[0].department || ''
         const department = ev.profiles[0].departments_id || '';
+                        const isSub = departmentName === resolveOrgById(deptTree, department);
                         const isAtf = departmentName.toLowerCase().includes('автоколонна');
-                        const organization = isAtf
+                        const organization = isSub ? 'Субподряд' : isAtf
                         ? 'АТФ'
                         : resolveOrgById(deptTree, department);
         enrichedPeople.push({
@@ -229,6 +273,12 @@ useEffect(() => {
   setPersonsAll(Array.from(map.values()));
 }, [persons, personsNot, personsKBS, personsKBSNot]);
 
+useEffect(() => {
+  setBioDataAll(aggregateAllItems(personsAll))
+
+}, [personsAll]);
+
+
 const colorMapLine: { [key: string]: string } = {
                 a: '#063955',
                 b: '#ed7931',
@@ -236,6 +286,12 @@ const colorMapLine: { [key: string]: string } = {
                 d: 'rgb(255, 210, 50)',
                 e: 'rgba(177, 169, 255, 1)',
         };
+
+const getStatus = (percent: number): 'success' | 'warning' | 'alert' => {
+  if (percent >= 80) return 'success';
+  if (percent >= 50) return 'warning';
+  return 'alert';
+};
 
 return (
     <Layout direction="column">
@@ -321,6 +377,87 @@ return (
           </Card>
 
       </Layout>
+      <Layout direction="column" style={{ flex: '1 1 100%', minWidth: 400 }} className={cnMixSpace({ m: 'xl' })}>
+      <Layout direction="column">
+        {/* Шапка */}
+        <Layout
+          direction="row"
+          style={{
+            padding: '8px 16px',
+            borderBottom: '1px solid var(--color-bg-border)',
+            gap: 12,
+            alignItems: 'center',
+          }}
+        >
+          <Text size="s" view="secondary" weight="semibold" style={{ width: 210, textAlign: 'center' }}>
+            Организация
+          </Text>
+          <Text
+            size="s"
+            view="secondary"
+            weight="semibold"
+            style={{ width: 110, textAlign: 'center' }}
+          >
+            Зарегистрировано
+          </Text>
+          <Text
+            size="s"
+            view="secondary"
+            weight="semibold"
+            style={{ width: 210, textAlign: 'center' }}
+          >
+            Всего
+          </Text>
+          <Text
+            size="s"
+            view="secondary"
+            weight="semibold"
+            style={{ flex: 1, minWidth: 0 }}
+          >
+            % зарегистрированных
+          </Text>
+        </Layout>
+
+        {/* Строки */}
+        {bioDataAll.map((row) => {
+          
+          return (
+            <Layout
+              key={row.organization}
+              direction="row"
+              style={{
+                padding: '12px 16px',
+                borderBottom: '1px solid var(--color-bg-border)',
+                gap: 12,
+                alignItems: 'center',
+              }}
+            >
+              <Text
+                size="m"
+                weight="semibold"
+                style={{ width: 210, textAlign: 'center' }}
+                truncate
+              >
+                {row.organization}
+              </Text>
+
+              <Text size="m" style={{ width: 110, textAlign: 'center' }}>
+                {row.count}
+              </Text>
+
+              <Text
+                size="m"
+                view="secondary"
+                style={{ width: 210, textAlign: 'center' }}
+              >
+                {row.countAll}
+              </Text>
+              <HighwayBar registered={row.count} total={row.countAll} />
+            </Layout>
+          );
+        })}
+      </Layout>
+    </Layout>
 
             {/* ================ НИЖНЯЯ ЧАСТЬ: ДВЕ КОЛОНКИ ================ */}
             <Layout direction="row" style={{ flexWrap: 'wrap', gap: 'var(--space-l)', alignItems: 'flex-start' }} className={cnMixSpace({ mT: 'l', mL: 'xl' })}>
