@@ -287,12 +287,6 @@ const colorMapLine: { [key: string]: string } = {
                 e: 'rgba(177, 169, 255, 1)',
         };
 
-const getStatus = (percent: number): 'success' | 'warning' | 'alert' => {
-  if (percent >= 80) return 'success';
-  if (percent >= 50) return 'warning';
-  return 'alert';
-};
-
 return (
     <Layout direction="column">
       <Layout
