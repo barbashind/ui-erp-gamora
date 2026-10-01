@@ -15,9 +15,9 @@ import {
   PassageItem,
 } from "../../types/integration-idgate";
 import { Button } from "@consta/uikit/Button";
-import { AntIcon } from "#/utils/AntIcon";
+import { AntIcon } from "../../utils/AntIcon";
 import { DownloadOutlined } from "@ant-design/icons";
-import { cnMixFontSize } from "#/utils/MixFontSize";
+import { cnMixFontSize } from "../../utils/MixFontSize";
 import { cnMixSpace } from "@consta/uikit/MixSpace";
 import { exportToExcelReportSkud } from "../IntegrationFaceIdPage/ExportToExcelReportSkud";
 
