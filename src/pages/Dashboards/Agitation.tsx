@@ -130,11 +130,11 @@ const Agitation = () => {
 
              try {
               if (p.photoProfileId) {
-                skud = await getIDGateSKUD( p.camId, sessionId );
+                skud = await getIDGateSKUD( p.deviceId, sessionId );
               }
             } catch (err) {
               console.warn(
-                `Не удалось загрузить профиль ${p.photoProfileId}`,
+                `Не удалось загрузить устройство ${p.deviceId}`,
                 err
               );
             }
@@ -143,9 +143,9 @@ const Agitation = () => {
             const organization = orgUnitsMap.get(orgId) || "Неизвестно";
 
             return {
-              id_event: "TT0000-15-0588-001-" + p.id,
-              id_employee: "TT0000-15-0588-001-" + p.photoProfileId,
-              employee: "TT0000-15-0588-001-" + p.photoProfileId,
+              id_event: "TT0000-15-0588-001-" + p.id.toUpperCase(),
+              id_employee: "TT0000-15-0588-001-" + p.photoProfileId.toUpperCase(),
+              employee: "TT0000-15-0588-001-" + p.photoProfileId.toUpperCase(),
               country: Number(profile?.fieldInt1 ?? 0),
               snils: String(profile?.fieldStr1 ?? "").replace(/\D/g, ""),
               kig: String(profile?.fieldStr4 ?? ""),
@@ -162,8 +162,8 @@ const Agitation = () => {
               vidPropusk: "Биометрия",
               typePropusk: "Постоянный",
               client: "avtoban",
-              dateCreation: p.passageDate,
-              dateUpdated: p.passageDate,
+              dateCreation: formatPassageDate(p.passageDate),
+              dateUpdated: formatPassageDate(p.passageDate),
             };
           }
         );
