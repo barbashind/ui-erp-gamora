@@ -1,4 +1,4 @@
-import { IdGateDataResponse, IdGateFilter, IdGateProfile, ListResponse, OrgUnitListResponse, PhotoProfile } from "../types/integration-idgate";
+import { DeviceMacInfo, IdGateDataResponse, IdGateDataResponseSKUD, IdGateFilter, IdGateProfile, ListResponse, OrgUnitListResponse, PhotoProfile } from "../types/integration-idgate";
 import { ErrorResponse, getErrorResponse } from "./utils";
 
 type User = {
@@ -192,6 +192,34 @@ export async function processProfiles(sessionId: string): Promise<void> {
 }
 
 
+export const getIDGateDataSKUD = async (sessionid: string): Promise<IdGateDataResponseSKUD> => {
+    const response = await fetch(`/api/v1/gate/registry/passage-fact?limit=30000&beginDate=2026-09-01%2000:00&endDate=2026-09-24%2023:59&locationCamId.in=%5Bbcfab5d5-eb6e-467e-4a9d-8da48a1f2823%5D`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            sessionid: sessionid,
+        },
+    });
+    if (!response.ok) {
+        const errorResponse = await getErrorResponse(response);
+        throw new ErrorResponse(errorResponse);
+    }
+    const resp: IdGateDataResponseSKUD = (await response.json()) as IdGateDataResponseSKUD;
+    return resp;
+};
 
-
-    
+export const getIDGateSKUD = async (id: string, sessionid: string): Promise<DeviceMacInfo> => {
+    const response = await fetch(`/api/v1/dict/device/${id}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            sessionid: sessionid,
+        },
+    });
+    if (!response.ok) {
+        const errorResponse = await getErrorResponse(response);
+        throw new ErrorResponse(errorResponse);
+    }
+    const resp: DeviceMacInfo = (await response.json()) as DeviceMacInfo;
+    return resp;
+};
