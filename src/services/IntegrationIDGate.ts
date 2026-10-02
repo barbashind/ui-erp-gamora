@@ -193,7 +193,7 @@ export async function processProfiles(sessionId: string): Promise<void> {
 
 
 export const getIDGateDataSKUD = async (sessionid: string): Promise<IdGateDataResponseSKUD> => {
-    const response = await fetch(`/api/v1/gate/registry/passage-fact?limit=30000&beginDate=2026-09-01%2000:00&endDate=2026-09-24%2023:59&locationCamId.in=%5Bbcfab5d5-eb6e-467e-4a9d-8da48a1f2823%5D`, {
+    const response = await fetch(`/api/v1/gate/registry/passage-fact?limit=30000&beginDate=2026-09-03%2000:00&endDate=2026-09-24%2023:59&locationCamId.in=%5Bbcfab5d5-eb6e-467e-4a9d-8da48a1f2823%5D`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

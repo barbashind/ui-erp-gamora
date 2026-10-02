@@ -148,7 +148,7 @@ const Agitation = () => {
               employee: "TT0000-15-0588-001-" + p.photoProfileId.toUpperCase(),
               country: Number(profile?.fieldInt1 ?? 0),
               snils: String(profile?.fieldStr1 ?? "").replace(/\D/g, ""),
-              kig: String(profile?.fieldStr4 ?? ""),
+              kig: String(profile?.fieldStr3 ?? ""),
               org: organization,
               type: p.direction === 'in' ? "Вход" : "Выход",
               date: formatPassageDate(p.passageDate),
