@@ -223,3 +223,18 @@ export const getIDGateSKUD = async (id: string, sessionid: string): Promise<Devi
     const resp: DeviceMacInfo = (await response.json()) as DeviceMacInfo;
     return resp;
 };
+
+export const activatePhotoProfile = async (id: string, sessionid: string): Promise<void> => {
+    const response = await fetch(`/api/v1/dict/photo-profile/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            sessionid: sessionid,
+        },
+        body: JSON.stringify({ active: true }),
+    });
+    if (!response.ok) {
+        const errorResponse = await getErrorResponse(response);
+        throw new ErrorResponse(errorResponse);
+    }
+};
