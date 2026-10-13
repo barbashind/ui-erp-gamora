@@ -21,6 +21,11 @@ import {
   OvisionTokenKBS,
 } from "../../services/IntegrationOvisionKBS";
 import { HighwayBar } from "../../global/HighwayBar";
+import { Button } from "@consta/uikit/Button";
+import { DownloadOutlined } from "@ant-design/icons";
+import { cnMixFontSize } from "#/utils/MixFontSize";
+import { AntIcon } from "#/utils/AntIcon";
+import { exportToExcelReportSkudCopy } from "../IntegrationFaceIdPage/ExportToExcelReportSkudCopy";
 
 /* ============================================================
  *  Палитра «Автобан» v2
@@ -100,6 +105,13 @@ export interface AggregatedAllItem {
   count: number;
   countMyId: number;
   countKBS: number;
+}
+
+export interface PersonRS {
+  name: string;
+  snils: string | undefined;
+  inn: string | undefined;
+  birthday: string | undefined;
 }
 
 /* ============================================================
@@ -249,6 +261,8 @@ const FaceIDReport = () => {
   const [bioDataKBS, setBioDataKBS] = useState<AggregatedBioItem[]>([]);
   const [bioDataAll, setBioDataAll] = useState<AggregatedAllItem[]>([]);
 
+  const [personsRS, setPersonsRS] = useState<PersonRS[]>([]);
+
   /* ---------- агрегаторы ---------- */
   const aggregateItemsBio = (items: MergedBioItem[]): AggregatedBioItem[] => {
     const resultBio: AggregatedBioItem[] = Object.entries(
@@ -295,7 +309,7 @@ const FaceIDReport = () => {
       const token: OvisionToken = await authOvision();
       const deptTree = await fetchDepartmentTree(token.access_token);
       const people = await getOvisionPeopleData(token.access_token);
-
+      const enrichedPeopleRS: PersonRS[] = [];
       const enrichedPeople: MergedPersonItem[] = [];
       for (const ev of people.data) {
         const departmentName = ev.profiles[0].department || "";
@@ -307,6 +321,12 @@ const FaceIDReport = () => {
           : isAtf
           ? "АТФ"
           : resolveOrgById(deptTree, department);
+        enrichedPeopleRS.push({
+          name: ev.name,
+          snils: ev.values.find(item=> (item.name === 'snils'))?.value,
+          inn: ev.values.find(item=> (item.name === 'staffinn'))?.value,
+          birthday: ev.values.find(item=> (item.name === 'dbrth'))?.value
+        });
 
         enrichedPeople.push({
           employeeId: ev.id,
@@ -317,6 +337,7 @@ const FaceIDReport = () => {
         });
       }
       setPersonsNot(enrichedPeople);
+      setPersonsRS(enrichedPeopleRS);
     };
 
     const processOvisionDataKBS = async (): Promise<void> => {
@@ -519,6 +540,17 @@ const FaceIDReport = () => {
         <Text size="2xl" weight="bold" style={{ color: ROAD.text }}>
           Face ID · Отчёт по регистрации
         </Text>
+        <Button
+                label="Выгрузить"
+                size="s"
+                iconLeft={AntIcon.asIconComponent(() => (
+                  <DownloadOutlined
+                    className={cnMixFontSize("l") + cnMixSpace({ mR: "xs" })}
+                  />
+                ))}
+                view="secondary"
+                onClick={() => exportToExcelReportSkudCopy(personsRS)}
+              />
       </Layout>
 
       {/* ======================= СВОДНЫЕ КАРТОЧКИ ======================= */}

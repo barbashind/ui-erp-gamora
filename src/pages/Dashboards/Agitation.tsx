@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Layout } from "@consta/uikit/Layout";
 import {
-  activatePhotoProfile,
+  // activatePhotoProfile,
   authIDGate,
   getIDGateDataSKUD,
   getIDGateOrgs,
@@ -122,17 +122,17 @@ const Agitation = () => {
                   p.photoProfileId
                 );
 
-                if (profile && profile.active === false) {
-                  try {
-                    await activatePhotoProfile(p.photoProfileId, sessionId);
-                    profile.active = true; // обновляем локально
-                  } catch (err) {
-                    console.warn(
-                      `Не удалось активировать профиль ${p.photoProfileId}`,
-                      err
-                    );
-                  }
-                }
+                // if (profile && profile.active === false) {
+                //   try {
+                //     await activatePhotoProfile(p.photoProfileId, sessionId);
+                //     profile.active = true; // обновляем локально
+                //   } catch (err) {
+                //     console.warn(
+                //       `Не удалось активировать профиль ${p.photoProfileId}`,
+                //       err
+                //     );
+                //   }
+                // }
                 
               }
             } catch (err) {

@@ -224,14 +224,14 @@ export const getIDGateSKUD = async (id: string, sessionid: string): Promise<Devi
     return resp;
 };
 
-export const activatePhotoProfile = async (id: string, sessionid: string): Promise<void> => {
+export const activatePhotoProfile = async (id: string, sessionid: string, profile: IdGateProfile): Promise<void> => {
     const response = await fetch(`/api/v1/dict/photo-profile/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
             sessionid: sessionid,
         },
-        body: JSON.stringify({ active: true }),
+        body: JSON.stringify(profile),
     });
     if (!response.ok) {
         const errorResponse = await getErrorResponse(response);
