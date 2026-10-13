@@ -25,7 +25,7 @@ const normalizeBirthDate = (value: unknown): string => {
     const dd = String(value.getDate()).padStart(2, "0");
     const mm = String(value.getMonth() + 1).padStart(2, "0");
     const yyyy = value.getFullYear();
-    return `${yyyy}-${mm}-${dd}`;
+    return `${dd}.${mm}.${yyyy}`;
   }
 
   // Если Excel вернул число (серийная дата Excel)
@@ -35,7 +35,7 @@ const normalizeBirthDate = (value: unknown): string => {
       const dd = String(parsed.d).padStart(2, "0");
       const mm = String(parsed.m).padStart(2, "0");
       const yyyy = parsed.y;
-      return `${yyyy}-${mm}-${dd}`;
+      return `${dd}.${mm}.${yyyy}`;
     }
   }
 
@@ -51,7 +51,7 @@ const rowToProfile = (row: ExcelRow): IdGateProfile => {
     fieldStr2: String(row["ИНН"] ?? "").trim(),
     fieldStr3: String(row["Номер карты иностранного гражданина"] ?? "").trim(),
     fieldStr4: String(row["Должность"] ?? "").trim(),
-
+    lastName: String(row["Фамилия"] ?? "").trim(),
     firstName: String(row["Имя"] ?? "").trim(),
     middleName: String(row["Отчество"] ?? "").trim(),
     birthDate: normalizeBirthDate(row["Дата рождения"]),
@@ -59,9 +59,10 @@ const rowToProfile = (row: ExcelRow): IdGateProfile => {
     // По вашему ТЗ gender = 1.
     // Если нужно брать из Excel, замените на: Number(row["Пол"] ?? 1) || 1
     gender: 1,
-
+    isDelete: false,
+    
     // Если в IdGateProfile есть поле lastName — раскомментируйте:
-    lastName: String(row["Фамилия"] ?? "").trim(),
+//     lastName: String(row["Фамилия"] ?? "").trim(),
   } as IdGateProfile;
 };
 
