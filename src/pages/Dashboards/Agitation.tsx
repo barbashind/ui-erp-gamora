@@ -8,7 +8,7 @@ import {
   getIDGateOrgs,
   getIDGateProfile,
   getIDGateSKUD,
-  restorePhotoProfile, // ← НОВОЕ
+  restorePhotoProfile,
 } from "../../services/IntegrationIDGate";
 import {
   DeviceMacInfo,
@@ -179,26 +179,12 @@ const rowToProfile = (row: ExcelRow): IdGateProfile => {
   return profile;
 };
 
-// Определяем, что ошибка — 400 Bad Request
-const isBadRequest = (error: unknown): boolean => {
-  if (!error) return false;
-
-  const anyErr = error as {
-    status?: number;
-    statusCode?: number;
-    message?: string;
-  };
-
-  if (anyErr.status === 400 || anyErr.statusCode === 400) return true;
-
-  const msg = String(anyErr.message ?? error).toLowerCase();
-  return msg.includes("400") || msg.includes("bad request");
-};
+export type UploadPhase = "restore" | "update";
 
 export interface UpdateResult {
   total: number;
   success: number;
-  restored: number; // ← НОВОЕ
+  restored: number;
   errors: Array<{ id: string; error: unknown }>;
 }
 
@@ -206,7 +192,7 @@ export interface UpdateResult {
 export async function updateProfilesFromExcel(
   file: File,
   sessionId: string,
-  onProgress?: (done: number, total: number) => void,
+  onProgress?: (done: number, total: number, phase: UploadPhase) => void,
   concurrency = 5
 ): Promise<UpdateResult> {
   const data = await file.arrayBuffer();
@@ -221,65 +207,80 @@ export async function updateProfilesFromExcel(
 
   const rows = XLSX.utils.sheet_to_json<ExcelRow>(sheet, { defval: "" });
 
-  let success = 0;
-  let restored = 0;
-  let done = 0;
-  const errors: Array<{ id: string; error: unknown }> = [];
-  let index = 0;
-
-  const worker = async () => {
-    while (index < rows.length) {
-      const current = index++;
-      const row = rows[current];
-
-      // GUID в нижнем регистре
-      const id = String(row["Сотрудник id_строка"] ?? "")
+  // Готовим список валидных строк с id
+  const prepared = rows
+    .map((row) => ({
+      row,
+      id: String(row["Сотрудник id_строка"] ?? "")
         .trim()
-        .toLowerCase();
+        .toLowerCase(),
+    }))
+    .filter((item) => Boolean(item.id));
 
-      if (!id) {
-        done++;
-        onProgress?.(done, rows.length);
-        continue;
+  const total = prepared.length;
+
+  let restored = 0;
+  let success = 0;
+  const errors: Array<{ id: string; error: unknown }> = [];
+
+  // Универсальный воркер с ограничением параллелизма
+  const runWithConcurrency = async <T,>(
+    items: T[],
+    conc: number,
+    fn: (item: T) => Promise<void>
+  ) => {
+    let i = 0;
+    const workers = Array.from({ length: conc }, async () => {
+      while (i < items.length) {
+        const cur = i++;
+        await fn(items[cur]);
       }
-
-      try {
-        const profile = rowToProfile(row);
-
-        try {
-          // 1. Обычное обновление
-          await activatePhotoProfile(id, sessionId, profile);
-        } catch (error) {
-          if (!isBadRequest(error)) throw error;
-
-          // 2. Профиль, вероятно, удалён — восстанавливаем
-          console.warn(
-            `Профиль ${id} вернул 400. Восстанавливаю и повторяю…`
-          );
-          await restorePhotoProfile(id, sessionId);
-          restored++;
-
-          // 3. Повторное обновление
-          await activatePhotoProfile(id, sessionId, profile);
-        }
-
-        success++;
-      } catch (error) {
-        console.error(`Ошибка обновления профиля ${id}:`, error);
-        errors.push({ id, error });
-      } finally {
-        done++;
-        onProgress?.(done, rows.length);
-      }
-    }
+    });
+    await Promise.all(workers);
   };
 
-  const workersCount = Math.min(concurrency, rows.length || 1);
-  await Promise.all(
-    Array.from({ length: workersCount }, () => worker())
+  // ---------- Проход 1: восстановление всех профилей ----------
+  console.log(`[Восстановление] Всего: ${total}`);
+  let doneRestore = 0;
+
+  await runWithConcurrency(prepared, concurrency, async (item) => {
+    try {
+      await restorePhotoProfile(item.id, sessionId);
+      restored++;
+    } catch (error) {
+      // Профиль не удалён / нет прав — не критично, просто логируем
+      console.warn(`[Восстановление] ${item.id} не восстановлен:`, error);
+    } finally {
+      doneRestore++;
+      onProgress?.(doneRestore, total, "restore");
+    }
+  });
+
+  console.log(`[Восстановление] Готово. Восстановлено: ${restored}`);
+
+  // ---------- Проход 2: обновление данных ----------
+  console.log(`[Обновление] Всего: ${total}`);
+  let doneUpdate = 0;
+
+  await runWithConcurrency(prepared, concurrency, async (item) => {
+    try {
+      const profile = rowToProfile(item.row);
+      await activatePhotoProfile(item.id, sessionId, profile);
+      success++;
+    } catch (error) {
+      console.error(`[Обновление] Ошибка для ${item.id}:`, error);
+      errors.push({ id: item.id, error });
+    } finally {
+      doneUpdate++;
+      onProgress?.(doneUpdate, total, "update");
+    }
+  });
+
+  console.log(
+    `[Обновление] Готово. Успешно: ${success}, ошибок: ${errors.length}`
   );
 
-  return { total: rows.length, success, restored, errors };
+  return { total, success, restored, errors };
 }
 
 // ---------- Компонент ----------
@@ -292,7 +293,11 @@ const Agitation = () => {
   // Состояния загрузки Excel
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [progress, setProgress] = useState({ done: 0, total: 0 });
+  const [progress, setProgress] = useState<{
+    done: number;
+    total: number;
+    phase: UploadPhase;
+  }>({ done: 0, total: 0, phase: "restore" });
   const [uploadResult, setUploadResult] = useState<UpdateResult | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -422,14 +427,14 @@ const Agitation = () => {
 
     setUploadError(null);
     setUploadResult(null);
-    setProgress({ done: 0, total: 0 });
+    setProgress({ done: 0, total: 0, phase: "restore" });
     setIsUploading(true);
 
     try {
       const result = await updateProfilesFromExcel(
         file,
         sessionId,
-        (done, total) => setProgress({ done, total }),
+        (done, total, phase) => setProgress({ done, total, phase }),
         5
       );
       setUploadResult(result);
@@ -443,6 +448,13 @@ const Agitation = () => {
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
+
+  const uploadButtonLabel = (() => {
+    if (!isUploading) return "Загрузить Excel и обновить профили";
+    const phaseLabel =
+      progress.phase === "restore" ? "Восстановление" : "Обновление";
+    return `${phaseLabel}… ${progress.done}/${progress.total}`;
+  })();
 
   return (
     <Layout direction="column">
@@ -474,11 +486,7 @@ const Agitation = () => {
             />
 
             <Button
-              label={
-                isUploading
-                  ? `Обновление… ${progress.done}/${progress.total}`
-                  : "Загрузить Excel и обновить профили"
-              }
+              label={uploadButtonLabel}
               size="s"
               iconLeft={AntIcon.asIconComponent(() => (
                 <UploadOutlined
@@ -508,9 +516,10 @@ const Agitation = () => {
           {uploadResult && (
             <div style={{ marginTop: 12 }}>
               <div>
-                Всего строк: {uploadResult.total}, обновлено успешно:{" "}
-                {uploadResult.success}, восстановлено: {uploadResult.restored}
-                , ошибок: {uploadResult.errors.length}
+                Всего строк: {uploadResult.total}, восстановлено:{" "}
+                {uploadResult.restored}, обновлено успешно:{" "}
+                {uploadResult.success}, ошибок:{" "}
+                {uploadResult.errors.length}
               </div>
 
               {uploadResult.errors.length > 0 && (

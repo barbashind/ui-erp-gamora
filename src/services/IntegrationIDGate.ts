@@ -251,7 +251,7 @@ export const restorePhotoProfile = async (
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        sessionid: sessionid,
+        sessionid: sessionid, // ← если API ждёт `token` — замените
       },
       body: JSON.stringify({}),
     }
