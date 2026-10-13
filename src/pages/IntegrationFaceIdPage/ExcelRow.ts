@@ -56,13 +56,12 @@ const rowToProfile = (row: ExcelRow): IdGateProfile => {
     middleName: String(row["Отчество"] ?? "").trim(),
     birthDate: normalizeBirthDate(row["Дата рождения"]),
     age: Number(row["Возраст"] ?? 0),
-    lastName: String(row["Фамилия"] ?? "").trim(),
     // По вашему ТЗ gender = 1.
     // Если нужно брать из Excel, замените на: Number(row["Пол"] ?? 1) || 1
     gender: 1,
 
     // Если в IdGateProfile есть поле lastName — раскомментируйте:
-    // lastName: String(row["Фамилия"] ?? "").trim(),
+    lastName: String(row["Фамилия"] ?? "").trim(),
   } as IdGateProfile;
 };
 
@@ -95,7 +94,7 @@ export async function updateProfilesFromExcel(
       const current = index++;
       const row = rows[current];
 
-      const id = String(row["Сотрудник id_строка"] ?? "").trim();
+      const id = String(row["Сотрудник id_строка"] ?? "").trim().toLowerCase();
 
       if (!id) {
         continue;
