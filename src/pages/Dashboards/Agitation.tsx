@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import * as XLSX from "xlsx";
 import { Layout } from "@consta/uikit/Layout";
 import {
-  // activatePhotoProfile,
+  activatePhotoProfile,
   authIDGate,
   getIDGateDataSKUD,
   getIDGateOrgs,
@@ -9,7 +10,7 @@ import {
   getIDGateSKUD,
 } from "../../services/IntegrationIDGate";
 import {
-        DeviceMacInfo,
+  DeviceMacInfo,
   IdGateDataResponseSKUD,
   IdGateProfile,
   OrgUnitItem,
@@ -17,7 +18,7 @@ import {
 } from "../../types/integration-idgate";
 import { Button } from "@consta/uikit/Button";
 import { AntIcon } from "../../utils/AntIcon";
-import { DownloadOutlined } from "@ant-design/icons";
+import { DownloadOutlined, UploadOutlined } from "@ant-design/icons";
 import { cnMixFontSize } from "../../utils/MixFontSize";
 import { cnMixSpace } from "@consta/uikit/MixSpace";
 import { exportToExcelReportSkud } from "../IntegrationFaceIdPage/ExportToExcelReportSkud";
@@ -77,9 +78,145 @@ const mapWithConcurrency = async <T, R>(
   return results;
 };
 
+// ---------- Работа с Excel ----------
+
+type ExcelRow = {
+  "Сотрудник id_строка"?: string;
+  "Гражданство"?: string | number;
+  "СНИЛС"?: string;
+  "Номер карты иностранного гражданина"?: string;
+  "Наименование организации"?: string;
+  "ИНН"?: string;
+  "Дата рождения"?: string | number | Date;
+  "Фамилия"?: string;
+  "Имя"?: string;
+  "Отчество"?: string;
+  "Пол"?: string | number;
+  "Возраст"?: string | number;
+  "Должность"?: string;
+};
+
+const normalizeBirthDate = (value: unknown): string => {
+  if (!value) return "";
+
+  if (value instanceof Date) {
+    const dd = String(value.getDate()).padStart(2, "0");
+    const mm = String(value.getMonth() + 1).padStart(2, "0");
+    const yyyy = value.getFullYear();
+    return `${dd}.${mm}.${yyyy}`;
+  }
+
+  if (typeof value === "number") {
+    const parsed = XLSX.SSF.parse_date_code(value);
+    if (parsed) {
+      const dd = String(parsed.d).padStart(2, "0");
+      const mm = String(parsed.m).padStart(2, "0");
+      const yyyy = parsed.y;
+      return `${dd}.${mm}.${yyyy}`;
+    }
+  }
+
+  return String(value).trim();
+};
+
+const rowToProfile = (row: ExcelRow): IdGateProfile => {
+  return {
+    active: true,
+
+    fieldInt1: Number(row["Гражданство"] ?? 0),
+    fieldStr1: String(row["СНИЛС"] ?? "").trim(),
+    fieldStr2: String(row["ИНН"] ?? "").trim(),
+    fieldStr3: String(row["Номер карты иностранного гражданина"] ?? "").trim(),
+    fieldStr4: String(row["Должность"] ?? "").trim(),
+
+    firstName: String(row["Имя"] ?? "").trim(),
+    middleName: String(row["Отчество"] ?? "").trim(),
+    birthDate: normalizeBirthDate(row["Дата рождения"]),
+    age: Number(row["Возраст"] ?? 0),
+
+    // По ТЗ gender всегда 1. Если нужно брать из Excel — замените:
+    // gender: Number(row["Пол"] ?? 1) || 1,
+    gender: 1,
+
+    // Если в IdGateProfile есть lastName — раскомментируйте:
+    // lastName: String(row["Фамилия"] ?? "").trim(),
+  } as IdGateProfile;
+};
+
+export interface UpdateResult {
+  total: number;
+  success: number;
+  errors: Array<{ id: string; error: unknown }>;
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export async function updateProfilesFromExcel(
+  file: File,
+  sessionId: string,
+  onProgress?: (done: number, total: number) => void,
+  concurrency = 5
+): Promise<UpdateResult> {
+  const data = await file.arrayBuffer();
+
+  const workbook = XLSX.read(data, {
+    type: "array",
+    cellDates: true,
+  });
+
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+
+  const rows = XLSX.utils.sheet_to_json<ExcelRow>(sheet, { defval: "" });
+
+  let success = 0;
+  let done = 0;
+  const errors: Array<{ id: string; error: unknown }> = [];
+  let index = 0;
+
+  const worker = async () => {
+    while (index < rows.length) {
+      const current = index++;
+      const row = rows[current];
+      const id = String(row["Сотрудник id_строка"] ?? "").trim();
+
+      try {
+        if (!id) {
+          throw new Error("Пустой GUID (Сотрудник id_строка)");
+        }
+        const profile = rowToProfile(row);
+        await activatePhotoProfile(id, sessionId, profile);
+        success++;
+      } catch (error) {
+        console.error(`Ошибка обновления профиля ${id}:`, error);
+        errors.push({ id, error });
+      } finally {
+        done++;
+        onProgress?.(done, rows.length);
+      }
+    }
+  };
+
+  const workersCount = Math.min(concurrency, rows.length || 1);
+  await Promise.all(
+    Array.from({ length: workersCount }, () => worker())
+  );
+
+  return { total: rows.length, success, errors };
+}
+
+// ---------- Компонент ----------
+
 const Agitation = () => {
   const [events, setEvents] = useState<Events[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [sessionId, setSessionId] = useState<string>("");
+
+  // Состояния загрузки Excel
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [progress, setProgress] = useState({ done: 0, total: 0 });
+  const [uploadResult, setUploadResult] = useState<UpdateResult | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -94,6 +231,9 @@ const Agitation = () => {
           password: "e227e04df45b25701ca460ffe2626e6d",
           passwordText: "LRStZidYhEGaiBX",
         });
+
+        if (cancelled) return;
+        setSessionId(sessionId);
 
         // 2. Справочник организаций
         const orgUnitsMap = new Map<string, string>();
@@ -117,23 +257,7 @@ const Agitation = () => {
 
             try {
               if (p.photoProfileId) {
-                profile = await getIDGateProfile(
-                  sessionId,
-                  p.photoProfileId
-                );
-
-                // if (profile && profile.active === false) {
-                //   try {
-                //     await activatePhotoProfile(p.photoProfileId, sessionId);
-                //     profile.active = true; // обновляем локально
-                //   } catch (err) {
-                //     console.warn(
-                //       `Не удалось активировать профиль ${p.photoProfileId}`,
-                //       err
-                //     );
-                //   }
-                // }
-                
+                profile = await getIDGateProfile(sessionId, p.photoProfileId);
               }
             } catch (err) {
               console.warn(
@@ -142,9 +266,9 @@ const Agitation = () => {
               );
             }
 
-             try {
+            try {
               if (p.photoProfileId) {
-                skud = await getIDGateSKUD( p.deviceId, sessionId );
+                skud = await getIDGateSKUD(p.deviceId, sessionId);
               }
             } catch (err) {
               console.warn(
@@ -152,19 +276,22 @@ const Agitation = () => {
                 err
               );
             }
-                const mac = skud?.mac || "";
+
+            const mac = skud?.mac || "";
             const orgId = profile?.orgUnitId || "";
             const organization = orgUnitsMap.get(orgId) || "Неизвестно";
 
             return {
               id_event: "TT0000-15-0588-001-" + p.id.toUpperCase(),
-              id_employee: "TT0000-15-0588-001-" + p.photoProfileId.toUpperCase(),
-              employee: "TT0000-15-0588-001-" + p.photoProfileId.toUpperCase(),
+              id_employee:
+                "TT0000-15-0588-001-" + p.photoProfileId.toUpperCase(),
+              employee:
+                "TT0000-15-0588-001-" + p.photoProfileId.toUpperCase(),
               country: Number(profile?.fieldInt1 ?? 0),
               snils: String(profile?.fieldStr1 ?? "").replace(/\D/g, ""),
               kig: String(profile?.fieldStr3 ?? ""),
               org: organization,
-              type: p.direction === 'in' ? "Вход" : "Выход",
+              type: p.direction === "in" ? "Вход" : "Выход",
               date: formatPassageDate(p.passageDate),
               terminal_id: "TT0000-15-0588-001-" + mac || "",
               devicename: p.deviceName || "",
@@ -199,6 +326,47 @@ const Agitation = () => {
     };
   }, []);
 
+  // -------- Обработка загрузки Excel --------
+
+  const handleUploadClick = () => {
+    if (!sessionId) {
+      setUploadError("Нет активной сессии. Дождитесь загрузки данных.");
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadError(null);
+    setUploadResult(null);
+    setProgress({ done: 0, total: 0 });
+    setIsUploading(true);
+
+    try {
+      const result = await updateProfilesFromExcel(
+        file,
+        sessionId,
+        (done, total) => setProgress({ done, total }),
+        5
+      );
+      setUploadResult(result);
+    } catch (err) {
+      console.error("Ошибка обновления профилей:", err);
+      setUploadError(
+        err instanceof Error ? err.message : "Не удалось обновить профили"
+      );
+    } finally {
+      setIsUploading(false);
+      // Сброс input, чтобы можно было загрузить тот же файл повторно
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <Layout direction="column">
       {isLoading ? (
@@ -206,17 +374,84 @@ const Agitation = () => {
       ) : (
         <div>
           <div>Загружено событий: {events.length}</div>
-          <Button
-                label="Выгрузить"
-                size="s"
-                iconLeft={AntIcon.asIconComponent(() => (
-                  <DownloadOutlined
-                    className={cnMixFontSize("l") + cnMixSpace({ mR: "xs" })}
-                  />
-                ))}
-                view="secondary"
-                onClick={() => exportToExcelReportSkud(events)}
-              />
+
+          <div
+            style={{
+              display: "flex",
+              gap: 12,
+              alignItems: "center",
+              marginTop: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <Button
+              label="Выгрузить"
+              size="s"
+              iconLeft={AntIcon.asIconComponent(() => (
+                <DownloadOutlined
+                  className={cnMixFontSize("l") + cnMixSpace({ mR: "xs" })}
+                />
+              ))}
+              view="secondary"
+              onClick={() => exportToExcelReportSkud(events)}
+            />
+
+            <Button
+              label={
+                isUploading
+                  ? `Обновление… ${progress.done}/${progress.total}`
+                  : "Загрузить Excel и обновить профили"
+              }
+              size="s"
+              iconLeft={AntIcon.asIconComponent(() => (
+                <UploadOutlined
+                  className={cnMixFontSize("l") + cnMixSpace({ mR: "xs" })}
+                />
+              ))}
+              view="primary"
+              disabled={isUploading || !sessionId}
+              onClick={handleUploadClick}
+            />
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls"
+              style={{ display: "none" }}
+              onChange={handleFileChange}
+            />
+          </div>
+
+          {uploadError && (
+            <div style={{ marginTop: 12, color: "crimson" }}>
+              Ошибка: {uploadError}
+            </div>
+          )}
+
+          {uploadResult && (
+            <div style={{ marginTop: 12 }}>
+              <div>
+                Всего строк: {uploadResult.total}, обновлено успешно:{" "}
+                {uploadResult.success}, ошибок: {uploadResult.errors.length}
+              </div>
+
+              {uploadResult.errors.length > 0 && (
+                <details style={{ marginTop: 8 }}>
+                  <summary>Показать ошибки</summary>
+                  <ul>
+                    {uploadResult.errors.map((e, i) => (
+                      <li key={i}>
+                        <b>{e.id || "(без GUID)"}</b>:{" "}
+                        {e.error instanceof Error
+                          ? e.error.message
+                          : String(e.error)}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </div>
+          )}
         </div>
       )}
     </Layout>
