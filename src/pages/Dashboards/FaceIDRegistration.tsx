@@ -23,8 +23,8 @@ import {
 import { HighwayBar } from "../../global/HighwayBar";
 import { Button } from "@consta/uikit/Button";
 import { DownloadOutlined } from "@ant-design/icons";
-import { cnMixFontSize } from "#/utils/MixFontSize";
-import { AntIcon } from "#/utils/AntIcon";
+import { cnMixFontSize } from "../../utils/MixFontSize";
+import { AntIcon } from "../../utils/AntIcon";
 import { exportToExcelReportSkudCopy } from "../IntegrationFaceIdPage/ExportToExcelReportSkudCopy";
 
 /* ============================================================
