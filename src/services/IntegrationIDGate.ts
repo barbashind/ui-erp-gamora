@@ -238,3 +238,27 @@ export const activatePhotoProfile = async (id: string, sessionid: string, profil
         throw new ErrorResponse(errorResponse);
     }
 };
+
+export const restorePhotoProfile = async (
+  id: string,
+  sessionid: string
+): Promise<void> => {
+  const normalizedId = id.trim().toLowerCase();
+
+  const response = await fetch(
+    `/api/v1/dict/photo-profile/${normalizedId}?includeDeleted=true`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        sessionid: sessionid,
+      },
+      body: JSON.stringify({}),
+    }
+  );
+
+  if (!response.ok) {
+    const errorResponse = await getErrorResponse(response);
+    throw new ErrorResponse(errorResponse);
+  }
+};
