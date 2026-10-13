@@ -321,6 +321,7 @@ const FaceIDReport = () => {
           : isAtf
           ? "АТФ"
           : resolveOrgById(deptTree, department);
+
         enrichedPeopleRS.push({
           name: ev.name,
           snils: ev.values.find(item=> (item.name === 'snils'))?.value,
@@ -337,7 +338,7 @@ const FaceIDReport = () => {
         });
       }
       setPersonsNot(enrichedPeople);
-      setPersonsRS(enrichedPeopleRS);
+      // setPersonsRS(enrichedPeopleRS);
     };
 
     const processOvisionDataKBS = async (): Promise<void> => {
@@ -372,7 +373,7 @@ const FaceIDReport = () => {
       const token: OvisionToken = await authOvision();
       const deptTree = await fetchDepartmentTree(token.access_token);
       const people = await getOvisionPeopleBioData(token.access_token);
-
+      const enrichedPeopleRS: PersonRS[] = [];
       const enrichedPeople: MergedBioItem[] = [];
       const enrichedPeople1: MergedPersonItem[] = [];
 
@@ -386,6 +387,12 @@ const FaceIDReport = () => {
           : isAtf
           ? "АТФ"
           : resolveOrgById(deptTree, department);
+        enrichedPeopleRS.push({
+          name: ev.name,
+          snils: ev.values.find(item=> (item.name === 'snils'))?.value,
+          inn: ev.values.find(item=> (item.name === 'staffinn'))?.value,
+          birthday: ev.values.find(item=> (item.name === 'dbrth'))?.value
+        });
 
         enrichedPeople.push({ employeeId: ev.id, organization });
         enrichedPeople1.push({
@@ -395,8 +402,9 @@ const FaceIDReport = () => {
           statusKBS: false,
           statusRS: true,
         });
+        
       }
-
+      setPersonsRS(enrichedPeopleRS);
       setPersons(enrichedPeople1);
       setBioData(aggregateItemsBio(enrichedPeople));
     };
@@ -428,6 +436,7 @@ const FaceIDReport = () => {
           statusKBS: true,
           statusRS: false,
         });
+        
       }
 
       setPersonsKBS(enrichedPeople1);
