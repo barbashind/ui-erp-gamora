@@ -8,6 +8,7 @@ import {
   getIDGateOrgs,
   getIDGateProfile,
   getIDGateSKUD,
+  restorePhotoProfile, // ← НОВОЕ
 } from "../../services/IntegrationIDGate";
 import {
   DeviceMacInfo,
@@ -96,6 +97,7 @@ type ExcelRow = {
   "Должность"?: string;
 };
 
+// API ждёт YYYY-MM-DD (формат Go "2006-01-02")
 const normalizeBirthDate = (value: unknown): string => {
   if (!value) return "";
 
@@ -103,7 +105,7 @@ const normalizeBirthDate = (value: unknown): string => {
     const dd = String(value.getDate()).padStart(2, "0");
     const mm = String(value.getMonth() + 1).padStart(2, "0");
     const yyyy = value.getFullYear();
-    return `${dd}.${mm}.${yyyy}`;
+    return `${yyyy}-${mm}-${dd}`;
   }
 
   if (typeof value === "number") {
@@ -112,15 +114,47 @@ const normalizeBirthDate = (value: unknown): string => {
       const dd = String(parsed.d).padStart(2, "0");
       const mm = String(parsed.m).padStart(2, "0");
       const yyyy = parsed.y;
-      return `${dd}.${mm}.${yyyy}`;
+      return `${yyyy}-${mm}-${dd}`;
     }
   }
 
-  return String(value).trim();
+  const str = String(value).trim().replace(/^"|"$/g, "");
+
+  // DD.MM.YYYY / DD/MM/YYYY / DD-MM-YYYY
+  const dmY = str.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
+  if (dmY) {
+    const dd = dmY[1].padStart(2, "0");
+    const mm = dmY[2].padStart(2, "0");
+    const yyyy = dmY[3];
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  // Уже YYYY-MM-DD
+  const YmD = str.match(/^(\d{4})[./-](\d{1,2})[./-](\d{1,2})$/);
+  if (YmD) {
+    const yyyy = YmD[1];
+    const mm = YmD[2].padStart(2, "0");
+    const dd = YmD[3].padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  return str;
+};
+
+// Безопасное чтение ячейки без учёта регистра/пробелов в заголовке
+const getCell = (
+  row: Record<string, unknown>,
+  name: string
+): string => {
+  const target = name.trim().toLowerCase();
+  const key = Object.keys(row).find(
+    (k) => k.trim().toLowerCase() === target
+  );
+  return key ? String(row[key] ?? "").trim() : "";
 };
 
 const rowToProfile = (row: ExcelRow): IdGateProfile => {
-  return {
+  const profile = {
     active: true,
 
     fieldInt1: Number(row["Гражданство"] ?? 0),
@@ -129,23 +163,42 @@ const rowToProfile = (row: ExcelRow): IdGateProfile => {
     fieldStr3: String(row["Номер карты иностранного гражданина"] ?? "").trim(),
     fieldStr4: String(row["Должность"] ?? "").trim(),
 
-    firstName: String(row["Имя"] ?? "").trim(),
-    middleName: String(row["Отчество"] ?? "").trim(),
+    lastName: getCell(row, "Фамилия"),
+    firstName: getCell(row, "Имя"),
+    middleName: getCell(row, "Отчество"),
+
     birthDate: normalizeBirthDate(row["Дата рождения"]),
     age: Number(row["Возраст"] ?? 0),
-
-    // По ТЗ gender всегда 1. Если нужно брать из Excel — замените:
-    // gender: Number(row["Пол"] ?? 1) || 1,
     gender: 1,
-
-    // Если в IdGateProfile есть lastName — раскомментируйте:
-    // lastName: String(row["Фамилия"] ?? "").trim(),
+    isDelete: false,
   } as IdGateProfile;
+
+  // Диагностика: что реально уходит в теле запроса
+  console.log("PROFILE TO SEND:", JSON.stringify(profile, null, 2));
+
+  return profile;
+};
+
+// Определяем, что ошибка — 400 Bad Request
+const isBadRequest = (error: unknown): boolean => {
+  if (!error) return false;
+
+  const anyErr = error as {
+    status?: number;
+    statusCode?: number;
+    message?: string;
+  };
+
+  if (anyErr.status === 400 || anyErr.statusCode === 400) return true;
+
+  const msg = String(anyErr.message ?? error).toLowerCase();
+  return msg.includes("400") || msg.includes("bad request");
 };
 
 export interface UpdateResult {
   total: number;
   success: number;
+  restored: number; // ← НОВОЕ
   errors: Array<{ id: string; error: unknown }>;
 }
 
@@ -169,6 +222,7 @@ export async function updateProfilesFromExcel(
   const rows = XLSX.utils.sheet_to_json<ExcelRow>(sheet, { defval: "" });
 
   let success = 0;
+  let restored = 0;
   let done = 0;
   const errors: Array<{ id: string; error: unknown }> = [];
   let index = 0;
@@ -177,14 +231,38 @@ export async function updateProfilesFromExcel(
     while (index < rows.length) {
       const current = index++;
       const row = rows[current];
-      const id = String(row["Сотрудник id_строка"] ?? "").trim();
+
+      // GUID в нижнем регистре
+      const id = String(row["Сотрудник id_строка"] ?? "")
+        .trim()
+        .toLowerCase();
+
+      if (!id) {
+        done++;
+        onProgress?.(done, rows.length);
+        continue;
+      }
 
       try {
-        if (!id) {
-          throw new Error("Пустой GUID (Сотрудник id_строка)");
-        }
         const profile = rowToProfile(row);
-        await activatePhotoProfile(id, sessionId, profile);
+
+        try {
+          // 1. Обычное обновление
+          await activatePhotoProfile(id, sessionId, profile);
+        } catch (error) {
+          if (!isBadRequest(error)) throw error;
+
+          // 2. Профиль, вероятно, удалён — восстанавливаем
+          console.warn(
+            `Профиль ${id} вернул 400. Восстанавливаю и повторяю…`
+          );
+          await restorePhotoProfile(id, sessionId);
+          restored++;
+
+          // 3. Повторное обновление
+          await activatePhotoProfile(id, sessionId, profile);
+        }
+
         success++;
       } catch (error) {
         console.error(`Ошибка обновления профиля ${id}:`, error);
@@ -201,7 +279,7 @@ export async function updateProfilesFromExcel(
     Array.from({ length: workersCount }, () => worker())
   );
 
-  return { total: rows.length, success, errors };
+  return { total: rows.length, success, restored, errors };
 }
 
 // ---------- Компонент ----------
@@ -362,7 +440,6 @@ const Agitation = () => {
       );
     } finally {
       setIsUploading(false);
-      // Сброс input, чтобы можно было загрузить тот же файл повторно
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
@@ -432,7 +509,8 @@ const Agitation = () => {
             <div style={{ marginTop: 12 }}>
               <div>
                 Всего строк: {uploadResult.total}, обновлено успешно:{" "}
-                {uploadResult.success}, ошибок: {uploadResult.errors.length}
+                {uploadResult.success}, восстановлено: {uploadResult.restored}
+                , ошибок: {uploadResult.errors.length}
               </div>
 
               {uploadResult.errors.length > 0 && (
