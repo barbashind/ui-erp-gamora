@@ -235,6 +235,7 @@ const ChartCard = ({
  * ============================================================ */
 const MoscowObjects = () => {
   const [isLoadObjects, setIsLoadObjects] = useState<boolean>(true);
+  const [isLoadDevs, setIsLoadDevs] = useState<boolean>(true);
   const [isLoadEntries, setIsLoadEntries] = useState<boolean>(true);
   const [isLoadUncorrects, setIsLoadUncorrects] = useState<boolean>(true);
 
@@ -335,9 +336,17 @@ const MoscowObjects = () => {
   useEffect(() => {
     const loadAllData = async () => {
       setIsLoadObjects(true);
+      setIsLoadDevs(true);
+      try {
+        await processDevicesData();
+      } catch (err) {
+        console.error("Ошибка загрузки устройств:", err);
+        
+      } finally {
+        setIsLoadDevs(false);
+      }
       try {
         await processZonesData();
-        await processDevicesData();
       } catch (err) {
         console.error("Ошибка загрузки зон:", err);
       } finally {
@@ -369,8 +378,7 @@ const MoscowObjects = () => {
       
       const zone = zones.find(
         (item) =>
-          item.id === Number(zoneId) ||
-          item.id === Number(zoneSourceId),
+          (Number(zoneId) !== 0) ? item.id === Number(zoneId) :  item.id === Number(zoneSourceId),
       );
       enriched.push({
         date: dateOnly,
@@ -647,7 +655,7 @@ const MoscowObjects = () => {
             size="s"
             multiple
             style={{ minWidth: 280 }}
-            isLoading={isLoadObjects}
+            isLoading={isLoadObjects || isLoadDevs}
           />
         </Layout>
       </Layout>
@@ -662,7 +670,7 @@ const MoscowObjects = () => {
         }}
       >
         <SummaryCard title="Всего объектов" accent={ROAD.brand}>
-          {isLoadObjects ? (
+          {isLoadObjects || isLoadDevs ? (
             <Loader />
           ) : (
             <Text
