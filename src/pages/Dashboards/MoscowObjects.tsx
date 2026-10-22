@@ -392,7 +392,8 @@ const MoscowObjects = () => {
     for (const item of enriched) {
       if (!groupedByDate.has(item.date)) groupedByDate.set(item.date, new Map());
       const dateMap = groupedByDate.get(item.date)!;
-      if (!dateMap.has(item.employeeId)) dateMap.set(item.employeeId, item);
+      const key = `${item.employeeId}::${item.object}`;
+      if (!dateMap.has(key)) dateMap.set(key, item);
     }
     const result: MergedItem[] = [];
     for (const dateMap of groupedByDate.values())
