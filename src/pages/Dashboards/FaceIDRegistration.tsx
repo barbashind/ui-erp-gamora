@@ -21,11 +21,7 @@ import {
   OvisionTokenKBS,
 } from "../../services/IntegrationOvisionKBS";
 import { HighwayBar } from "../../global/HighwayBar";
-import { Button } from "@consta/uikit/Button";
-import { DownloadOutlined } from "@ant-design/icons";
-import { cnMixFontSize } from "../../utils/MixFontSize";
-import { AntIcon } from "../../utils/AntIcon";
-import { exportToExcelReportSkudCopy } from "../IntegrationFaceIdPage/ExportToExcelReportSkudCopy";
+
 
 /* ============================================================
  *  Палитра «Автобан» v2
@@ -261,7 +257,6 @@ const FaceIDReport = () => {
   const [bioDataKBS, setBioDataKBS] = useState<AggregatedBioItem[]>([]);
   const [bioDataAll, setBioDataAll] = useState<AggregatedAllItem[]>([]);
 
-  const [personsRS, setPersonsRS] = useState<PersonRS[]>([]);
 
   /* ---------- агрегаторы ---------- */
   const aggregateItemsBio = (items: MergedBioItem[]): AggregatedBioItem[] => {
@@ -404,7 +399,6 @@ const FaceIDReport = () => {
         });
         
       }
-      setPersonsRS(enrichedPeopleRS);
       setPersons(enrichedPeople1);
       setBioData(aggregateItemsBio(enrichedPeople));
     };
@@ -549,17 +543,6 @@ const FaceIDReport = () => {
         <Text size="2xl" weight="bold" style={{ color: ROAD.text }}>
           Face ID · Отчёт по регистрации
         </Text>
-        <Button
-                label="Выгрузить"
-                size="s"
-                iconLeft={AntIcon.asIconComponent(() => (
-                  <DownloadOutlined
-                    className={cnMixFontSize("l") + cnMixSpace({ mR: "xs" })}
-                  />
-                ))}
-                view="secondary"
-                onClick={() => exportToExcelReportSkudCopy(personsRS)}
-              />
       </Layout>
 
       {/* ======================= СВОДНЫЕ КАРТОЧКИ ======================= */}

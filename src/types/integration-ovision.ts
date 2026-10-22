@@ -167,3 +167,43 @@ export interface OvisionZonesResponse {
     data: OvisionZone[];
     meta: MetaData;
 }
+
+export interface OvisionChannels {
+    id: number;
+    devices_id: number;
+    channel: number;
+    name: string;
+    zones_id: number;
+    source_id: number;
+    antighost_mode: number;
+    purpose: string;
+    is_fixed_pass: boolean;
+    enable: boolean;
+}
+
+export interface OvisionDevice {
+channels: OvisionChannels[];
+data: string;
+device_service_name: string;
+device_type: string;
+enabled: boolean;
+external_ip: string;
+external_uid: string;
+id: number;
+ip_address: string;
+is_complete:  boolean;
+is_error_logs:  boolean;
+is_init:  boolean;
+monitoring: object;
+name: string;
+order_num: number;
+purpose: string;
+sync_key: string;
+version: string;
+}
+
+export interface OvisionDevicesResponse {
+    status: ResponseStatus;
+    data: OvisionDevice[];
+    meta: MetaData;
+}

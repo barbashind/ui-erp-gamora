@@ -16,6 +16,7 @@ import { useEffect, useState, ReactNode } from "react";
 import { ComboboxMultiple } from "../../global/ComboboxMultiple";
 import {
   DepartmentTree,
+  OvisionDevice,
   OvisionFilter,
   OvisionZone,
 } from "../../types/integration-ovision";
@@ -23,6 +24,7 @@ import {
   authOvision,
   fetchDepartmentTree,
   getOvisionData,
+  getOvisionDevices,
   getOvisionPersonData,
   getOvisionZones,
   OvisionToken,
@@ -252,6 +254,7 @@ const MoscowObjects = () => {
   };
 
   const [objects, setObjects] = useState<OvisionZone[]>([]);
+  const [devices, setDevices] = useState<OvisionDevice[]>([]);
   const [entries, setEntries] = useState<MergedItem[]>([]);
   const [entriesUncorrect, setEntriesUncorrect] = useState<MergedItem[]>([]);
 
@@ -320,11 +323,21 @@ const MoscowObjects = () => {
     return zones;
   };
 
+   // ---- Устройства ----
+  const processDevicesData = async (): Promise<OvisionDevice[]> => {
+    const token: OvisionToken = await authOvision();
+    const resp = await getOvisionDevices(token.access_token);
+    const devices = resp.data;
+    setDevices(devices);
+    return devices;
+  };
+
   useEffect(() => {
     const loadAllData = async () => {
       setIsLoadObjects(true);
       try {
         await processZonesData();
+        await processDevicesData();
       } catch (err) {
         console.error("Ошибка загрузки зон:", err);
       } finally {
@@ -351,10 +364,13 @@ const MoscowObjects = () => {
 
     for (const ev of events.data) {
       const dateOnly = ev.created_at.split("T")[0];
+      const zoneSourceId = devices.find(item => item.id === ev.event.device_id)?.channels[0].source_id
+      const zoneId = devices.find(item => item.id === ev.event.device_id)?.channels[0].zones_id
+      
       const zone = zones.find(
         (item) =>
-          item.id === Number(ev.event.zone_id) ||
-          item.id === Number(ev.event.zone_source_id),
+          item.id === Number(zoneId) ||
+          item.id === Number(zoneSourceId),
       );
       enriched.push({
         date: dateOnly,

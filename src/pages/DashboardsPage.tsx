@@ -5,7 +5,6 @@ import { useState } from "react";
 import MoscowObjects from "./Dashboards/MoscowObjects";
 import FaceIDReport from "./Dashboards/FaceIDReport";
 import FaceIDRegistration from "./Dashboards/FaceIDRegistration";
-import Agitation from "./Dashboards/Agitation";
 
 
 const DashboardsPage = () => { 
@@ -27,10 +26,6 @@ const tabs: Tab[] = [
         {
                 id: 2,
                 label: 'Регистрация FaceID',
-        },
-        {
-                id: 3,
-                label: 'Агитация сотрудников',
         },
 ]
 
@@ -57,9 +52,7 @@ const [activeTab, setActiveTab] = useState<Tab>(tabs[0])
                                 {activeTab.id === 2 && (
                                         <FaceIDRegistration />
                                 )}
-                                {activeTab.id === 3 && (
-                                        <Agitation />
-                                )}
+                                
                         </Layout>
                 </Layout>
         );
